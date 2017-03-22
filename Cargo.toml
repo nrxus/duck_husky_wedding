@@ -3,4 +3,10 @@ name = "duck_husky_wedding"
 version = "0.1.0"
 authors = ["Andres <andresnrx@gmail.com>"]
 
+[[bin]]
+name = "duck_husky_wedding"
+path = "src/main.rs"
+
 [dependencies]
+moho = ">=0.0.5"
+error-chain = ">=0.9"
