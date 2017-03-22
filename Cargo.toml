@@ -1,0 +1,6 @@
+[package]
+name = "duck_husky_wedding"
+version = "0.1.0"
+authors = ["Andres <andresnrx@gmail.com>"]
+
+[dependencies]
