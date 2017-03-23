@@ -29,6 +29,7 @@ fn main() {
     let game_data = GameData::load("media/game_data.yaml").unwrap();
     let (renderer, input_manager) = moho::init("Master Smasher", WINDOW_WIDTH, WINDOW_HEIGHT)
         .unwrap();
-    let mut game = DuckHuskyWedding::<moho::SdlMohoEngine>::new(renderer, input_manager, game_data);
+    let mut game =
+        DuckHuskyWedding::<moho::SdlMohoEngine>::load(renderer, input_manager, game_data).unwrap();
     game.run().unwrap();
 }

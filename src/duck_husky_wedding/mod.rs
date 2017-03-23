@@ -19,11 +19,18 @@ pub struct DuckHuskyWedding<E: MohoEngine> {
 }
 
 impl<E: MohoEngine> DuckHuskyWedding<E> {
+    pub fn load(renderer: E::Renderer,
+                input_manager: InputManager<E::EventPump>,
+                game_data: GameData)
+                -> Result<Self> {
+        let player = Player::load(game_data.duck, &renderer)?;
+        Ok(Self::new(renderer, input_manager, player))
+    }
+
     pub fn new(renderer: E::Renderer,
                input_manager: InputManager<E::EventPump>,
-               game_data: GameData)
+               player: Player)
                -> Self {
-        let player = Player::load(game_data.duck, &renderer).unwrap();
         DuckHuskyWedding {
             input_manager: input_manager,
             renderer: renderer,
