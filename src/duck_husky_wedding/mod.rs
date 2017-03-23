@@ -53,7 +53,7 @@ impl<E: MohoEngine> DuckHuskyWedding<E> {
             if self.game_quit() {
                 break;
             }
-            self.player.animate(delta);
+            self.player.animate(game_time.since_update);
             let interpolation = delta.subsec_nanos() as f64 / update_duration.subsec_nanos() as f64;
             self.draw(interpolation)?;
         }
