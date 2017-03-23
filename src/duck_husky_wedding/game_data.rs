@@ -13,6 +13,7 @@ pub struct DimensionData {
 
 #[derive(Debug,Deserialize)]
 pub struct SpriteData {
+    pub file_name: String,
     pub frames: u32,
     pub tiles: DimensionData,
     pub out_size: DimensionData,
@@ -32,7 +33,7 @@ impl GameData {
 
 impl<'a> From<DimensionData> for glm::UVec2 {
     fn from(data: DimensionData) -> glm::UVec2 {
-        let DimensionData{x, y} = data;
+        let DimensionData { x, y } = data;
         glm::uvec2(x, y)
     }
 }
