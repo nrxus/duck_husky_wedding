@@ -43,11 +43,17 @@ impl Player {
 
 impl Scene for Player {
     fn show<R: Renderer>(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        let tile = self.sheet.tile(self.animator.frame().unwrap());
-        let dst_rect = glm::ivec4(self.position.x,
-                                  self.position.y,
-                                  self.dimensions.x as i32,
-                                  self.dimensions.y as i32);
-        renderer.render(&tile, dst_rect)
+        let frame = self.animator.frame();
+        match frame {
+            None => Ok(()),
+            Some(f) => {
+                let tile = self.sheet.tile(f);
+                let dst_rect = glm::ivec4(self.position.x,
+                                          self.position.y,
+                                          self.dimensions.x as i32,
+                                          self.dimensions.y as i32);
+                renderer.render(&tile, dst_rect)
+            }
+        }
     }
 }
