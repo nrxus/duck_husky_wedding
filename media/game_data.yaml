@@ -1,0 +1,9 @@
+duck:
+  file: "duck.png"
+  frames: 4
+  tiles:
+    x: 4
+    y: 1
+  out_size:
+    x: 400
+    y: 400

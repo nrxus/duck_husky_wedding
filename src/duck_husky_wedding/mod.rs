@@ -1,4 +1,7 @@
+pub mod game_data;
+
 use errors::*;
+use self::game_data::GameData;
 
 use moho::input_manager::InputManager;
 use moho::resource_manager::Renderer;
@@ -10,13 +13,18 @@ use std::time::Duration;
 pub struct DuckHuskyWedding<E: MohoEngine> {
     input_manager: InputManager<E::EventPump>,
     renderer: E::Renderer,
+    game_data: GameData,
 }
 
 impl<E: MohoEngine> DuckHuskyWedding<E> {
-    pub fn new(renderer: E::Renderer, input_manager: InputManager<E::EventPump>) -> Self {
+    pub fn new(renderer: E::Renderer,
+               input_manager: InputManager<E::EventPump>,
+               game_data: GameData)
+               -> Self {
         DuckHuskyWedding {
             input_manager: input_manager,
             renderer: renderer,
+            game_data: game_data,
         }
     }
 
