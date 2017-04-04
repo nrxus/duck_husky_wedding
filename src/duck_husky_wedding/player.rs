@@ -1,9 +1,8 @@
 use duck_husky_wedding::game_data::SpriteData;
-use errors::*;
 
 use glm;
 use moho::errors as moho_errors;
-use moho::renderer::{FrameAnimator, Renderer, ResourceLoader, Scene, Texture, TileSheet};
+use moho::renderer::{FrameAnimator, Renderer, Scene, Texture, TileSheet};
 
 use std::time::Duration;
 use std::rc::Rc;
@@ -16,20 +15,15 @@ pub struct Player<T: Texture> {
 }
 
 impl<T: Texture> Player<T> {
-    pub fn load<R>(data: SpriteData, loader: &R) -> Result<Self>
-        where R: for<'a> ResourceLoader<'a, T>
-    {
-        let file_name = format!("media/sprites/{}", data.file_name);
-        let texture = loader.load(&file_name)?;
-        let sheet = TileSheet::new(data.tiles.into(), Rc::new(texture));
+    pub fn new(data: SpriteData, texture: Rc<T>) -> Self {
+        let sheet = TileSheet::new(data.tiles.into(), texture);
         let animator = FrameAnimator::new(data.frames, Duration::from_millis(50), true);
-        let player = Player {
+        Player {
             sheet: sheet,
             animator: animator,
             dimensions: data.out_size.into(),
             position: glm::ivec2(0, 300),
-        };
-        Ok(player)
+        }
     }
 
     pub fn animate(&mut self, delta: Duration) {
