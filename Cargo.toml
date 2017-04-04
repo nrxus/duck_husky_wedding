@@ -11,7 +11,7 @@ path = "src/main.rs"
 [dependencies]
 error-chain = ">=0.9"
 glm = ">=0.2.2"
-moho = ">=0.0.5"
+moho = ">=0.0.7"
 serde = ">=0.9"
 serde_yaml = ">=0.6"
 serde_derive = ">=0.9"

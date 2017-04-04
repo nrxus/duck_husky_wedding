@@ -3,22 +3,25 @@ use errors::*;
 
 use glm;
 use moho::errors as moho_errors;
-use moho::resource_manager::{FrameAnimator, Renderer, ResourceLoader, Scene, TileSheet};
+use moho::renderer::{FrameAnimator, Renderer, ResourceLoader, Scene, Texture, TileSheet};
 
 use std::time::Duration;
+use std::rc::Rc;
 
-pub struct Player {
-    sheet: TileSheet,
+pub struct Player<T: Texture> {
+    sheet: TileSheet<T>,
     animator: FrameAnimator,
     dimensions: glm::UVec2,
     position: glm::IVec2,
 }
 
-impl Player {
-    pub fn load<R: ResourceLoader>(data: SpriteData, loader: &R) -> Result<Self> {
+impl<T: Texture> Player<T> {
+    pub fn load<R>(data: SpriteData, loader: &R) -> Result<Self>
+        where R: for<'a> ResourceLoader<'a, T>
+    {
         let file_name = format!("media/sprites/{}", data.file_name);
-        let texture = loader.load_texture(&file_name)?;
-        let sheet = TileSheet::new(data.tiles.into(), texture);
+        let texture = loader.load(&file_name)?;
+        let sheet = TileSheet::new(data.tiles.into(), Rc::new(texture));
         let animator = FrameAnimator::new(data.frames, Duration::from_millis(50), true);
         let player = Player {
             sheet: sheet,
@@ -41,8 +44,10 @@ impl Player {
     }
 }
 
-impl Scene for Player {
-    fn show<R: Renderer>(&self, renderer: &mut R) -> moho_errors::Result<()> {
+impl<T: Texture, R> Scene<R> for Player<T>
+    where R: Renderer<T>
+{
+    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         let frame = self.animator.frame();
         match frame {
             None => Ok(()),

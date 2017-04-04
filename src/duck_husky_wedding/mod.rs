@@ -5,32 +5,27 @@ use errors::*;
 use self::player::Player;
 use self::game_data::GameData;
 
-use moho::input_manager::InputManager;
-use moho::resource_manager::Renderer;
-use moho::MohoEngine;
+use moho::input_manager::{InputManager, EventPump};
+use moho::renderer::{Renderer, ResourceLoader, Texture};
 use moho::timer::Timer;
 
 use std::time::Duration;
 
-pub struct DuckHuskyWedding<E: MohoEngine> {
-    input_manager: InputManager<E::EventPump>,
-    renderer: E::Renderer,
-    player: Player,
+pub struct DuckHuskyWedding<E: EventPump, R, T: Texture> {
+    input_manager: InputManager<E>,
+    renderer: R,
+    player: Player<T>,
 }
 
-impl<E: MohoEngine> DuckHuskyWedding<E> {
-    pub fn load(renderer: E::Renderer,
-                input_manager: InputManager<E::EventPump>,
-                game_data: GameData)
-                -> Result<Self> {
+impl<E: EventPump, R, T: Texture> DuckHuskyWedding<E, R, T>
+    where R: Renderer<T> + for<'a> ResourceLoader<'a, T>
+{
+    pub fn load(renderer: R, input_manager: InputManager<E>, game_data: GameData) -> Result<Self> {
         let player = Player::load(game_data.duck, &renderer)?;
         Ok(Self::new(renderer, input_manager, player))
     }
 
-    pub fn new(renderer: E::Renderer,
-               input_manager: InputManager<E::EventPump>,
-               player: Player)
-               -> Self {
+    pub fn new(renderer: R, input_manager: InputManager<E>, player: Player<T>) -> Self {
         DuckHuskyWedding {
             input_manager: input_manager,
             renderer: renderer,
