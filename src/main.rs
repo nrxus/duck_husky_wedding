@@ -5,6 +5,7 @@ extern crate error_chain;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_yaml;
+extern crate sdl2;
 
 mod duck_husky_wedding;
 
@@ -29,6 +30,7 @@ fn main() {
     let game_data = GameData::load("media/game_data.yaml").unwrap();
     let (renderer, input_manager) = moho::init("Husky <3's Ducky", WINDOW_WIDTH, WINDOW_HEIGHT)
         .unwrap();
-    let mut game = DuckHuskyWedding::load(renderer, input_manager, game_data).unwrap();
+    let loader = sdl2::ttf::init().unwrap();
+    let mut game = DuckHuskyWedding::load(renderer, &loader, input_manager, game_data).unwrap();
     game.run().unwrap();
 }
