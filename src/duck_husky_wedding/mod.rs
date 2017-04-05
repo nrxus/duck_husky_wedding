@@ -9,12 +9,12 @@ use glm;
 use moho::shape::Rectangle;
 use moho::input_manager::{InputManager, EventPump};
 use moho::renderer::{Font, ColorRGBA, FontDetails, FontTexturizer, FontLoader, Renderer,
-                     ResourceLoader, ResourceManager, Texture};
+                     ResourceLoader, ResourceManager, Show, Texture};
 use moho::timer::Timer;
 
 use std::time::Duration;
 
-pub struct DuckHuskyWedding<E: EventPump, R, T: Texture> {
+pub struct DuckHuskyWedding<E: EventPump, R, T> {
     input_manager: InputManager<E>,
     title: T,
     player: Player<T>,
@@ -22,15 +22,15 @@ pub struct DuckHuskyWedding<E: EventPump, R, T: Texture> {
 }
 
 impl<E: EventPump, R, T: Texture> DuckHuskyWedding<E, R, T>
-    where R: Renderer<T>
+    where R: Renderer<Texture = T>
 {
     pub fn load<'ttf, F: Font, FL>(renderer: R,
                                    font_loader: &'ttf FL,
                                    input_manager: InputManager<E>,
                                    game_data: GameData)
                                    -> Result<Self>
-        where FL: FontLoader<'ttf, F>,
-              R: FontTexturizer<'ttf, F, Texture = T> + for<'a> ResourceLoader<'a, T>
+        where FL: FontLoader<'ttf, Font = F>,
+              R: FontTexturizer<'ttf, Font = F, Texture = T> + for<'a> ResourceLoader<Texture = T>
     {
         let mut texture_manager: ResourceManager<T, String> = ResourceManager::new();
         let mut font_manager: ResourceManager<F, FontDetails> = ResourceManager::new();
@@ -53,7 +53,9 @@ impl<E: EventPump, R, T: Texture> DuckHuskyWedding<E, R, T>
         Ok(game)
     }
 
-    pub fn run(&mut self) -> Result<()> {
+    pub fn run(&mut self) -> Result<()>
+        where R: Show
+    {
         const GAME_SPEED: u32 = 60;
         const MAX_SKIP: u32 = 10;
         let update_duration = Duration::new(0, 1000000000 / GAME_SPEED);
@@ -86,12 +88,15 @@ impl<E: EventPump, R, T: Texture> DuckHuskyWedding<E, R, T>
         self.player.update();
     }
 
-    fn draw(&mut self, interpolation: f64) -> Result<()> {
+    fn draw(&mut self, interpolation: f64) -> Result<()>
+        where R: Show
+    {
         let title_dims = self.title.dims();
         let title_rectangle = glm::ivec4(0, 0, title_dims.x as i32, title_dims.y as i32);
         self.renderer.clear();
         self.renderer.show(&self.player)?;
-        self.renderer.copy(&self.title, Some(title_rectangle), None)?;
+        self.renderer
+            .copy(&self.title, Some(title_rectangle), None)?;
         self.renderer.present();
         Ok(())
     }

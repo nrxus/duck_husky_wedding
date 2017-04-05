@@ -2,12 +2,12 @@ use duck_husky_wedding::game_data::SpriteData;
 
 use glm;
 use moho::errors as moho_errors;
-use moho::renderer::{FrameAnimator, Renderer, Scene, Texture, TileSheet};
+use moho::renderer::{FrameAnimator, Renderer, Scene, Show, Texture, TileSheet};
 
 use std::time::Duration;
 use std::rc::Rc;
 
-pub struct Player<T: Texture> {
+pub struct Player<T> {
     sheet: TileSheet<T>,
     animator: FrameAnimator,
     dimensions: glm::UVec2,
@@ -38,8 +38,8 @@ impl<T: Texture> Player<T> {
     }
 }
 
-impl<T: Texture, R> Scene<R> for Player<T>
-    where R: Renderer<T>
+impl<T, R> Scene<R> for Player<T>
+    where R: Renderer<Texture = T> + Show
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         let frame = self.animator.frame();
@@ -51,7 +51,7 @@ impl<T: Texture, R> Scene<R> for Player<T>
                                           self.position.y,
                                           self.dimensions.x as i32,
                                           self.dimensions.y as i32);
-                renderer.render(&tile, dst_rect)
+                renderer.show_at(&tile, dst_rect)
             }
         }
     }
