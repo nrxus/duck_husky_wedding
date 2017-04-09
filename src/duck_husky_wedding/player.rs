@@ -12,6 +12,7 @@ pub struct Player<T> {
     animator: FrameAnimator,
     dimensions: glm::UVec2,
     position: glm::IVec2,
+    velocity: i32,
 }
 
 impl<T: Texture> Player<T> {
@@ -23,6 +24,7 @@ impl<T: Texture> Player<T> {
             animator: animator,
             dimensions: data.out_size.into(),
             position: glm::ivec2(0, 300),
+            velocity: 4,
         }
     }
 
@@ -34,7 +36,11 @@ impl<T: Texture> Player<T> {
     }
 
     pub fn update(&mut self) {
-        self.position.x = (self.position.x + 5) % 1280;
+        self.position.x = (self.position.x + self.velocity + 1280) % 1280;
+    }
+
+    pub fn flip(&mut self) {
+        self.velocity *= -1;
     }
 }
 
