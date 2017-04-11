@@ -52,11 +52,11 @@ impl<'f, E, R, T> DuckHuskyWedding<E, R, T>
         let file_name: &str = &format!("media/sprites/{}", game_data.duck.file_name);
         let texture = texture_manager.load(file_name, &renderer)?;
         let player = Player::new(game_data.duck, texture);
-        let button = Button::new("click me",
-                                 &renderer,
-                                 &*font,
-                                 glm::uvec2(100, 100),
-                                 Box::new(|p| p.flip()))?;
+        let button = Button::from_text("click me",
+                                       &renderer,
+                                       &*font,
+                                       glm::uvec2(100, 100),
+                                       Box::new(|p| p.flip()))?;
         let game = DuckHuskyWedding {
             input_manager: input_manager,
             title: title,
