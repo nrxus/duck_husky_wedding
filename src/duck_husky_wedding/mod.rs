@@ -15,30 +15,29 @@ use moho::timer::Timer;
 
 use std::time::Duration;
 
-pub struct DuckHuskyWedding<E, R, T, F>
+pub struct DuckHuskyWedding<E, R, T>
     where E: EventPump
 {
     input_manager: input::Manager<E>,
     title: T,
     player: Player<T>,
     renderer: R,
-    font_manager: ResourceManager<FontDetails, F>,
-    button: Button<F, T>,
+    button: Button<T>,
 }
 
-impl<'f, E, R, T, F> DuckHuskyWedding<E, R, T, F>
+impl<'f, E, R, T> DuckHuskyWedding<E, R, T>
     where E: EventPump,
           T: Texture,
-          R: Renderer<Texture = T> + FontTexturizer<'f, Font = F, Texture = T>,
-          F: Font
+          R: Renderer<Texture = T>
 {
-    pub fn load<FL>(renderer: R,
-                    font_loader: &'f FL,
-                    input_manager: input::Manager<E>,
-                    game_data: GameData)
-                    -> Result<Self>
-        where FL: FontLoader<'f, Font = F>,
-              R: for<'a> ResourceLoader<Texture = T>
+    pub fn load<F, FL>(renderer: R,
+                       font_loader: &'f FL,
+                       input_manager: input::Manager<E>,
+                       game_data: GameData)
+                       -> Result<Self>
+        where F: Font,
+              FL: FontLoader<'f, Font = F>,
+              R: for<'a> ResourceLoader<Texture = T> + FontTexturizer<'f, Font = F, Texture = T>
     {
         let mut texture_manager: ResourceManager<String, T> = ResourceManager::new();
         let mut font_manager: ResourceManager<FontDetails, F> = ResourceManager::new();
@@ -54,16 +53,16 @@ impl<'f, E, R, T, F> DuckHuskyWedding<E, R, T, F>
         let texture = texture_manager.load(file_name, &renderer)?;
         let player = Player::new(game_data.duck, texture);
         let button = Button::new("click me",
-                                 font.clone(),
+                                 &renderer,
+                                 &*font,
                                  glm::uvec2(100, 100),
-                                 Box::new(|p| p.flip()));
+                                 Box::new(|p| p.flip()))?;
         let game = DuckHuskyWedding {
             input_manager: input_manager,
             title: title,
             renderer: renderer,
             player: player,
             button: button,
-            font_manager: font_manager,
         };
         Ok(game)
     }
