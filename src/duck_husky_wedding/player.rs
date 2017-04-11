@@ -15,8 +15,10 @@ pub struct Player<T> {
     velocity: i32,
 }
 
-impl<T: Texture> Player<T> {
-    pub fn new(data: SpriteData, texture: Rc<T>) -> Self {
+impl<T> Player<T> {
+    pub fn new(data: SpriteData, texture: Rc<T>) -> Self
+        where T: Texture
+    {
         let sheet = TileSheet::new(data.tiles.into(), texture);
         let animator = FrameAnimator::new(data.frames, Duration::from_millis(50), true);
         Player {

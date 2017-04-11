@@ -1,16 +1,15 @@
 pub mod game_data;
 mod player;
+mod menu_screen;
 mod button;
 
 use errors::*;
-use self::button::Button;
-use self::player::Player;
 use self::game_data::GameData;
+use self::menu_screen::MenuScreen;
 
-use glm;
 use moho::input::{self, EventPump};
-use moho::renderer::{Font, ColorRGBA, FontDetails, FontTexturizer, FontLoader, Renderer,
-                     ResourceLoader, ResourceManager, Show, Texture};
+use moho::renderer::{Font, FontDetails, FontTexturizer, FontLoader, Renderer, ResourceLoader,
+                     ResourceManager, Show, Texture};
 use moho::timer::Timer;
 
 use std::time::Duration;
@@ -19,10 +18,8 @@ pub struct DuckHuskyWedding<E, R, T>
     where E: EventPump
 {
     input_manager: input::Manager<E>,
-    title: T,
-    player: Player<T>,
+    menu_screen: MenuScreen<T>,
     renderer: R,
-    button: Button<T>,
 }
 
 impl<'f, E, R, T> DuckHuskyWedding<E, R, T>
@@ -46,23 +43,13 @@ impl<'f, E, R, T> DuckHuskyWedding<E, R, T>
             size: 64,
         };
         let font = font_manager.load(&font_details, font_loader)?;
-        let title_color = ColorRGBA(255, 255, 0, 255);
-        let title = renderer
-            .texturize(&font, "Husky <3's Ducky", &title_color)?;
         let file_name: &str = &format!("media/sprites/{}", game_data.duck.file_name);
         let texture = texture_manager.load(file_name, &renderer)?;
-        let player = Player::new(game_data.duck, texture);
-        let button = Button::from_text("click me",
-                                       &renderer,
-                                       &*font,
-                                       glm::uvec2(100, 100),
-                                       Box::new(|p| p.flip()))?;
+        let menu_screen = MenuScreen::load(&*font, &renderer, game_data.duck, texture)?;
         let game = DuckHuskyWedding {
+            menu_screen: menu_screen,
             input_manager: input_manager,
-            title: title,
             renderer: renderer,
-            player: player,
-            button: button,
         };
         Ok(game)
     }
@@ -84,15 +71,14 @@ impl<'f, E, R, T> DuckHuskyWedding<E, R, T>
                 if state.game_quit() {
                     break;
                 }
-                self.player.update();
-                self.button.update(state, &mut self.player);
+                self.menu_screen.update(state);
                 delta -= update_duration;
                 loops += 1;
             }
             if self.game_quit() {
                 break;
             }
-            self.player.animate(game_time.since_update);
+            self.menu_screen.animate(game_time.since_update);
             let interpolation = delta.subsec_nanos() as f64 / update_duration.subsec_nanos() as f64;
             self.draw(interpolation)?;
         }
@@ -102,13 +88,8 @@ impl<'f, E, R, T> DuckHuskyWedding<E, R, T>
     fn draw(&mut self, interpolation: f64) -> Result<()>
         where R: Show
     {
-        let title_dims = self.title.dims();
-        let title_rectangle = glm::ivec4(0, 0, title_dims.x as i32, title_dims.y as i32);
         self.renderer.clear();
-        self.renderer.show(&self.player)?;
-        self.renderer.show(&self.button)?;
-        self.renderer
-            .copy(&self.title, Some(&title_rectangle), None)?;
+        self.renderer.show(&self.menu_screen)?;
         self.renderer.present();
         Ok(())
     }
