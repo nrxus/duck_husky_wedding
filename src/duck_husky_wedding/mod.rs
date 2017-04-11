@@ -8,7 +8,7 @@ use self::game_data::GameData;
 use glm;
 use moho::errors as moho_errors;
 use moho::shape::{Rectangle, Shape};
-use moho::input_manager::{InputManager, EventPump};
+use moho::input::{self, EventPump};
 use moho::renderer::{Font, ColorRGBA, FontDetails, FontTexturizer, FontLoader, Renderer,
                      ResourceLoader, ResourceManager, Scene, Show, Texture};
 use moho::timer::Timer;
@@ -45,10 +45,10 @@ impl<F: Font, T> Button<F, T> {
         }
     }
 
-    fn update<E: EventPump>(&mut self, input_manager: &InputManager<E>, player: &mut Player<T>) {
-        let mouse = input_manager.mouse_coords();
+    fn update(&mut self, input_state: &input::State, player: &mut Player<T>) {
+        let mouse = input_state.mouse_coords();
         self.is_hovering = self.body.contains(&glm::to_dvec2(mouse));
-        if self.is_hovering && input_manager.did_click_mouse(MouseButton::Left) {
+        if self.is_hovering && input_state.did_click_mouse(MouseButton::Left) {
             (self.on_click)(player);
         }
     }
@@ -66,23 +66,23 @@ impl<'f, F, T, R> Scene<R> for Button<F, T>
         } else {
             ColorRGBA(255, 255, 255, 0)
         };
-        let texture = renderer.texturize(&self.font, self.text, color)?;
+        let texture = renderer.texturize(&self.font, self.text, &color)?;
         let dst_rect = glm::to_ivec4(glm::dvec4(self.body.top_left.x,
                                                 self.body.top_left.y,
                                                 self.body.dims.x,
                                                 self.body.dims.y));
-        renderer.copy(&texture, Some(dst_rect), None)
+        renderer.copy(&texture, Some(&dst_rect), None)
     }
 }
 
 pub struct DuckHuskyWedding<E, R, T, F>
     where E: EventPump
 {
-    input_manager: InputManager<E>,
+    input_manager: input::Manager<E>,
     title: T,
     player: Player<T>,
     renderer: R,
-    font_manager: ResourceManager<F, FontDetails>,
+    font_manager: ResourceManager<FontDetails, F>,
     button: Button<F, T>,
 }
 
@@ -94,21 +94,22 @@ impl<'f, E, R, T, F> DuckHuskyWedding<E, R, T, F>
 {
     pub fn load<FL>(renderer: R,
                     font_loader: &'f FL,
-                    input_manager: InputManager<E>,
+                    input_manager: input::Manager<E>,
                     game_data: GameData)
                     -> Result<Self>
         where FL: FontLoader<'f, Font = F>,
               R: for<'a> ResourceLoader<Texture = T>
     {
-        let mut texture_manager: ResourceManager<T, String> = ResourceManager::new();
-        let mut font_manager: ResourceManager<F, FontDetails> = ResourceManager::new();
+        let mut texture_manager: ResourceManager<String, T> = ResourceManager::new();
+        let mut font_manager: ResourceManager<FontDetails, F> = ResourceManager::new();
         let font_details = FontDetails {
             path: "media/fonts/kenpixel_mini.ttf",
             size: 64,
         };
         let font = font_manager.load(&font_details, font_loader)?;
         let title_color = ColorRGBA(255, 255, 0, 255);
-        let title = renderer.texturize(&font, "Husky <3's Ducky", title_color)?;
+        let title = renderer
+            .texturize(&font, "Husky <3's Ducky", &title_color)?;
         let file_name: &str = &format!("media/sprites/{}", game_data.duck.file_name);
         let texture = texture_manager.load(file_name, &renderer)?;
         let player = Player::new(game_data.duck, texture);
@@ -140,12 +141,12 @@ impl<'f, E, R, T, F> DuckHuskyWedding<E, R, T, F>
             delta += game_time.since_update;
             let mut loops: u32 = 0;
             while delta >= update_duration && loops < MAX_SKIP {
-                self.input_manager.update();
-                if self.game_quit() {
+                let state = self.input_manager.update();
+                if state.game_quit() {
                     break;
                 }
-                self.update();
-                self.button.update(&self.input_manager, &mut self.player);
+                self.player.update();
+                self.button.update(state, &mut self.player);
                 delta -= update_duration;
                 loops += 1;
             }
@@ -159,10 +160,6 @@ impl<'f, E, R, T, F> DuckHuskyWedding<E, R, T, F>
         Ok(())
     }
 
-    fn update(&mut self) {
-        self.player.update();
-    }
-
     fn draw(&mut self, interpolation: f64) -> Result<()>
         where R: Show
     {
@@ -172,12 +169,12 @@ impl<'f, E, R, T, F> DuckHuskyWedding<E, R, T, F>
         self.renderer.show(&self.player)?;
         self.renderer.show(&self.button)?;
         self.renderer
-            .copy(&self.title, Some(title_rectangle), None)?;
+            .copy(&self.title, Some(&title_rectangle), None)?;
         self.renderer.present();
         Ok(())
     }
 
     fn game_quit(&self) -> bool {
-        self.input_manager.game_quit()
+        self.input_manager.current.game_quit()
     }
 }

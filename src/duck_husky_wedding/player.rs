@@ -57,7 +57,7 @@ impl<T, R> Scene<R> for Player<T>
                                           self.position.y,
                                           self.dimensions.x as i32,
                                           self.dimensions.y as i32);
-                renderer.show_at(&tile, dst_rect)
+                renderer.show_at(&tile, &dst_rect)
             }
         }
     }
