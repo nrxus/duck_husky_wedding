@@ -1,5 +1,4 @@
 use errors::*;
-use super::player::Player;
 
 use glm;
 use moho::errors as moho_errors;
@@ -8,20 +7,20 @@ use moho::shape::{Rectangle, Shape};
 use moho::renderer::{ColorRGBA, Font, FontTexturizer, Renderer, Scene, Texture};
 use sdl2::mouse::MouseButton;
 
-pub struct Button<T> {
+pub struct Button<T, S> {
     idle_texture: T,
     hover_texture: T,
     is_hovering: bool,
     body: Rectangle,
-    on_click: Box<FnMut(&mut Player<T>) -> ()>,
+    on_click: Box<FnMut(&mut S) -> ()>,
 }
 
-impl<T> Button<T> {
+impl<T, S> Button<T, S> {
     pub fn from_text<'a, R, F>(text: &str,
                                texturizer: &R,
                                font: &F,
                                tl: glm::UVec2,
-                               on_click: Box<FnMut(&mut Player<T>)>)
+                               on_click: Box<FnMut(&mut S)>)
                                -> Result<Self>
         where T: Texture,
               F: Font,
@@ -43,7 +42,7 @@ impl<T> Button<T> {
     pub fn new(idle_texture: T,
                hover_texture: T,
                body: Rectangle,
-               on_click: Box<FnMut(&mut Player<T>)>)
+               on_click: Box<FnMut(&mut S)>)
                -> Self {
         Button {
             idle_texture: idle_texture,
@@ -54,16 +53,16 @@ impl<T> Button<T> {
         }
     }
 
-    pub fn update(&mut self, input_state: &input::State, player: &mut Player<T>) {
+    pub fn update(&mut self, input_state: &input::State, subject: &mut S) {
         let mouse = input_state.mouse_coords();
         self.is_hovering = self.body.contains(&glm::to_dvec2(mouse));
         if self.is_hovering && input_state.did_click_mouse(MouseButton::Left) {
-            (self.on_click)(player);
+            (self.on_click)(subject);
         }
     }
 }
 
-impl<T, R> Scene<R> for Button<T>
+impl<T, R, S> Scene<R> for Button<T, S>
     where T: Texture,
           R: Renderer<Texture = T>
 {
@@ -77,6 +76,6 @@ impl<T, R> Scene<R> for Button<T>
                                                 self.body.top_left.y,
                                                 self.body.dims.x,
                                                 self.body.dims.y));
-        renderer.copy(&texture, Some(&dst_rect), None)
+        renderer.copy(texture, Some(&dst_rect), None)
     }
 }

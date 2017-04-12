@@ -13,7 +13,7 @@ use std::time::Duration;
 
 pub struct MenuScreen<T> {
     title: T,
-    button: Button<T>,
+    button: Button<T, Player<T>>,
     player: Player<T>,
 }
 
@@ -34,12 +34,12 @@ impl<T> MenuScreen<T> {
                                        texturizer,
                                        font,
                                        glm::uvec2(100, 100),
-                                       Box::new(|p| p.flip()))?;
+                                       Box::new(|p: &mut Player<T>| p.flip()))?;
         let player = Player::new(data, player_texture);
         Ok(Self::new(title, button, player))
     }
 
-    pub fn new(title: T, button: Button<T>, player: Player<T>) -> Self {
+    pub fn new(title: T, button: Button<T, Player<T>>, player: Player<T>) -> Self {
         MenuScreen {
             title: title,
             button: button,
