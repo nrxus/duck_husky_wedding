@@ -7,21 +7,15 @@ use moho::shape::{Rectangle, Shape};
 use moho::renderer::{ColorRGBA, Font, FontTexturizer, Renderer, Scene, Texture};
 use sdl2::mouse::MouseButton;
 
-pub struct Button<T, S> {
+pub struct Button<T> {
     idle_texture: T,
     hover_texture: T,
     is_hovering: bool,
     body: Rectangle,
-    on_click: Box<FnMut(&mut S) -> ()>,
 }
 
-impl<T, S> Button<T, S> {
-    pub fn from_text<'a, R, F>(text: &str,
-                               texturizer: &R,
-                               font: &F,
-                               tl: glm::UVec2,
-                               on_click: Box<FnMut(&mut S)>)
-                               -> Result<Self>
+impl<T> Button<T> {
+    pub fn from_text<'a, R, F>(text: &str, texturizer: &R, font: &F, tl: glm::UVec2) -> Result<Self>
         where T: Texture,
               F: Font,
               R: FontTexturizer<'a, Texture = T, Font = F>
@@ -36,33 +30,26 @@ impl<T, S> Button<T, S> {
             dims: glm::to_dvec2(dims),
         };
 
-        Ok(Self::new(idle_texture, hover_texture, body, on_click))
+        Ok(Self::new(idle_texture, hover_texture, body))
     }
 
-    pub fn new(idle_texture: T,
-               hover_texture: T,
-               body: Rectangle,
-               on_click: Box<FnMut(&mut S)>)
-               -> Self {
+    pub fn new(idle_texture: T, hover_texture: T, body: Rectangle) -> Self {
         Button {
             idle_texture: idle_texture,
             hover_texture: hover_texture,
             is_hovering: false,
             body: body,
-            on_click: on_click,
         }
     }
 
-    pub fn update(&mut self, input_state: &input::State, subject: &mut S) {
+    pub fn update(&mut self, input_state: &input::State) -> bool {
         let mouse = input_state.mouse_coords();
         self.is_hovering = self.body.contains(&glm::to_dvec2(mouse));
-        if self.is_hovering && input_state.did_click_mouse(MouseButton::Left) {
-            (self.on_click)(subject);
-        }
+        self.is_hovering && input_state.did_click_mouse(MouseButton::Left)
     }
 }
 
-impl<T, R, S> Scene<R> for Button<T, S>
+impl<T, R> Scene<R> for Button<T>
     where T: Texture,
           R: Renderer<Texture = T>
 {

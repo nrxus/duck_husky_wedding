@@ -11,9 +11,20 @@ use moho::renderer::{ColorRGBA, Font, FontTexturizer, Renderer, Scene, Show, Tex
 use std::rc::Rc;
 use std::time::Duration;
 
+enum ScreenKind {
+    MENU_SCREEN,
+    GAME_PLAY,
+}
+
+enum ScreenState {
+    FOREGROUND,
+    BACKGROUND,
+}
+
 pub struct MenuScreen<T> {
     title: T,
-    button: Button<T, Player<T>>,
+    button: Button<T>,
+    new_game: Button<T>,
     player: Player<T>,
 }
 
@@ -30,26 +41,33 @@ impl<T> MenuScreen<T> {
         let title_color = ColorRGBA(255, 255, 0, 255);
         let title = texturizer
             .texturize(font, "Husky <3 Ducky", &title_color)?;
-        let button = Button::from_text("click me",
-                                       texturizer,
-                                       font,
-                                       glm::uvec2(100, 100),
-                                       Box::new(|p: &mut Player<T>| p.flip()))?;
+        let button = Button::from_text("click me", texturizer, font, glm::uvec2(100, 100))?;
+        let new_game = Button::from_text("New Game", texturizer, font, glm::uvec2(200, 200))?;
         let player = Player::new(data, player_texture);
-        Ok(Self::new(title, button, player))
+        Ok(Self::new(title, button, new_game, player))
     }
 
-    pub fn new(title: T, button: Button<T, Player<T>>, player: Player<T>) -> Self {
+    pub fn quack(&mut self) {
+        println!("QUACK");
+    }
+
+    pub fn new(title: T, button: Button<T>, new_game: Button<T>, player: Player<T>) -> Self {
         MenuScreen {
             title: title,
             button: button,
+            new_game: new_game,
             player: player,
         }
     }
 
     pub fn update(&mut self, input: &input::State) {
         self.player.update();
-        self.button.update(input, &mut self.player);
+        if self.button.update(input) {
+            self.player.flip();
+        }
+        if self.new_game.update(input) {
+            self.quack();
+        }
     }
 
     pub fn animate(&mut self, delta: Duration) {
@@ -66,6 +84,7 @@ impl<T, R> Scene<R> for MenuScreen<T>
         let title_rectangle = glm::ivec4(0, 0, title_dims.x as i32, title_dims.y as i32);
         renderer.show(&self.player)?;
         renderer.show(&self.button)?;
+        renderer.show(&self.new_game)?;
         renderer.copy(&self.title, Some(&title_rectangle), None)
     }
 }
