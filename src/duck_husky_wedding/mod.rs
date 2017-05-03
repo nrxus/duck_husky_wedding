@@ -62,32 +62,25 @@ impl<'f, 't, TL, FL, R, T, F, E> DuckHuskyWedding<'f, 't, TL, FL, R, T, F, E> {
         let update_duration = Duration::new(0, 1000000000 / GAME_SPEED);
         let mut timer = Timer::new();
         let mut delta: Duration = Default::default();
-        while !self.game_quit() {
+        'game_loop: loop {
             let game_time = timer.update();
             delta += game_time.since_update;
             let mut loops: u32 = 0;
             while delta >= update_duration && loops < MAX_SKIP {
+                menu_screen.animate(update_duration);
                 let state = self.input_manager.update();
                 if state.game_quit() {
-                    break;
+                    break 'game_loop;
                 }
                 menu_screen.update(state);
                 delta -= update_duration;
                 loops += 1;
             }
-            if self.game_quit() {
-                break;
-            }
-            menu_screen.animate(game_time.since_update);
             let interpolation = delta.subsec_nanos() as f64 / update_duration.subsec_nanos() as f64;
             self.renderer.clear();
             self.renderer.show(&menu_screen)?;
             self.renderer.present();
         }
         Ok(())
-    }
-
-    fn game_quit(&self) -> bool {
-        self.input_manager.current.game_quit()
     }
 }
