@@ -6,9 +6,9 @@ use duck_husky_wedding::player::Player;
 use glm;
 use moho::errors as moho_errors;
 use moho::input;
-use moho::renderer::{ColorRGBA, Font, FontTexturizer, Renderer, Scene, Show, Texture};
+use moho::renderer::{ColorRGBA, Font, FontDetails, FontLoader, FontManager, FontTexturizer,
+                     Renderer, Scene, Show, Texture, TextureLoader, TextureManager};
 
-use std::rc::Rc;
 use std::time::Duration;
 
 pub struct MenuScreen<T> {
@@ -19,21 +19,30 @@ pub struct MenuScreen<T> {
 }
 
 impl<T> MenuScreen<T> {
-    pub fn load<'f, 't, F, R>(font: &F,
-                              texturizer: &'t R,
-                              data: SpriteData,
-                              player_texture: Rc<T>)
-                              -> Result<Self>
+    pub fn load<'f, 't, F, R, TL, FL>(font_manager: &mut FontManager<'f, F, FL>,
+                                      texture_manager: &mut TextureManager<'t, T, TL>,
+                                      texturizer: &'t R,
+                                      data: SpriteData)
+                                      -> Result<Self>
         where T: Texture,
               F: Font,
+              TL: TextureLoader<'t, Texture = T>,
+              FL: FontLoader<'f, Font = F>,
               R: FontTexturizer<'f, 't, Font = F, Texture = T>
     {
+        let font_details = FontDetails {
+            path: "media/fonts/kenpixel_mini.ttf",
+            size: 64,
+        };
+        let font = font_manager.load(&font_details)?;
+        let file_name: &str = &format!("media/sprites/{}", data.file_name);
+        let texture = texture_manager.load(file_name)?;
         let title_color = ColorRGBA(255, 255, 0, 255);
         let title = texturizer
-            .texturize(font, "Husky <3 Ducky", &title_color)?;
-        let button = Button::from_text("click me", texturizer, font, glm::uvec2(100, 100))?;
-        let new_game = Button::from_text("New Game", texturizer, font, glm::uvec2(200, 200))?;
-        let player = Player::new(data, player_texture);
+            .texturize(&*font, "Husky <3 Ducky", &title_color)?;
+        let button = Button::from_text("click me", texturizer, &*font, glm::uvec2(100, 100))?;
+        let new_game = Button::from_text("New Game", texturizer, &*font, glm::uvec2(200, 200))?;
+        let player = Player::new(data, texture);
         Ok(Self::new(title, button, new_game, player))
     }
 

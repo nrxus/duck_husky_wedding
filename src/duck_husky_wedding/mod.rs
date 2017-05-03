@@ -8,8 +8,8 @@ use self::game_data::GameData;
 use self::menu_screen::MenuScreen;
 
 use moho::input;
-use moho::renderer::{Font, FontDetails, FontTexturizer, FontLoader, Renderer, TextureLoader,
-                     TextureManager, FontManager, Show, Texture};
+use moho::renderer::{Font, FontTexturizer, FontLoader, Renderer, TextureLoader, TextureManager,
+                     FontManager, Show, Texture};
 use moho::timer::Timer;
 
 use std::time::Duration;
@@ -47,21 +47,17 @@ impl<'f, 't, TL, FL, R, T, F, E> DuckHuskyWedding<'f, 't, TL, FL, R, T, F, E> {
               T: Texture,
               F: Font
     {
-        let font_details = FontDetails {
-            path: "media/fonts/kenpixel_mini.ttf",
-            size: 64,
-        };
-        let font = self.font_manager.load(&font_details)?;
-        let file_name: &str = &format!("media/sprites/{}", game_data.duck.file_name);
-        let texture = self.texture_manager.load(file_name)?;
-        let mut menu_screen =
-            MenuScreen::load(&*font, self.texture_loader, game_data.duck, texture)?;
+
+        let mut menu_screen = MenuScreen::load(&mut self.font_manager,
+                                               &mut self.texture_manager,
+                                               self.texture_loader,
+                                               game_data.duck)?;
 
         const GAME_SPEED: u32 = 60;
         const MAX_SKIP: u32 = 10;
         let update_duration = Duration::new(0, 1000000000 / GAME_SPEED);
         let mut timer = Timer::new();
-        let mut delta: Duration = Default::default();
+        let mut delta = Duration::default();
         'game_loop: loop {
             let game_time = timer.update();
             delta += game_time.since_update;
