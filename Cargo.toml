@@ -11,12 +11,14 @@ path = "src/main.rs"
 [dependencies]
 error-chain = ">=0.9"
 glm = ">=0.2.2"
-moho = ">=0.0.7"
 serde = ">=0.9"
 serde_yaml = ">=0.6"
 serde_derive = ">=0.9"
 
+[dependencies.moho]
+git = "https://github.com/nrxus/moho"
+
 [dependencies.sdl2]
-version = ">=0.29"
+git = "https://github.com/AngryLawyer/rust-sdl2"
 default-features = false
-features = ["ttf"]
+features = []

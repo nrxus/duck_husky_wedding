@@ -7,56 +7,56 @@ use errors::*;
 use self::game_data::GameData;
 use self::menu_screen::MenuScreen;
 
-use moho::input::{self, EventPump};
-use moho::renderer::{Font, FontDetails, FontTexturizer, FontLoader, Renderer, ResourceLoader,
-                     ResourceManager, Show, Texture};
+use moho::input;
+use moho::renderer::{Font, FontDetails, FontTexturizer, FontLoader, Renderer, TextureLoader,
+                     TextureManager, FontManager, Show, Texture};
 use moho::timer::Timer;
 
 use std::time::Duration;
 
-pub struct DuckHuskyWedding<E, R, T>
-    where E: EventPump
-{
+pub struct DuckHuskyWedding<'f, 't, TL: 't, FL: 'f, R, T, F, E> {
     input_manager: input::Manager<E>,
-    menu_screen: MenuScreen<T>,
+    texture_manager: TextureManager<'t, T, TL>,
+    font_manager: FontManager<'f, F, FL>,
     renderer: R,
+    texture_loader: &'t TL,
 }
 
-impl<'f, E, R, T> DuckHuskyWedding<E, R, T>
-    where E: EventPump,
-          T: Texture,
-          R: Renderer<Texture = T>
-{
-    pub fn load<F, FL>(renderer: R,
-                       font_loader: &'f FL,
-                       input_manager: input::Manager<E>,
-                       game_data: GameData)
-                       -> Result<Self>
-        where F: Font,
+impl<'f, 't, TL, FL, R, T, F, E> DuckHuskyWedding<'f, 't, TL, FL, R, T, F, E> {
+    pub fn new(renderer: R,
+               font_loader: &'f FL,
+               texture_loader: &'t TL,
+               input_manager: input::Manager<E>)
+               -> Self {
+        let texture_manager = TextureManager::new(texture_loader);
+        let font_manager = FontManager::new(font_loader);
+        DuckHuskyWedding {
+            input_manager: input_manager,
+            texture_manager: texture_manager,
+            font_manager: font_manager,
+            renderer: renderer,
+            texture_loader: texture_loader,
+        }
+    }
+
+    pub fn run(&mut self, game_data: GameData) -> Result<()>
+        where TL: TextureLoader<'t, Texture = T> + FontTexturizer<'f, 't, Texture = T, Font = F>,
               FL: FontLoader<'f, Font = F>,
-              R: for<'a> ResourceLoader<Texture = T> + FontTexturizer<'f, Font = F, Texture = T>
+              R: Renderer<'t, Texture = T> + Show,
+              E: input::EventPump,
+              T: Texture,
+              F: Font
     {
-        let mut texture_manager: ResourceManager<String, T> = ResourceManager::new();
-        let mut font_manager: ResourceManager<FontDetails, F> = ResourceManager::new();
         let font_details = FontDetails {
             path: "media/fonts/kenpixel_mini.ttf",
             size: 64,
         };
-        let font = font_manager.load(&font_details, font_loader)?;
+        let font = self.font_manager.load(&font_details)?;
         let file_name: &str = &format!("media/sprites/{}", game_data.duck.file_name);
-        let texture = texture_manager.load(file_name, &renderer)?;
-        let menu_screen = MenuScreen::load(&*font, &renderer, game_data.duck, texture)?;
-        let game = DuckHuskyWedding {
-            menu_screen: menu_screen,
-            input_manager: input_manager,
-            renderer: renderer,
-        };
-        Ok(game)
-    }
+        let texture = self.texture_manager.load(file_name)?;
+        let mut menu_screen =
+            MenuScreen::load(&*font, self.texture_loader, game_data.duck, texture)?;
 
-    pub fn run(&mut self) -> Result<()>
-        where R: Show
-    {
         const GAME_SPEED: u32 = 60;
         const MAX_SKIP: u32 = 10;
         let update_duration = Duration::new(0, 1000000000 / GAME_SPEED);
@@ -71,26 +71,19 @@ impl<'f, E, R, T> DuckHuskyWedding<E, R, T>
                 if state.game_quit() {
                     break;
                 }
-                self.menu_screen.update(state);
+                menu_screen.update(state);
                 delta -= update_duration;
                 loops += 1;
             }
             if self.game_quit() {
                 break;
             }
-            self.menu_screen.animate(game_time.since_update);
+            menu_screen.animate(game_time.since_update);
             let interpolation = delta.subsec_nanos() as f64 / update_duration.subsec_nanos() as f64;
-            self.draw(interpolation)?;
+            self.renderer.clear();
+            self.renderer.show(&menu_screen)?;
+            self.renderer.present();
         }
-        Ok(())
-    }
-
-    fn draw(&mut self, interpolation: f64) -> Result<()>
-        where R: Show
-    {
-        self.renderer.clear();
-        self.renderer.show(&self.menu_screen)?;
-        self.renderer.present();
         Ok(())
     }
 

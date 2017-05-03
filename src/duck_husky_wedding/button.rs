@@ -15,10 +15,14 @@ pub struct Button<T> {
 }
 
 impl<T> Button<T> {
-    pub fn from_text<'a, R, F>(text: &str, texturizer: &R, font: &F, tl: glm::UVec2) -> Result<Self>
+    pub fn from_text<'f, 't, R, F>(text: &str,
+                                   texturizer: &'t R,
+                                   font: &F,
+                                   tl: glm::UVec2)
+                                   -> Result<Self>
         where T: Texture,
               F: Font,
-              R: FontTexturizer<'a, Texture = T, Font = F>
+              R: FontTexturizer<'f, 't, Texture = T, Font = F>
     {
         let idle_color = ColorRGBA(255, 255, 255, 255);
         let hover_color = ColorRGBA(255, 255, 0, 0);
@@ -49,9 +53,9 @@ impl<T> Button<T> {
     }
 }
 
-impl<T, R> Scene<R> for Button<T>
+impl<'t, T, R> Scene<R> for Button<T>
     where T: Texture,
-          R: Renderer<Texture = T>
+          R: Renderer<'t, Texture = T>
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         let texture = if self.is_hovering {

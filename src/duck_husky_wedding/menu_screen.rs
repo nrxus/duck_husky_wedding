@@ -11,16 +11,6 @@ use moho::renderer::{ColorRGBA, Font, FontTexturizer, Renderer, Scene, Show, Tex
 use std::rc::Rc;
 use std::time::Duration;
 
-enum ScreenKind {
-    MENU_SCREEN,
-    GAME_PLAY,
-}
-
-enum ScreenState {
-    FOREGROUND,
-    BACKGROUND,
-}
-
 pub struct MenuScreen<T> {
     title: T,
     button: Button<T>,
@@ -29,14 +19,14 @@ pub struct MenuScreen<T> {
 }
 
 impl<T> MenuScreen<T> {
-    pub fn load<'f, F, R>(font: &F,
-                          texturizer: &R,
-                          data: SpriteData,
-                          player_texture: Rc<T>)
-                          -> Result<Self>
+    pub fn load<'f, 't, F, R>(font: &F,
+                              texturizer: &'t R,
+                              data: SpriteData,
+                              player_texture: Rc<T>)
+                              -> Result<Self>
         where T: Texture,
               F: Font,
-              R: FontTexturizer<'f, Font = F, Texture = T>
+              R: FontTexturizer<'f, 't, Font = F, Texture = T>
     {
         let title_color = ColorRGBA(255, 255, 0, 255);
         let title = texturizer
@@ -45,10 +35,6 @@ impl<T> MenuScreen<T> {
         let new_game = Button::from_text("New Game", texturizer, font, glm::uvec2(200, 200))?;
         let player = Player::new(data, player_texture);
         Ok(Self::new(title, button, new_game, player))
-    }
-
-    pub fn quack(&mut self) {
-        println!("QUACK");
     }
 
     pub fn new(title: T, button: Button<T>, new_game: Button<T>, player: Player<T>) -> Self {
@@ -65,9 +51,6 @@ impl<T> MenuScreen<T> {
         if self.button.update(input) {
             self.player.flip();
         }
-        if self.new_game.update(input) {
-            self.quack();
-        }
     }
 
     pub fn animate(&mut self, delta: Duration) {
@@ -75,9 +58,9 @@ impl<T> MenuScreen<T> {
     }
 }
 
-impl<T, R> Scene<R> for MenuScreen<T>
+impl<'t, T, R> Scene<R> for MenuScreen<T>
     where T: Texture,
-          R: Renderer<Texture = T> + Show
+          R: Renderer<'t, Texture = T> + Show
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         let title_dims = self.title.dims();
