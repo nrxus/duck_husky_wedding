@@ -11,7 +11,7 @@ pub struct Button<T> {
     idle_texture: T,
     hover_texture: T,
     is_hovering: bool,
-    body: Rectangle,
+    pub body: Rectangle,
 }
 
 impl<T> Button<T> {
@@ -33,6 +33,21 @@ impl<T> Button<T> {
             dims: glm::to_dvec2(dims),
         };
 
+        Ok(Self::new(idle_texture, hover_texture, body))
+    }
+
+    pub fn text_at<'f, 't, R>(text: &str,
+                              texturizer: &'t R,
+                              font: &R::Font,
+                              body: Rectangle)
+                              -> Result<Self>
+        where T: Texture,
+              R: FontTexturizer<'f, 't, Texture = T>
+    {
+        let idle_color = ColorRGBA(255, 255, 255, 255);
+        let hover_color = ColorRGBA(255, 255, 0, 0);
+        let idle_texture = texturizer.texturize(font, text, &idle_color)?;
+        let hover_texture = texturizer.texturize(font, text, &hover_color)?;
         Ok(Self::new(idle_texture, hover_texture, body))
     }
 

@@ -4,8 +4,9 @@ use duck_husky_wedding::button::Button;
 use glm;
 use moho::errors as moho_errors;
 use moho::input;
-use moho::renderer::{ColorRGBA, FontDetails, FontLoader, FontManager, FontTexturizer, Renderer,
-                     Scene, Show, Texture};
+use moho::renderer::{ColorRGBA, Font, FontDetails, FontLoader, FontManager, FontTexturizer,
+                     Renderer, Scene, Show, Texture};
+use moho::shape::Rectangle;
 
 pub struct Menu<T> {
     title: T,
@@ -25,10 +26,16 @@ impl<T> Menu<T> {
             size: 64,
         };
         let font = font_manager.load(&font_details)?;
+        let dims = font.measure("New Game")?;
+        let top_left = glm::ivec2(640 - dims.x as i32 / 2, 200);
+        let body = Rectangle {
+            top_left: glm::to_dvec2(top_left),
+            dims: glm::to_dvec2(dims),
+        };
+        let new_game = Button::text_at("New Game", texturizer, &*font, body)?;
         let title_color = ColorRGBA(255, 255, 0, 255);
         let title = texturizer
-            .texturize(&*font, "Husky <3 Ducky", &title_color)?;
-        let new_game = Button::from_text("New Game", texturizer, &*font, glm::ivec2(200, 200))?;
+            .texturize(&*font, "Husky Loves Ducky", &title_color)?;
         Ok(Self::new(title, new_game))
     }
 
@@ -53,8 +60,8 @@ impl<'t, T, R> Scene<R> for Menu<T>
           R: Renderer<'t, Texture = T> + Show
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        let title_dims = self.title.dims();
-        let title_rectangle = glm::ivec4(0, 0, title_dims.x as i32, title_dims.y as i32);
+        let title_dims = glm::to_ivec2(self.title.dims());
+        let title_rectangle = glm::ivec4(640 - title_dims.x / 2, 0, title_dims.x, title_dims.y);
         renderer.show(&self.new_game)?;
         renderer.copy(&self.title, Some(&title_rectangle), None)
     }
