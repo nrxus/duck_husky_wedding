@@ -28,7 +28,7 @@ impl<T> Menu<T> {
         let title_color = ColorRGBA(255, 255, 0, 255);
         let title = texturizer
             .texturize(&*font, "Husky <3 Ducky", &title_color)?;
-        let new_game = Button::from_text("New Game", texturizer, &*font, glm::uvec2(200, 200))?;
+        let new_game = Button::from_text("New Game", texturizer, &*font, glm::ivec2(200, 200))?;
         Ok(Self::new(title, new_game))
     }
 

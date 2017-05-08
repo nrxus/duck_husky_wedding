@@ -4,7 +4,7 @@ use glm;
 use moho::errors as moho_errors;
 use moho::input;
 use moho::shape::{Rectangle, Shape};
-use moho::renderer::{ColorRGBA, Font, FontTexturizer, Renderer, Scene, Texture};
+use moho::renderer::{ColorRGBA, FontTexturizer, Renderer, Scene, Texture};
 use sdl2::mouse::MouseButton;
 
 pub struct Button<T> {
@@ -15,14 +15,13 @@ pub struct Button<T> {
 }
 
 impl<T> Button<T> {
-    pub fn from_text<'f, 't, R, F>(text: &str,
-                                   texturizer: &'t R,
-                                   font: &F,
-                                   tl: glm::UVec2)
-                                   -> Result<Self>
+    pub fn from_text<'f, 't, R>(text: &str,
+                                texturizer: &'t R,
+                                font: &R::Font,
+                                tl: glm::IVec2)
+                                -> Result<Self>
         where T: Texture,
-              F: Font,
-              R: FontTexturizer<'f, 't, Texture = T, Font = F>
+              R: FontTexturizer<'f, 't, Texture = T>
     {
         let idle_color = ColorRGBA(255, 255, 255, 255);
         let hover_color = ColorRGBA(255, 255, 0, 0);
