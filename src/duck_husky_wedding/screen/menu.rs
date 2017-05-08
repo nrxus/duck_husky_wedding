@@ -54,12 +54,13 @@ impl<T> Menu<T> {
         }
     }
 
-    pub fn update(&mut self, delta: Duration, input: &input::State) {
+    pub fn update(&mut self, delta: Duration, input: &input::State) -> super::Kind {
         self.player.animate(delta);
         self.player.update();
         if self.button.update(input) {
             self.player.flip();
         }
+        super::Kind::Menu
     }
 }
 

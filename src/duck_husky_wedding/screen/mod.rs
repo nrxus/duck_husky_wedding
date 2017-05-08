@@ -12,6 +12,10 @@ use errors::*;
 
 use std::time::Duration;
 
+pub enum Kind {
+    Menu,
+}
+
 pub enum Screen<'s, T: 's> {
     Menu(&'s Menu<T>),
 }
@@ -32,7 +36,7 @@ pub enum MutScreen<'s, T: 's> {
 }
 
 impl<'s, T> MutScreen<'s, T> {
-    pub fn update(&mut self, delta: Duration, input: &input::State) {
+    pub fn update(&mut self, delta: Duration, input: &input::State) -> Kind {
         match *self {
             MutScreen::Menu(ref mut s) => s.update(delta, input),
         }
@@ -41,6 +45,7 @@ impl<'s, T> MutScreen<'s, T> {
 
 pub struct Manager<T> {
     menu: Menu<T>,
+    active: Kind,
 }
 
 impl<T> Manager<T> {
@@ -55,14 +60,25 @@ impl<T> Manager<T> {
               R: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>
     {
         let menu = Menu::load(font_manager, texture_manager, texturizer, data.duck)?;
-        Ok(Manager { menu: menu })
+        Ok(Manager {
+               menu: menu,
+               active: Kind::Menu,
+           })
     }
 
     pub fn mut_screen(&mut self) -> MutScreen<T> {
-        MutScreen::Menu(&mut self.menu)
+        match self.active {
+            Kind::Menu => MutScreen::Menu(&mut self.menu),
+        }
     }
 
     pub fn screen(&self) -> Screen<T> {
-        Screen::Menu(&self.menu)
+        match self.active {
+            Kind::Menu => Screen::Menu(&self.menu),
+        }
+    }
+
+    pub fn select_screen(&mut self, screen: Kind) {
+        self.active = screen;
     }
 }
