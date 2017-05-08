@@ -72,13 +72,10 @@ impl<'f, 't, TL, FL, R, E> DuckHuskyWedding<'f, 't, TL, FL, R, E>
                 if state.game_quit() {
                     break 'game_loop;
                 }
-                let screen = screen_manager.mut_screen();
-                match screen {
-                    screen::MutScreen::Menu(s) => {
-                        s.animate(update_duration);
-                        s.update(state);
-                    }
-                }
+
+                screen_manager
+                    .mut_screen()
+                    .update(update_duration, state);
 
                 delta -= update_duration;
                 loops += 1;

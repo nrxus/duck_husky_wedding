@@ -4,10 +4,13 @@ use self::menu::Menu;
 use super::game_data::GameData;
 
 use moho::errors as moho_errors;
-use moho::renderer::{FontLoader, FontManager, FontTexturizer, Renderer, Scene, Show, Texture,
-                     TextureLoader, TextureManager};
+use moho::input;
+use moho::renderer::{FontLoader, FontManager, FontTexturizer};
+use moho::renderer::{Renderer, Scene, Show, Texture, TextureLoader, TextureManager};
 
 use errors::*;
+
+use std::time::Duration;
 
 pub enum Screen<'s, T: 's> {
     Menu(&'s Menu<T>),
@@ -26,6 +29,14 @@ impl<'s, 't, T, R> Scene<R> for Screen<'s, T>
 
 pub enum MutScreen<'s, T: 's> {
     Menu(&'s mut Menu<T>),
+}
+
+impl<'s, T> MutScreen<'s, T> {
+    pub fn update(&mut self, delta: Duration, input: &input::State) {
+        match *self {
+            MutScreen::Menu(ref mut s) => s.update(delta, input),
+        }
+    }
 }
 
 pub struct Manager<T> {
