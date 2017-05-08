@@ -2,7 +2,7 @@ use duck_husky_wedding::game_data::SpriteData;
 
 use glm;
 use moho::errors as moho_errors;
-use moho::renderer::{Drawable, Renderer, Scene, Show, Texture};
+use moho::renderer::{Renderer, Scene, Show, Texture};
 use moho::animation::{Animation, AnimationData, AnimatorData, TileSheet};
 
 use std::time::Duration;
@@ -51,6 +51,6 @@ impl<'t, T, R> Scene<R> for Player<T>
                                   self.position.y,
                                   self.dimensions.x as i32,
                                   self.dimensions.y as i32);
-        self.animation.draw(&dst_rect, renderer)
+        renderer.show_at(&self.animation, &dst_rect)
     }
 }
