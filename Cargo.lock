@@ -5,7 +5,7 @@ dependencies = [
  "error-chain 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "glm 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "moho 0.0.10 (git+https://github.com/nrxus/moho)",
- "sdl2 0.29.1 (git+https://github.com/AngryLawyer/rust-sdl2)",
+ "sdl2 0.30.0-beta (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_yaml 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -138,12 +138,12 @@ dependencies = [
 [[package]]
 name = "moho"
 version = "0.0.10"
-source = "git+https://github.com/nrxus/moho#5c725015a62e7e57b6310ca6734fc4dce1034e02"
+source = "git+https://github.com/nrxus/moho#8f4bd25d9def5501cde3b60487c1b63944362439"
 dependencies = [
  "error-chain 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "glm 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "num-traits 0.1.37 (registry+https://github.com/rust-lang/crates.io-index)",
- "sdl2 0.29.1 (git+https://github.com/AngryLawyer/rust-sdl2)",
+ "sdl2 0.30.0-beta (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -264,21 +264,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "sdl2"
-version = "0.29.1"
-source = "git+https://github.com/AngryLawyer/rust-sdl2#c007c3fd7aa7eac9f8a8a342becfeb2f7fe51bab"
+version = "0.30.0-beta"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "bitflags 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.22 (registry+https://github.com/rust-lang/crates.io-index)",
  "num 0.1.37 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)",
- "sdl2-sys 0.27.3 (git+https://github.com/AngryLawyer/rust-sdl2)",
+ "sdl2-sys 0.30.0-beta (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "sdl2-sys"
-version = "0.27.3"
-source = "git+https://github.com/AngryLawyer/rust-sdl2#c007c3fd7aa7eac9f8a8a342becfeb2f7fe51bab"
+version = "0.30.0-beta"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "libc 0.2.22 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -414,8 +414,8 @@ dependencies = [
 "checksum regex-syntax 0.3.9 (registry+https://github.com/rust-lang/crates.io-index)" = "f9ec002c35e86791825ed294b50008eea9ddfc8def4420124fbc6b08db834957"
 "checksum rustc-demangle 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)" = "3058a43ada2c2d0b92b3ae38007a2d0fa5e9db971be260e0171408a4ff471c95"
 "checksum rustc-serialize 0.3.24 (registry+https://github.com/rust-lang/crates.io-index)" = "dcf128d1287d2ea9d80910b5f1120d0b8eede3fbf1abe91c40d39ea7d51e6fda"
-"checksum sdl2 0.29.1 (git+https://github.com/AngryLawyer/rust-sdl2)" = "<none>"
-"checksum sdl2-sys 0.27.3 (git+https://github.com/AngryLawyer/rust-sdl2)" = "<none>"
+"checksum sdl2 0.30.0-beta (registry+https://github.com/rust-lang/crates.io-index)" = "d328b53c80ec81754108cd2d776277cb55cbae3353e8b5d8dd4257978a4e4665"
+"checksum sdl2-sys 0.30.0-beta (registry+https://github.com/rust-lang/crates.io-index)" = "759845057eb488479b344873c959800377feae4fb9bd3c3de2c5ee5eb21e690f"
 "checksum serde 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "3b46a59dd63931010fdb1d88538513f3279090d88b5c22ef4fe8440cfffcc6e3"
 "checksum serde_derive 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "6c06b68790963518008b8ae0152d48be4bbbe77015d2c717f6282eea1824be9a"
 "checksum serde_derive_internals 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)" = "021c338d22c7e30f957a6ab7e388cb6098499dda9fd4ba1661ee074ca7a180d1"

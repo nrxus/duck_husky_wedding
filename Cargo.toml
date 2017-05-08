@@ -9,16 +9,16 @@ name = "duck_husky_wedding"
 path = "src/main.rs"
 
 [dependencies]
-error-chain = ">=0.9"
-glm = ">=0.2.2"
-serde = ">=0.9"
-serde_yaml = ">=0.6"
-serde_derive = ">=0.9"
+error-chain = ">=0.10"
+glm = ">=0.2.3"
+serde = ">=1.0.2"
+serde_yaml = ">=0.7"
+serde_derive = ">=1.0.2"
 
 [dependencies.moho]
 git = "https://github.com/nrxus/moho"
 
 [dependencies.sdl2]
-git = "https://github.com/AngryLawyer/rust-sdl2"
+version = ">=0.30.0-beta"
 default-features = false
 features = []
