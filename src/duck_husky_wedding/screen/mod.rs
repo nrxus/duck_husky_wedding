@@ -1,4 +1,6 @@
-use super::menu_screen::MenuScreen;
+mod menu;
+
+use self::menu::Menu;
 use super::game_data::GameData;
 
 use moho::renderer::{FontLoader, FontManager, FontTexturizer, Texture, TextureLoader,
@@ -7,15 +9,15 @@ use moho::renderer::{FontLoader, FontManager, FontTexturizer, Texture, TextureLo
 use errors::*;
 
 pub enum Screen<'s, T: 's> {
-    Menu(&'s MenuScreen<T>),
+    Menu(&'s Menu<T>),
 }
 
 pub enum MutScreen<'s, T: 's> {
-    Menu(&'s mut MenuScreen<T>),
+    Menu(&'s mut Menu<T>),
 }
 
 pub struct Manager<T> {
-    menu: MenuScreen<T>,
+    menu: Menu<T>,
 }
 
 impl<T> Manager<T> {
@@ -29,7 +31,7 @@ impl<T> Manager<T> {
               FL: FontLoader<'f>,
               R: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>
     {
-        let menu = MenuScreen::load(font_manager, texture_manager, texturizer, data.duck)?;
+        let menu = Menu::load(font_manager, texture_manager, texturizer, data.duck)?;
         Ok(Manager { menu: menu })
     }
 

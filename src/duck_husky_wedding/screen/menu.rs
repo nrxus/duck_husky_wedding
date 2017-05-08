@@ -11,14 +11,14 @@ use moho::renderer::{ColorRGBA, FontDetails, FontLoader, FontManager, FontTextur
 
 use std::time::Duration;
 
-pub struct MenuScreen<T> {
+pub struct Menu<T> {
     title: T,
     button: Button<T>,
     new_game: Button<T>,
     player: Player<T>,
 }
 
-impl<T> MenuScreen<T> {
+impl<T> Menu<T> {
     pub fn load<'f, 't, R, TL, FL>(font_manager: &mut FontManager<'f, FL>,
                                    texture_manager: &mut TextureManager<'t, TL>,
                                    texturizer: &'t R,
@@ -46,7 +46,7 @@ impl<T> MenuScreen<T> {
     }
 
     pub fn new(title: T, button: Button<T>, new_game: Button<T>, player: Player<T>) -> Self {
-        MenuScreen {
+        Menu {
             title: title,
             button: button,
             new_game: new_game,
@@ -66,7 +66,7 @@ impl<T> MenuScreen<T> {
     }
 }
 
-impl<'t, T, R> Scene<R> for MenuScreen<T>
+impl<'t, T, R> Scene<R> for Menu<T>
     where T: Texture,
           R: Renderer<'t, Texture = T> + Show
 {
