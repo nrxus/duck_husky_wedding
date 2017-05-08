@@ -54,9 +54,9 @@ impl<'f, 't, TL, FL, R, E> DuckHuskyWedding<'f, 't, TL, FL, R, E>
     {
         let game_data = GameData::load("media/game_data.yaml")?;
         let mut screen_manager = screen::Manager::load(&mut self.font_manager,
-                                                   &mut self.texture_manager,
-                                                   self.texture_loader,
-                                                   game_data)?;
+                                                       &mut self.texture_manager,
+                                                       self.texture_loader,
+                                                       game_data)?;
 
         const GAME_SPEED: u32 = 60;
         const MAX_SKIP: u32 = 10;
@@ -85,11 +85,7 @@ impl<'f, 't, TL, FL, R, E> DuckHuskyWedding<'f, 't, TL, FL, R, E>
             }
             let interpolation = delta.subsec_nanos() as f64 / update_duration.subsec_nanos() as f64;
             self.renderer.clear();
-            match screen_manager.screen() {
-                screen::Screen::Menu(s) => {
-                    self.renderer.show(s)?;
-                }
-            }
+            self.renderer.show(&screen_manager.screen())?;
             self.renderer.present();
         }
         Ok(())

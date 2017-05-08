@@ -3,13 +3,25 @@ mod menu;
 use self::menu::Menu;
 use super::game_data::GameData;
 
-use moho::renderer::{FontLoader, FontManager, FontTexturizer, Texture, TextureLoader,
-                     TextureManager};
+use moho::errors as moho_errors;
+use moho::renderer::{FontLoader, FontManager, FontTexturizer, Renderer, Scene, Show, Texture,
+                     TextureLoader, TextureManager};
 
 use errors::*;
 
 pub enum Screen<'s, T: 's> {
     Menu(&'s Menu<T>),
+}
+
+impl<'s, 't, T, R> Scene<R> for Screen<'s, T>
+    where T: Texture,
+          R: Renderer<'t, Texture = T> + Show
+{
+    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+        match *self {
+            Screen::Menu(s) => renderer.show(s),
+        }
+    }
 }
 
 pub enum MutScreen<'s, T: 's> {
