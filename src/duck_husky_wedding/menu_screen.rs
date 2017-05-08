@@ -6,8 +6,8 @@ use duck_husky_wedding::player::Player;
 use glm;
 use moho::errors as moho_errors;
 use moho::input;
-use moho::renderer::{ColorRGBA, Font, FontDetails, FontLoader, FontManager, FontTexturizer,
-                     Renderer, Scene, Show, Texture, TextureLoader, TextureManager};
+use moho::renderer::{ColorRGBA, FontDetails, FontLoader, FontManager, FontTexturizer, Renderer,
+                     Scene, Show, Texture, TextureLoader, TextureManager};
 
 use std::time::Duration;
 
@@ -19,16 +19,15 @@ pub struct MenuScreen<T> {
 }
 
 impl<T> MenuScreen<T> {
-    pub fn load<'f, 't, F, R, TL, FL>(font_manager: &mut FontManager<'f, F, FL>,
-                                      texture_manager: &mut TextureManager<'t, T, TL>,
-                                      texturizer: &'t R,
-                                      data: SpriteData)
-                                      -> Result<Self>
+    pub fn load<'f, 't, R, TL, FL>(font_manager: &mut FontManager<'f, FL>,
+                                   texture_manager: &mut TextureManager<'t, TL>,
+                                   texturizer: &'t R,
+                                   data: SpriteData)
+                                   -> Result<Self>
         where T: Texture,
-              F: Font,
               TL: TextureLoader<'t, Texture = T>,
-              FL: FontLoader<'f, Font = F>,
-              R: FontTexturizer<'f, 't, Font = F, Texture = T>
+              FL: FontLoader<'f>,
+              R: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>
     {
         let font_details = FontDetails {
             path: "media/fonts/kenpixel_mini.ttf",

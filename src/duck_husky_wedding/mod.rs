@@ -1,28 +1,34 @@
-pub mod game_data;
+mod game_data;
 mod player;
 mod menu_screen;
 mod button;
+mod screen;
 
 use errors::*;
 use self::game_data::GameData;
-use self::menu_screen::MenuScreen;
 
 use moho::input;
-use moho::renderer::{Font, FontTexturizer, FontLoader, Renderer, TextureLoader, TextureManager,
-                     FontManager, Show, Texture};
+use moho::renderer::{FontTexturizer, FontLoader, Renderer, TextureLoader, TextureManager,
+                     FontManager, Show};
 use moho::timer::Timer;
 
 use std::time::Duration;
 
-pub struct DuckHuskyWedding<'f, 't, TL: 't, FL: 'f, R, T, F, E> {
+pub struct DuckHuskyWedding<'f, 't, TL, FL, R, E>
+    where TL: 't + TextureLoader<'t>,
+          FL: 'f + FontLoader<'f>
+{
     input_manager: input::Manager<E>,
-    texture_manager: TextureManager<'t, T, TL>,
-    font_manager: FontManager<'f, F, FL>,
+    texture_manager: TextureManager<'t, TL>,
+    font_manager: FontManager<'f, FL>,
     renderer: R,
     texture_loader: &'t TL,
 }
 
-impl<'f, 't, TL, FL, R, T, F, E> DuckHuskyWedding<'f, 't, TL, FL, R, T, F, E> {
+impl<'f, 't, TL, FL, R, E> DuckHuskyWedding<'f, 't, TL, FL, R, E>
+    where TL: TextureLoader<'t>,
+          FL: FontLoader<'f>
+{
     pub fn new(renderer: R,
                font_loader: &'f FL,
                texture_loader: &'t TL,
@@ -39,19 +45,19 @@ impl<'f, 't, TL, FL, R, T, F, E> DuckHuskyWedding<'f, 't, TL, FL, R, T, F, E> {
         }
     }
 
-    pub fn run(&mut self, game_data: GameData) -> Result<()>
-        where TL: TextureLoader<'t, Texture = T> + FontTexturizer<'f, 't, Texture = T, Font = F>,
-              FL: FontLoader<'f, Font = F>,
-              R: Renderer<'t, Texture = T> + Show,
-              E: input::EventPump,
-              T: Texture,
-              F: Font
+    pub fn run(&mut self) -> Result<()>
+        where TL: FontTexturizer<'f,
+                                 't,
+                                 Texture = <TL as TextureLoader<'t>>::Texture,
+                                 Font = FL::Font>,
+              R: Renderer<'t, Texture = <TL as TextureLoader<'t>>::Texture> + Show,
+              E: input::EventPump
     {
-
-        let mut menu_screen = MenuScreen::load(&mut self.font_manager,
-                                               &mut self.texture_manager,
-                                               self.texture_loader,
-                                               game_data.duck)?;
+        let game_data = GameData::load("media/game_data.yaml")?;
+        let mut screen_manager = screen::Manager::load(&mut self.font_manager,
+                                                   &mut self.texture_manager,
+                                                   self.texture_loader,
+                                                   game_data)?;
 
         const GAME_SPEED: u32 = 60;
         const MAX_SKIP: u32 = 10;
@@ -63,18 +69,28 @@ impl<'f, 't, TL, FL, R, T, F, E> DuckHuskyWedding<'f, 't, TL, FL, R, T, F, E> {
             delta += game_time.since_update;
             let mut loops: u32 = 0;
             while delta >= update_duration && loops < MAX_SKIP {
-                menu_screen.animate(update_duration);
                 let state = self.input_manager.update();
                 if state.game_quit() {
                     break 'game_loop;
                 }
-                menu_screen.update(state);
+                let screen = screen_manager.mut_screen();
+                match screen {
+                    screen::MutScreen::Menu(s) => {
+                        s.animate(update_duration);
+                        s.update(state);
+                    }
+                }
+
                 delta -= update_duration;
                 loops += 1;
             }
             let interpolation = delta.subsec_nanos() as f64 / update_duration.subsec_nanos() as f64;
             self.renderer.clear();
-            self.renderer.show(&menu_screen)?;
+            match screen_manager.screen() {
+                screen::Screen::Menu(s) => {
+                    self.renderer.show(s)?;
+                }
+            }
             self.renderer.present();
         }
         Ok(())
