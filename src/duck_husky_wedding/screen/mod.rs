@@ -1,8 +1,10 @@
 mod menu;
 mod game_play;
+mod high_score;
 
 use self::menu::Menu;
 use self::game_play::GamePlay;
+use self::high_score::HighScore;
 use super::game_data::GameData;
 
 use moho::errors as moho_errors;
@@ -17,11 +19,13 @@ use std::time::Duration;
 pub enum Kind {
     Menu,
     GamePlay,
+    HighScore,
 }
 
 pub enum Screen<'s, T: 's> {
     Menu(&'s Menu<T>),
     GamePlay(&'s GamePlay<T>),
+    HighScore(&'s HighScore<T>),
 }
 
 impl<'s, 't, T, R> Scene<R> for Screen<'s, T>
@@ -32,6 +36,7 @@ impl<'s, 't, T, R> Scene<R> for Screen<'s, T>
         match *self {
             Screen::Menu(s) => renderer.show(s),
             Screen::GamePlay(s) => renderer.show(s),
+            Screen::HighScore(s) => renderer.show(s),
         }
     }
 }
@@ -39,6 +44,7 @@ impl<'s, 't, T, R> Scene<R> for Screen<'s, T>
 pub enum MutScreen<'s, T: 's> {
     Menu(&'s mut Menu<T>),
     GamePlay(&'s mut GamePlay<T>),
+    HighScore(&'s mut HighScore<T>),
 }
 
 impl<'s, T> MutScreen<'s, T> {
@@ -46,6 +52,7 @@ impl<'s, T> MutScreen<'s, T> {
         match *self {
             MutScreen::Menu(ref mut s) => s.update(input),
             MutScreen::GamePlay(ref mut s) => s.update(delta, input),
+            MutScreen::HighScore(ref mut s) => s.update(input),
         }
     }
 }
@@ -53,6 +60,8 @@ impl<'s, T> MutScreen<'s, T> {
 pub struct Manager<T> {
     menu: Menu<T>,
     game_play: GamePlay<T>,
+    high_score: HighScore<T>,
+    //kind of current screen
     active: Kind,
 }
 
@@ -69,9 +78,11 @@ impl<T> Manager<T> {
     {
         let menu = Menu::load(font_manager, texturizer)?;
         let game_play = GamePlay::load(texture_manager, data.duck)?;
+        let high_score = HighScore::load(font_manager, texturizer)?;
         Ok(Manager {
                menu: menu,
                game_play: game_play,
+               high_score: high_score,
                active: Kind::Menu,
            })
     }
@@ -80,6 +91,7 @@ impl<T> Manager<T> {
         match self.active {
             Kind::Menu => MutScreen::Menu(&mut self.menu),
             Kind::GamePlay => MutScreen::GamePlay(&mut self.game_play),
+            Kind::HighScore => MutScreen::HighScore(&mut self.high_score),
         }
     }
 
@@ -87,6 +99,7 @@ impl<T> Manager<T> {
         match self.active {
             Kind::Menu => Screen::Menu(&self.menu),
             Kind::GamePlay => Screen::GamePlay(&self.game_play),
+            Kind::HighScore => Screen::HighScore(&self.high_score),
         }
     }
 
