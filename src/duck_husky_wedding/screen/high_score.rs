@@ -57,7 +57,7 @@ impl<T> HighScore<T> {
               FT: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>
     {
         let font_details = FontDetails {
-            path: "media/fonts/kenpixel_mini.ttf",
+            path: "media/fonts/joystix.monospace.ttf",
             size: 32,
         };
         let font = font_manager.load(&font_details)?;
@@ -69,7 +69,7 @@ impl<T> HighScore<T> {
         self.scores = scores
             .iter()
             .map(|s| {
-                     let score = format!("{:04}XXXXX{:>3}", s.score, s.name);
+                     let score = format!("{:04}{:5}{:>3}", s.score, "", s.name);
                      texturizer
                          .texturize(&*font, &score, &color)
                          .map_err(Into::into)
