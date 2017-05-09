@@ -2,26 +2,33 @@ use duck_husky_wedding::button::Button;
 use errors::*;
 
 use glm;
+use serde_yaml;
 use moho::input;
 use moho::errors as moho_errors;
 use moho::renderer::{ColorRGBA, Font, FontDetails, FontLoader, FontManager, FontTexturizer,
                      Renderer, Scene, Show, Texture};
 
-use std::rc::Rc;
+use std::fs::File;
 
-pub struct HighScore<T, F> {
-    title: T,
-    back: Button<T>,
-    score_font: Rc<F>,
+#[derive(Debug, Deserialize, Clone)]
+struct ScoreEntry {
+    score: u32,
+    name: String,
 }
 
-impl<T, F: Font> HighScore<T, F> {
+pub struct HighScore<T> {
+    title: T,
+    back: Button<T>,
+    scores: Vec<T>,
+}
+
+impl<T> HighScore<T> {
     pub fn load<'f, 't, FT, FL>(font_manager: &mut FontManager<'f, FL>,
                                 texturizer: &'t FT)
                                 -> Result<Self>
         where T: Texture,
-              FL: FontLoader<'f, Font = F>,
-              FT: FontTexturizer<'f, 't, Font = F, Texture = T>
+              FL: FontLoader<'f>,
+              FT: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>
     {
         let font_details = FontDetails {
             path: "media/fonts/kenpixel_mini.ttf",
@@ -33,17 +40,42 @@ impl<T, F: Font> HighScore<T, F> {
         let back = Button::from_text("<", texturizer, &*font, top_left)?;
         let title_color = ColorRGBA(255, 255, 0, 255);
         let title = texturizer
-            .texturize(&*font, "HIGH SCORES", &title_color)?;
-        let score_font_details = FontDetails {
-            path: "media/fonts/kenpixel_mini.ttf",
-            size: 32,
-        };
-        let score_font = font_manager.load(&score_font_details)?;
+            .texturize(&*font, "High Scores", &title_color)?;
         Ok(HighScore {
                title: title,
                back: back,
-               score_font: score_font,
+               scores: vec![],
            })
+    }
+
+    pub fn load_scores<'f, 't, FT, FL>(&mut self,
+                                       font_manager: &mut FontManager<'f, FL>,
+                                       texturizer: &'t FT)
+                                       -> Result<()>
+        where T: Texture,
+              FL: FontLoader<'f>,
+              FT: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>
+    {
+        let font_details = FontDetails {
+            path: "media/fonts/kenpixel_mini.ttf",
+            size: 32,
+        };
+        let font = font_manager.load(&font_details)?;
+
+        let path = "media/high_scores.yaml";
+        let f = File::open(path)?;
+        let color = ColorRGBA(255, 255, 255, 255);
+        let scores: Vec<ScoreEntry> = serde_yaml::from_reader(&f)?;
+        self.scores = scores
+            .iter()
+            .map(|s| {
+                     let score = format!("{:04}XXXXX{:>3}", s.score, s.name);
+                     texturizer
+                         .texturize(&*font, &score, &color)
+                         .map_err(Into::into)
+                 })
+            .collect::<Result<Vec<_>>>()?;
+        Ok(())
     }
 
     pub fn update(&mut self, input: &input::State) -> Option<super::Kind> {
@@ -55,7 +87,7 @@ impl<T, F: Font> HighScore<T, F> {
     }
 }
 
-impl<'t, T, F, R> Scene<R> for HighScore<T, F>
+impl<'t, T, R> Scene<R> for HighScore<T>
     where T: Texture,
           R: Renderer<'t, Texture = T> + Show
 {
@@ -63,6 +95,18 @@ impl<'t, T, F, R> Scene<R> for HighScore<T, F>
         let title_dims = glm::to_ivec2(self.title.dims());
         let title_rectangle = glm::ivec4(640 - title_dims.x / 2, 0, title_dims.x, title_dims.y);
         renderer.show(&self.back)?;
+        let mut height = 200;
+        self.scores
+            .iter()
+            .map(|s| {
+                     let dims = glm::to_ivec2(s.dims());
+                     let dst = glm::ivec4(640 - dims.x / 2, height, dims.x, dims.y);
+                     height += dims.y;
+                     renderer.copy(&s, Some(&dst), None)
+                 })
+            .take_while(moho_errors::Result::is_ok)
+            .last()
+            .unwrap_or(Ok(()))?;
         renderer.copy(&self.title, Some(&title_rectangle), None)
     }
 }

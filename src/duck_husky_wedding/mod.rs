@@ -77,7 +77,7 @@ impl<'f, 't, TL, FL, R, E> DuckHuskyWedding<'f, 't, TL, FL, R, E>
                     .mut_screen()
                     .update(update_duration, state);
                 if let Some(s) = next_screen {
-                    screen_manager.select_screen(s);
+                    screen_manager.select_screen(s, &mut self.font_manager, self.texture_loader);
                 }
 
                 delta -= update_duration;
