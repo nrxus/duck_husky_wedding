@@ -4,7 +4,7 @@ use errors::*;
 use glm;
 use moho::input;
 use moho::errors as moho_errors;
-use moho::renderer::{ColorRGBA, FontDetails, FontLoader, FontManager, FontTexturizer,
+use moho::renderer::{ColorRGBA, Font, FontDetails, FontLoader, FontManager, FontTexturizer,
                      Renderer, Scene, Show, Texture};
 
 pub struct HighScore<T> {
@@ -25,7 +25,9 @@ impl<T> HighScore<T> {
             size: 64,
         };
         let font = font_manager.load(&font_details)?;
-        let back = Button::from_text("<", texturizer, &*font, glm::ivec2(0, 0))?;
+        let dims = font.measure("<")?;
+        let top_left = glm::ivec2(10, 360 - dims.y as i32 / 2);
+        let back = Button::from_text("<", texturizer, &*font, top_left)?;
         let title_color = ColorRGBA(255, 255, 0, 255);
         let title = texturizer
             .texturize(&*font, "HIGH SCORES", &title_color)?;
@@ -36,7 +38,11 @@ impl<T> HighScore<T> {
     }
 
     pub fn update(&mut self, input: &input::State) -> Option<super::Kind> {
-        None
+        if self.back.update(input) {
+            Some(super::Kind::Menu)
+        } else {
+            None
+        }
     }
 }
 
