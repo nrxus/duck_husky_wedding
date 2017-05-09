@@ -7,18 +7,21 @@ use moho::errors as moho_errors;
 use moho::renderer::{ColorRGBA, Font, FontDetails, FontLoader, FontManager, FontTexturizer,
                      Renderer, Scene, Show, Texture};
 
-pub struct HighScore<T> {
+use std::rc::Rc;
+
+pub struct HighScore<T, F> {
     title: T,
     back: Button<T>,
+    score_font: Rc<F>,
 }
 
-impl<T> HighScore<T> {
+impl<T, F: Font> HighScore<T, F> {
     pub fn load<'f, 't, FT, FL>(font_manager: &mut FontManager<'f, FL>,
                                 texturizer: &'t FT)
                                 -> Result<Self>
         where T: Texture,
-              FL: FontLoader<'f>,
-              FT: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>
+              FL: FontLoader<'f, Font = F>,
+              FT: FontTexturizer<'f, 't, Font = F, Texture = T>
     {
         let font_details = FontDetails {
             path: "media/fonts/kenpixel_mini.ttf",
@@ -31,9 +34,15 @@ impl<T> HighScore<T> {
         let title_color = ColorRGBA(255, 255, 0, 255);
         let title = texturizer
             .texturize(&*font, "HIGH SCORES", &title_color)?;
+        let score_font_details = FontDetails {
+            path: "media/fonts/kenpixel_mini.ttf",
+            size: 32,
+        };
+        let score_font = font_manager.load(&score_font_details)?;
         Ok(HighScore {
                title: title,
                back: back,
+               score_font: score_font,
            })
     }
 
@@ -46,7 +55,7 @@ impl<T> HighScore<T> {
     }
 }
 
-impl<'t, T, R> Scene<R> for HighScore<T>
+impl<'t, T, F, R> Scene<R> for HighScore<T, F>
     where T: Texture,
           R: Renderer<'t, Texture = T> + Show
 {

@@ -9,7 +9,7 @@ use super::game_data::GameData;
 
 use moho::errors as moho_errors;
 use moho::input;
-use moho::renderer::{FontLoader, FontManager, FontTexturizer};
+use moho::renderer::{Font, FontLoader, FontManager, FontTexturizer};
 use moho::renderer::{Renderer, Scene, Show, Texture, TextureLoader, TextureManager};
 
 use errors::*;
@@ -22,13 +22,13 @@ pub enum Kind {
     HighScore,
 }
 
-pub enum Screen<'s, T: 's> {
+pub enum Screen<'s, T: 's, F: 's> {
     Menu(&'s Menu<T>),
     GamePlay(&'s GamePlay<T>),
-    HighScore(&'s HighScore<T>),
+    HighScore(&'s HighScore<T, F>),
 }
 
-impl<'s, 't, T, R> Scene<R> for Screen<'s, T>
+impl<'s, 't, T, F, R> Scene<R> for Screen<'s, T, F>
     where T: Texture,
           R: Renderer<'t, Texture = T> + Show
 {
@@ -41,13 +41,13 @@ impl<'s, 't, T, R> Scene<R> for Screen<'s, T>
     }
 }
 
-pub enum MutScreen<'s, T: 's> {
+pub enum MutScreen<'s, T: 's, F: 's> {
     Menu(&'s mut Menu<T>),
     GamePlay(&'s mut GamePlay<T>),
-    HighScore(&'s mut HighScore<T>),
+    HighScore(&'s mut HighScore<T, F>),
 }
 
-impl<'s, T> MutScreen<'s, T> {
+impl<'s, T, F: Font> MutScreen<'s, T, F> {
     pub fn update(&mut self, delta: Duration, input: &input::State) -> Option<Kind> {
         match *self {
             MutScreen::Menu(ref mut s) => s.update(input),
@@ -57,15 +57,15 @@ impl<'s, T> MutScreen<'s, T> {
     }
 }
 
-pub struct Manager<T> {
+pub struct Manager<T, F> {
     menu: Menu<T>,
     game_play: GamePlay<T>,
-    high_score: HighScore<T>,
+    high_score: HighScore<T, F>,
     //kind of current screen
     active: Kind,
 }
 
-impl<T> Manager<T> {
+impl<T, F: Font> Manager<T, F> {
     pub fn load<'f, 't, R, TL, FL>(font_manager: &mut FontManager<'f, FL>,
                                    texture_manager: &mut TextureManager<'t, TL>,
                                    texturizer: &'t R,
@@ -73,8 +73,8 @@ impl<T> Manager<T> {
                                    -> Result<Self>
         where T: Texture,
               TL: TextureLoader<'t, Texture = T>,
-              FL: FontLoader<'f>,
-              R: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>
+              FL: FontLoader<'f, Font = F>,
+              R: FontTexturizer<'f, 't, Font = F, Texture = T>
     {
         let menu = Menu::load(font_manager, texturizer)?;
         let game_play = GamePlay::load(texture_manager, data.duck)?;
@@ -87,7 +87,7 @@ impl<T> Manager<T> {
            })
     }
 
-    pub fn mut_screen(&mut self) -> MutScreen<T> {
+    pub fn mut_screen(&mut self) -> MutScreen<T, F> {
         match self.active {
             Kind::Menu => MutScreen::Menu(&mut self.menu),
             Kind::GamePlay => MutScreen::GamePlay(&mut self.game_play),
@@ -95,7 +95,7 @@ impl<T> Manager<T> {
         }
     }
 
-    pub fn screen(&self) -> Screen<T> {
+    pub fn screen(&self) -> Screen<T, F> {
         match self.active {
             Kind::Menu => Screen::Menu(&self.menu),
             Kind::GamePlay => Screen::GamePlay(&self.game_play),
