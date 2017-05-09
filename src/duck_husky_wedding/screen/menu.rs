@@ -46,11 +46,11 @@ impl<T> Menu<T> {
         }
     }
 
-    pub fn update(&mut self, input: &input::State) -> super::Kind {
+    pub fn update(&mut self, input: &input::State) -> Option<super::Kind> {
         if self.new_game.update(input) {
-            super::Kind::GamePlay
+            Some(super::Kind::GamePlay)
         } else {
-            super::Kind::Menu
+            None
         }
     }
 }

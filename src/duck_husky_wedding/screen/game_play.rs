@@ -26,10 +26,10 @@ impl<T> GamePlay<T> {
         Ok(GamePlay { player: player })
     }
 
-    pub fn update(&mut self, delta: Duration, input: &input::State) -> super::Kind {
+    pub fn update(&mut self, delta: Duration, input: &input::State) -> Option<super::Kind> {
         self.player.animate(delta);
         self.player.update();
-        super::Kind::GamePlay
+        None
     }
 }
 

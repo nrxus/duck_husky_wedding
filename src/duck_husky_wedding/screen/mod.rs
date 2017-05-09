@@ -42,7 +42,7 @@ pub enum MutScreen<'s, T: 's> {
 }
 
 impl<'s, T> MutScreen<'s, T> {
-    pub fn update(&mut self, delta: Duration, input: &input::State) -> Kind {
+    pub fn update(&mut self, delta: Duration, input: &input::State) -> Option<Kind> {
         match *self {
             MutScreen::Menu(ref mut s) => s.update(input),
             MutScreen::GamePlay(ref mut s) => s.update(delta, input),
