@@ -1,7 +1,5 @@
-use duck_husky_wedding::game_data::SpriteData;
-
 use glm;
-use moho::animation::{self, animator, Animation, TileSheet};
+use moho::animation::{self, Animation};
 use moho::errors as moho_errors;
 use moho::input;
 use moho::renderer::{Renderer, Scene, Show, Texture, TextureFlip};
@@ -11,25 +9,27 @@ use sdl2::keyboard::Keycode;
 use std::time::Duration;
 use std::rc::Rc;
 
+enum Action<T> {
+    Moving(Animation<T>),
+    Standing(Rc<T>),
+}
+
 pub struct Player<T> {
-    animation: Animation<T>,
+    action: Action<T>,
+    animation: animation::Data<T>,
+    texture: Rc<T>,
     body: Rectangle,
     backwards: bool,
 }
 
 impl<T> Player<T> {
-    pub fn new(data: SpriteData, texture: Rc<T>) -> Self
+    pub fn new(animation: animation::Data<T>, texture: Rc<T>, body: Rectangle) -> Self
         where T: Texture
     {
-        let sheet = TileSheet::new(data.tiles.into(), texture);
-        let animator = animator::Data::new(data.frames, Duration::from_millis(50));
-        let animation_data = animation::Data::new(animator, sheet);
-        let body = Rectangle {
-            top_left: glm::dvec2(0., 300.),
-            dims: glm::dvec2(data.out_size.x as f64, data.out_size.y as f64),
-        };
         Player {
-            animation: animation_data.start(),
+            action: Action::Standing(texture.clone()),
+            animation: animation,
+            texture: texture,
             body: body,
             backwards: false,
         }
@@ -38,8 +38,17 @@ impl<T> Player<T> {
     pub fn update(&mut self, delta: Duration, input: &input::State) {
         let left = input.is_key_down(Keycode::Left);
         let right = input.is_key_down(Keycode::Right);
+
         if left ^ right {
-            self.animation.animate(delta);
+            match self.action {
+                Action::Moving(ref mut a) => {
+                    a.animate(delta);
+                }
+                Action::Standing(_) => {
+                    let animation = self.animation.clone().start();
+                    self.action = Action::Moving(animation);
+                }
+            }
             let window = Rectangle {
                 top_left: glm::dvec2(0., 0.),
                 dims: glm::dvec2(1280., 720.),
@@ -49,7 +58,9 @@ impl<T> Player<T> {
             self.body.top_left.x += velocity;
             self.body = Self::clamp(&self.body, &window);
         } else {
-            self.animation.animator.restart();
+            if let Action::Moving(_) = self.action {
+                self.action = Action::Standing(self.texture.clone());
+            }
         }
     }
 
@@ -78,11 +89,22 @@ impl<'t, T, R> Scene<R> for Player<T>
                                                 self.body.top_left.y,
                                                 self.body.dims.x,
                                                 self.body.dims.y));
-        let tile = self.animation.tile();
-        let mut partial = renderer.with_asset(&tile).at(&dst_rect);
-        if self.backwards {
-            partial = partial.flip(TextureFlip::Horizontal)
+        match self.action {
+            Action::Moving(ref a) => {
+                let tile = a.tile();
+                let mut partial = renderer.with_asset(&tile).at(&dst_rect);
+                if self.backwards {
+                    partial = partial.flip(TextureFlip::Horizontal);
+                }
+                partial.copy()
+            }
+            Action::Standing(ref t) => {
+                let mut partial = renderer.with(&*t).at(&dst_rect);
+                if self.backwards {
+                    partial = partial.flip(TextureFlip::Horizontal);
+                }
+                partial.copy()
+            }
         }
-        partial.copy()
     }
 }
