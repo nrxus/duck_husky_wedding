@@ -36,10 +36,10 @@ impl<T> Player<T> {
     }
 
     pub fn update(&mut self, delta: Duration, input: &input::State) {
-        self.animation.animate(delta);
         let left = input.is_key_down(Keycode::Left);
         let right = input.is_key_down(Keycode::Right);
         if left ^ right {
+            self.animation.animate(delta);
             let window = Rectangle {
                 top_left: glm::dvec2(0., 0.),
                 dims: glm::dvec2(1280., 720.),
@@ -48,6 +48,8 @@ impl<T> Player<T> {
             let velocity = if left { -5. } else { 5. };
             self.body.top_left.x += velocity;
             self.body = Self::clamp(&self.body, &window);
+        } else {
+            self.animation.animator.restart();
         }
     }
 
