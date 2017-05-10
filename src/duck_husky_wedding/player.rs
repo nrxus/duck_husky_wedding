@@ -1,7 +1,7 @@
 use duck_husky_wedding::game_data::SpriteData;
 
 use glm;
-use moho::animation::{Animation, AnimationData, AnimatorData, TileSheet};
+use moho::animation::{self, animator, Animation, TileSheet};
 use moho::errors as moho_errors;
 use moho::input;
 use moho::renderer::{Renderer, Scene, Show, Texture, TextureFlip};
@@ -22,8 +22,8 @@ impl<T> Player<T> {
         where T: Texture
     {
         let sheet = TileSheet::new(data.tiles.into(), texture);
-        let animator = AnimatorData::new(data.frames, Duration::from_millis(50));
-        let animation_data = AnimationData::new(animator, sheet);
+        let animator = animator::Data::new(data.frames, Duration::from_millis(50));
+        let animation_data = animation::Data::new(animator, sheet);
         let body = Rectangle {
             top_left: glm::dvec2(0., 300.),
             dims: glm::dvec2(data.out_size.x as f64, data.out_size.y as f64),
