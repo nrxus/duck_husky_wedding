@@ -81,6 +81,6 @@ impl<'t, T, R> Scene<R> for Button<T>
                                                 self.body.top_left.y,
                                                 self.body.dims.x,
                                                 self.body.dims.y));
-        renderer.copy(texture, Some(&dst_rect), None)
+        renderer.with(texture).at(&dst_rect).copy()
     }
 }

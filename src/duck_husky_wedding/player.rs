@@ -78,6 +78,9 @@ impl<'t, T, R> Scene<R> for Player<T>
                                                 self.body.top_left.y,
                                                 self.body.dims.x,
                                                 self.body.dims.y));
-        renderer.show_at(&self.animation, &dst_rect)
+        renderer
+            .with_asset(&self.animation.tile())
+            .at(&dst_rect)
+            .copy()
     }
 }

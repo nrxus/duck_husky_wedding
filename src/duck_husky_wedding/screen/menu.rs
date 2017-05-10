@@ -76,6 +76,6 @@ impl<'t, T, R> Scene<R> for Menu<T>
         let title_rectangle = glm::ivec4(640 - title_dims.x / 2, 0, title_dims.x, title_dims.y);
         renderer.show(&self.new_game)?;
         renderer.show(&self.high_score)?;
-        renderer.copy(&self.title, Some(&title_rectangle), None)
+        renderer.with(&self.title).at(&title_rectangle).copy()
     }
 }
