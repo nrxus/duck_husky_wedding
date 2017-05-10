@@ -1,18 +1,20 @@
 use duck_husky_wedding::game_data::SpriteData;
 
 use glm;
-use moho::errors as moho_errors;
-use moho::renderer::{Renderer, Scene, Show, Texture};
 use moho::animation::{Animation, AnimationData, AnimatorData, TileSheet};
+use moho::errors as moho_errors;
+use moho::input;
+use moho::renderer::{Renderer, Scene, Show, Texture};
+use moho::shape::Rectangle;
+use sdl2::keyboard::Keycode;
 
 use std::time::Duration;
 use std::rc::Rc;
 
 pub struct Player<T> {
     animation: Animation<T>,
-    dimensions: glm::UVec2,
-    position: glm::IVec2,
-    velocity: i32,
+    body: Rectangle,
+    velocity: f64,
 }
 
 impl<T> Player<T> {
@@ -22,24 +24,49 @@ impl<T> Player<T> {
         let sheet = TileSheet::new(data.tiles.into(), texture);
         let animator = AnimatorData::new(data.frames, Duration::from_millis(50));
         let animation_data = AnimationData::new(animator, sheet);
+        let body = Rectangle {
+            top_left: glm::dvec2(0., 300.),
+            dims: glm::dvec2(data.out_size.x as f64, data.out_size.y as f64),
+        };
         Player {
             animation: animation_data.start(),
-            dimensions: data.out_size.into(),
-            position: glm::ivec2(0, 300),
-            velocity: 4,
+            body: body,
+            velocity: 0.,
         }
     }
 
-    pub fn animate(&mut self, delta: Duration) {
+    pub fn update(&mut self, delta: Duration, input: &input::State) {
         self.animation.animate(delta);
+        let mut velocity = 0.;
+        if input.is_key_down(Keycode::Left) {
+            velocity -= 5.;
+        }
+        if input.is_key_down(Keycode::Right) {
+            velocity += 5.;
+        }
+        self.velocity = velocity;
+        self.body.top_left.x += self.velocity;
+        let window = Rectangle {
+            top_left: glm::dvec2(0., 0.),
+            dims: glm::dvec2(1280., 720.),
+        };
+        self.body = Self::clamp(&self.body, &window);
     }
 
-    pub fn update(&mut self) {
-        self.position.x = (self.position.x + self.velocity + 1280) % 1280;
-    }
+    fn clamp(shape: &Rectangle, window: &Rectangle) -> Rectangle {
+        let tl = shape.top_left;
 
-    pub fn flip(&mut self) {
-        self.velocity *= -1;
+        let left = tl.x
+            .max(window.top_left.x)
+            .min(window.top_left.x + window.dims.x - shape.dims.x);
+        let top = tl.y
+            .max(window.top_left.y)
+            .min(window.top_left.y + window.dims.y - shape.dims.y);
+
+        Rectangle {
+            top_left: glm::dvec2(left, top),
+            dims: shape.dims,
+        }
     }
 }
 
@@ -47,10 +74,10 @@ impl<'t, T, R> Scene<R> for Player<T>
     where R: Renderer<'t, Texture = T> + Show
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        let dst_rect = glm::ivec4(self.position.x,
-                                  self.position.y,
-                                  self.dimensions.x as i32,
-                                  self.dimensions.y as i32);
+        let dst_rect = glm::to_ivec4(glm::dvec4(self.body.top_left.x,
+                                                self.body.top_left.y,
+                                                self.body.dims.x,
+                                                self.body.dims.y));
         renderer.show_at(&self.animation, &dst_rect)
     }
 }
