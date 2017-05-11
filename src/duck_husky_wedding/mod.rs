@@ -7,8 +7,8 @@ use errors::*;
 use self::game_data::GameData;
 
 use moho::input;
-use moho::renderer::{FontTexturizer, FontLoader, Renderer, TextureLoader, TextureManager,
-                     FontManager, Show};
+use moho::renderer::{ColorRGBA, FontTexturizer, FontLoader, Renderer, TextureLoader,
+                     TextureManager, FontManager, Show};
 use moho::timer::Timer;
 
 use std::time::Duration;
@@ -63,6 +63,7 @@ impl<'f, 't, TL, FL, R, E> DuckHuskyWedding<'f, 't, TL, FL, R, E>
         let update_duration = Duration::new(0, 1000000000 / GAME_SPEED);
         let mut timer = Timer::new();
         let mut delta = Duration::default();
+        let color = ColorRGBA(128, 0, 128, 255);
         'game_loop: loop {
             let game_time = timer.update();
             delta += game_time.since_update;
@@ -82,6 +83,7 @@ impl<'f, 't, TL, FL, R, E> DuckHuskyWedding<'f, 't, TL, FL, R, E>
                 loops += 1;
             }
             let interpolation = delta.subsec_nanos() as f64 / update_duration.subsec_nanos() as f64;
+            self.renderer.set_draw_color(color);
             self.renderer.clear();
             self.renderer.show(&screen_manager.screen())?;
             self.renderer.present();
