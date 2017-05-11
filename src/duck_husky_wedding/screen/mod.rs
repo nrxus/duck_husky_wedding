@@ -77,7 +77,7 @@ impl<T> Manager<T> {
               R: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>
     {
         let menu = Menu::load(font_manager, texturizer)?;
-        let game_play = GamePlay::load(texture_manager, data.duck)?;
+        let game_play = GamePlay::load(texture_manager, data)?;
         let high_score = HighScore::load(font_manager, texturizer)?;
         Ok(Manager {
                menu: menu,

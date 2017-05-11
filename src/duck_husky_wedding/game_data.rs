@@ -30,10 +30,17 @@ pub struct PlayerData {
     pub out_size: DimensionData,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct GroundData {
+    pub file_name: String,
+    pub out_size: DimensionData,
+}
+
 #[derive(Debug,Deserialize)]
 pub struct GameData {
     pub duck: PlayerData,
     pub husky: PlayerData,
+    pub ground: GroundData,
 }
 
 impl GameData {

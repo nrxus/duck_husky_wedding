@@ -1,5 +1,5 @@
 use duck_husky_wedding::player::Player;
-use duck_husky_wedding::game_data::PlayerData;
+use duck_husky_wedding::game_data::GameData;
 use duck_husky_wedding::ground::Ground;
 use errors::*;
 
@@ -20,28 +20,28 @@ pub struct GamePlay<T> {
 
 impl<T> GamePlay<T> {
     pub fn load<'t, TL>(texture_manager: &mut TextureManager<'t, TL>,
-                        data: PlayerData)
+                        data: GameData)
                         -> Result<Self>
         where T: Texture,
               TL: TextureLoader<'t, Texture = T>
     {
-        let animation = data.animation;
+        let animation = data.duck.animation;
         let file_name: &str = &format!("media/sprites/{}", animation.file_name);
         let texture = texture_manager.load(file_name)?;
         let sheet = TileSheet::new(animation.tiles.into(), texture);
         let animator = animator::Data::new(animation.frames, Duration::from_millis(40));
         let animation = animation::Data::new(animator, sheet);
 
-        let file_name: &str = &format!("media/sprites/{}", data.texture.file_name);
+        let file_name: &str = &format!("media/sprites/{}", data.duck.texture.file_name);
         let texture = texture_manager.load(file_name)?;
         let body = Rectangle {
             top_left: glm::dvec2(0., 300.),
-            dims: glm::dvec2(data.out_size.x as f64, data.out_size.y as f64),
+            dims: glm::dvec2(data.duck.out_size.x as f64, data.duck.out_size.y as f64),
         };
         let player = Player::new(animation, texture, body);
-        let file_name: &str = &format!("media/sprites/{}", "ground.png");
+        let file_name: &str = &format!("media/sprites/{}", data.ground.file_name);
         let texture = texture_manager.load(file_name)?;
-        let dims = glm::dvec2(150., 30.);
+        let dims = glm::dvec2(data.ground.out_size.x as f64, data.ground.out_size.y as f64);
         let ground = (0..10)
             .map(|i| {
                      let top_left = glm::dvec2(dims.x * i as f64, 600.);
