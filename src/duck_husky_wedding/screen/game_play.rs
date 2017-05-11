@@ -1,5 +1,6 @@
 use duck_husky_wedding::player::Player;
 use duck_husky_wedding::game_data::PlayerData;
+use duck_husky_wedding::ground::Ground;
 use errors::*;
 
 use glm;
@@ -14,6 +15,7 @@ use std::time::Duration;
 
 pub struct GamePlay<T> {
     player: Player<T>,
+    ground: Vec<Ground<T>>,
 }
 
 impl<T> GamePlay<T> {
@@ -37,7 +39,23 @@ impl<T> GamePlay<T> {
             dims: glm::dvec2(data.out_size.x as f64, data.out_size.y as f64),
         };
         let player = Player::new(animation, texture, body);
-        Ok(GamePlay { player: player })
+        let file_name: &str = &format!("media/sprites/{}", "ground.png");
+        let texture = texture_manager.load(file_name)?;
+        let dims = glm::dvec2(150., 30.);
+        let ground = (0..10)
+            .map(|i| {
+                     let top_left = glm::dvec2(dims.x * i as f64, 600.);
+                     let body = Rectangle {
+                         top_left: top_left,
+                         dims: dims,
+                     };
+                     Ground::new(texture.clone(), body)
+                 })
+            .collect();
+        Ok(GamePlay {
+               player: player,
+               ground: ground,
+           })
     }
 
     pub fn update(&mut self, delta: Duration, input: &input::State) -> Option<super::Kind> {
@@ -51,6 +69,12 @@ impl<'t, T, R> Scene<R> for GamePlay<T>
           R: Renderer<'t, Texture = T> + Show
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+        self.ground
+            .iter()
+            .map(|g| renderer.show(g))
+            .take_while(moho_errors::Result::is_ok)
+            .last()
+            .unwrap_or(Ok(()))?;
         renderer.show(&self.player)
     }
 }

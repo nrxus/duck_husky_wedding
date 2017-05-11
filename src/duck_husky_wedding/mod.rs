@@ -2,6 +2,7 @@ mod game_data;
 mod player;
 mod button;
 mod screen;
+mod ground;
 
 use errors::*;
 use self::game_data::GameData;
