@@ -63,7 +63,7 @@ impl<'f, 't, TL, FL, R, E> DuckHuskyWedding<'f, 't, TL, FL, R, E>
         let update_duration = Duration::new(0, 1000000000 / GAME_SPEED);
         let mut timer = Timer::new();
         let mut delta = Duration::default();
-        let color = ColorRGBA(128, 0, 128, 255);
+        let color = ColorRGBA(60, 0, 70, 255);
         'game_loop: loop {
             let game_time = timer.update();
             delta += game_time.since_update;
