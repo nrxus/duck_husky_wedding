@@ -27,7 +27,7 @@ impl<T> GamePlay<T> {
         let file_name: &str = &format!("media/sprites/{}", animation.file_name);
         let texture = texture_manager.load(file_name)?;
         let sheet = TileSheet::new(animation.tiles.into(), texture);
-        let animator = animator::Data::new(animation.frames, Duration::from_millis(50));
+        let animator = animator::Data::new(animation.frames, Duration::from_millis(40));
         let animation = animation::Data::new(animator, sheet);
 
         let file_name: &str = &format!("media/sprites/{}", data.texture.file_name);

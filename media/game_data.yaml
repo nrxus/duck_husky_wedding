@@ -8,5 +8,5 @@ duck:
   texture:
     file_name: "standing_duck.png"
   out_size:
-    x: 200
-    y: 150
+    x: 100
+    y: 75
