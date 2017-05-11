@@ -2,7 +2,7 @@ use glm;
 use moho::animation::{self, Animation};
 use moho::errors as moho_errors;
 use moho::input;
-use moho::renderer::{Renderer, Scene, Show, Texture, TextureFlip};
+use moho::renderer::{options, Renderer, Scene, Show, Texture, TextureFlip};
 use moho::shape::Rectangle;
 use sdl2::keyboard::Keycode;
 
@@ -89,22 +89,13 @@ impl<'t, T, R> Scene<R> for Player<T>
                                                 self.body.top_left.y,
                                                 self.body.dims.x,
                                                 self.body.dims.y));
+        let mut options = options::at(&dst_rect);
+        if self.backwards {
+            options = options.flip(TextureFlip::Horizontal);
+        }
         match self.action {
-            Action::Moving(ref a) => {
-                let tile = a.tile();
-                let mut partial = renderer.with_asset(&tile).at(&dst_rect);
-                if self.backwards {
-                    partial = partial.flip(TextureFlip::Horizontal);
-                }
-                partial.copy()
-            }
-            Action::Standing(ref t) => {
-                let mut partial = renderer.with(&*t).at(&dst_rect);
-                if self.backwards {
-                    partial = partial.flip(TextureFlip::Horizontal);
-                }
-                partial.copy()
-            }
+            Action::Moving(ref a) => renderer.copy_asset(&a.tile(), options),
+            Action::Standing(ref t) => renderer.copy(&*t, options),
         }
     }
 }

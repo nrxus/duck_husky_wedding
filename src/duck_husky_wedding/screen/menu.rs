@@ -4,8 +4,8 @@ use duck_husky_wedding::button::Button;
 use glm;
 use moho::errors as moho_errors;
 use moho::input;
-use moho::renderer::{ColorRGBA, Font, FontDetails, FontLoader, FontManager, FontTexturizer,
-                     Renderer, Scene, Show, Texture};
+use moho::renderer::{options, ColorRGBA, Font, FontDetails, FontLoader, FontManager,
+                     FontTexturizer, Renderer, Scene, Show, Texture};
 use moho::shape::Rectangle;
 
 pub struct Menu<T> {
@@ -76,6 +76,6 @@ impl<'t, T, R> Scene<R> for Menu<T>
         let title_rectangle = glm::ivec4(640 - title_dims.x / 2, 0, title_dims.x, title_dims.y);
         renderer.show(&self.new_game)?;
         renderer.show(&self.high_score)?;
-        renderer.with(&self.title).at(&title_rectangle).copy()
+        renderer.copy(&self.title, options::at(&title_rectangle))
     }
 }

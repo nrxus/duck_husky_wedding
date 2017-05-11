@@ -5,8 +5,8 @@ use glm;
 use serde_yaml;
 use moho::input;
 use moho::errors as moho_errors;
-use moho::renderer::{ColorRGBA, Font, FontDetails, FontLoader, FontManager, FontTexturizer,
-                     Renderer, Scene, Show, Texture};
+use moho::renderer::{options, ColorRGBA, Font, FontDetails, FontLoader, FontManager,
+                     FontTexturizer, Renderer, Scene, Show, Texture};
 
 use std::fs::File;
 
@@ -39,8 +39,7 @@ impl<T> HighScore<T> {
         let top_left = glm::ivec2(10, 360 - dims.y as i32 / 2);
         let back = Button::from_text("<", texturizer, &*font, top_left)?;
         let title_color = ColorRGBA(255, 255, 0, 255);
-        let title = texturizer
-            .texturize(&*font, "High Scores", &title_color)?;
+        let title = texturizer.texturize(&*font, "High Scores", &title_color)?;
         Ok(HighScore {
                title: title,
                back: back,
@@ -102,11 +101,11 @@ impl<'t, T, R> Scene<R> for HighScore<T>
                      let dims = glm::to_ivec2(s.dims());
                      let dst = glm::ivec4(640 - dims.x / 2, height, dims.x, dims.y);
                      height += dims.y;
-                     renderer.with(&s).at(&dst).copy()
+                     renderer.copy(&s, options::at(&dst))
                  })
             .take_while(moho_errors::Result::is_ok)
             .last()
             .unwrap_or(Ok(()))?;
-        renderer.with(&self.title).at(&title_rectangle).copy()
+        renderer.copy(&self.title, options::at(&title_rectangle))
     }
 }
