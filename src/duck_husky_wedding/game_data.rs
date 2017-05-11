@@ -11,17 +11,28 @@ pub struct DimensionData {
     pub y: u32,
 }
 
-#[derive(Debug,Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct SpriteData {
     pub file_name: String,
     pub frames: u32,
     pub tiles: DimensionData,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct TextureData {
+    pub file_name: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct PlayerData {
+    pub animation: SpriteData,
+    pub texture: TextureData,
     pub out_size: DimensionData,
 }
 
 #[derive(Debug,Deserialize)]
 pub struct GameData {
-    pub duck: SpriteData,
+    pub duck: PlayerData,
 }
 
 impl GameData {

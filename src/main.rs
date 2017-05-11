@@ -5,10 +5,10 @@ extern crate error_chain;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_yaml;
+extern crate sdl2;
 
 mod duck_husky_wedding;
 
-use duck_husky_wedding::game_data::GameData;
 use duck_husky_wedding::DuckHuskyWedding;
 
 pub mod errors {
@@ -26,10 +26,9 @@ pub mod errors {
 fn main() {
     const WINDOW_WIDTH: u32 = 1280;
     const WINDOW_HEIGHT: u32 = 720;
-    let game_data = GameData::load("media/game_data.yaml").unwrap();
-    let (renderer, input_manager) = moho::init("Master Smasher", WINDOW_WIDTH, WINDOW_HEIGHT)
-        .unwrap();
-    let mut game =
-        DuckHuskyWedding::<moho::SdlMohoEngine>::load(renderer, input_manager, game_data).unwrap();
+    let (renderer, creator, input_manager) =
+        moho::init("Husky Loves Ducky", WINDOW_WIDTH, WINDOW_HEIGHT).unwrap();
+    let loader = sdl2::ttf::init().unwrap();
+    let mut game = DuckHuskyWedding::new(renderer, &loader, &creator, input_manager);
     game.run().unwrap();
 }

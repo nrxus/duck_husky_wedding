@@ -1,84 +1,91 @@
-pub mod game_data;
+mod game_data;
 mod player;
+mod button;
+mod screen;
 
 use errors::*;
-use self::player::Player;
 use self::game_data::GameData;
 
-use moho::input_manager::InputManager;
-use moho::resource_manager::Renderer;
-use moho::MohoEngine;
+use moho::input;
+use moho::renderer::{FontTexturizer, FontLoader, Renderer, TextureLoader, TextureManager,
+                     FontManager, Show};
 use moho::timer::Timer;
 
 use std::time::Duration;
 
-pub struct DuckHuskyWedding<E: MohoEngine> {
-    input_manager: InputManager<E::EventPump>,
-    renderer: E::Renderer,
-    player: Player,
+pub struct DuckHuskyWedding<'f, 't, TL, FL, R, E>
+    where TL: 't + TextureLoader<'t>,
+          FL: 'f + FontLoader<'f>
+{
+    input_manager: input::Manager<E>,
+    texture_manager: TextureManager<'t, TL>,
+    font_manager: FontManager<'f, FL>,
+    renderer: R,
+    texture_loader: &'t TL,
 }
 
-impl<E: MohoEngine> DuckHuskyWedding<E> {
-    pub fn load(renderer: E::Renderer,
-                input_manager: InputManager<E::EventPump>,
-                game_data: GameData)
-                -> Result<Self> {
-        let player = Player::load(game_data.duck, &renderer)?;
-        Ok(Self::new(renderer, input_manager, player))
-    }
-
-    pub fn new(renderer: E::Renderer,
-               input_manager: InputManager<E::EventPump>,
-               player: Player)
+impl<'f, 't, TL, FL, R, E> DuckHuskyWedding<'f, 't, TL, FL, R, E>
+    where TL: TextureLoader<'t>,
+          FL: FontLoader<'f>
+{
+    pub fn new(renderer: R,
+               font_loader: &'f FL,
+               texture_loader: &'t TL,
+               input_manager: input::Manager<E>)
                -> Self {
+        let texture_manager = TextureManager::new(texture_loader);
+        let font_manager = FontManager::new(font_loader);
         DuckHuskyWedding {
             input_manager: input_manager,
+            texture_manager: texture_manager,
+            font_manager: font_manager,
             renderer: renderer,
-            player: player,
+            texture_loader: texture_loader,
         }
     }
 
-    pub fn run(&mut self) -> Result<()> {
+    pub fn run(&mut self) -> Result<()>
+        where TL: FontTexturizer<'f,
+                                 't,
+                                 Texture = <TL as TextureLoader<'t>>::Texture,
+                                 Font = FL::Font>,
+              R: Renderer<'t, Texture = <TL as TextureLoader<'t>>::Texture> + Show,
+              E: input::EventPump
+    {
+        let game_data = GameData::load("media/game_data.yaml")?;
+        let mut screen_manager = screen::Manager::load(&mut self.font_manager,
+                                                       &mut self.texture_manager,
+                                                       self.texture_loader,
+                                                       game_data)?;
+
         const GAME_SPEED: u32 = 60;
         const MAX_SKIP: u32 = 10;
         let update_duration = Duration::new(0, 1000000000 / GAME_SPEED);
         let mut timer = Timer::new();
-        let mut delta: Duration = Default::default();
-        while !self.game_quit() {
+        let mut delta = Duration::default();
+        'game_loop: loop {
             let game_time = timer.update();
             delta += game_time.since_update;
             let mut loops: u32 = 0;
             while delta >= update_duration && loops < MAX_SKIP {
-                self.input_manager.update();
-                if self.game_quit() {
-                    break;
+                let state = self.input_manager.update();
+                if state.game_quit() {
+                    break 'game_loop;
                 }
-                self.update();
+
+                let next_screen = screen_manager.mut_screen().update(update_duration, state);
+                if let Some(s) = next_screen {
+                    screen_manager.select_screen(s, &mut self.font_manager, self.texture_loader);
+                }
+
                 delta -= update_duration;
                 loops += 1;
             }
-            if self.game_quit() {
-                break;
-            }
-            self.player.animate(game_time.since_update);
             let interpolation = delta.subsec_nanos() as f64 / update_duration.subsec_nanos() as f64;
-            self.draw(interpolation)?;
+            self.renderer.clear();
+            self.renderer.show(&screen_manager.screen())?;
+            self.renderer.present();
         }
         Ok(())
-    }
-
-    fn update(&mut self) {
-        self.player.update();
-    }
-
-    fn draw(&mut self, interpolation: f64) -> Result<()> {
-        self.renderer.clear();
-        self.renderer.show(&self.player)?;
-        self.renderer.present();
-        Ok(())
-    }
-
-    fn game_quit(&self) -> bool {
-        self.input_manager.game_quit()
     }
 }

@@ -1,9 +1,12 @@
 duck:
-  file_name: "duck.png"
-  frames: 10
-  tiles:
-    x: 10
-    y: 1
+  animation:
+    file_name: "duck.png"
+    frames: 10
+    tiles:
+      x: 10
+      y: 1
+  texture:
+    file_name: "standing_duck.png"
   out_size:
-    x: 400
-    y: 300
+    x: 200
+    y: 150
