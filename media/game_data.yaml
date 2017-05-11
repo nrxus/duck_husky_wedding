@@ -25,5 +25,5 @@ husky:
 ground:
   file_name: "ground.png"
   out_size:
-    x: 150
-    y: 30
+    x: 100
+    y: 100

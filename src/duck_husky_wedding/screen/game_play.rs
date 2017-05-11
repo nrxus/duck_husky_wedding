@@ -42,7 +42,7 @@ impl<T> GamePlay<T> {
         let file_name: &str = &format!("media/sprites/{}", data.ground.file_name);
         let texture = texture_manager.load(file_name)?;
         let dims = glm::dvec2(data.ground.out_size.x as f64, data.ground.out_size.y as f64);
-        let ground = (0..10)
+        let ground = (0..13)
             .map(|i| {
                      let top_left = glm::dvec2(dims.x * i as f64, 600.);
                      let body = Rectangle {
