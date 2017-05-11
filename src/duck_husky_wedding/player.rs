@@ -57,10 +57,8 @@ impl<T> Player<T> {
             let velocity = if left { -5. } else { 5. };
             self.body.top_left.x += velocity;
             self.body = Self::clamp(&self.body, &window);
-        } else {
-            if let Action::Moving(_) = self.action {
-                self.action = Action::Standing(self.texture.clone());
-            }
+        } else if let Action::Moving(_) = self.action {
+            self.action = Action::Standing(self.texture.clone());
         }
     }
 

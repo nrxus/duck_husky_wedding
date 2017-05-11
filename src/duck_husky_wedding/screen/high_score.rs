@@ -101,7 +101,7 @@ impl<'t, T, R> Scene<R> for HighScore<T>
                      let dims = glm::to_ivec2(s.dims());
                      let dst = glm::ivec4(640 - dims.x / 2, height, dims.x, dims.y);
                      height += dims.y;
-                     renderer.copy(&s, options::at(&dst))
+                     renderer.copy(s, options::at(&dst))
                  })
             .take_while(moho_errors::Result::is_ok)
             .last()
