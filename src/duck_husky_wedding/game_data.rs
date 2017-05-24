@@ -33,6 +33,7 @@ pub struct PlayerData {
 #[derive(Debug,Deserialize)]
 pub struct GameData {
     pub duck: PlayerData,
+    pub husky: PlayerData,
 }
 
 impl GameData {
