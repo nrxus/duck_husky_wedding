@@ -18,7 +18,7 @@ pub struct Player<T> {
     action: Action<T>,
     animation: animation::Data<T>,
     texture: Rc<T>,
-    body: Rectangle,
+    pub body: Rectangle,
     backwards: bool,
 }
 

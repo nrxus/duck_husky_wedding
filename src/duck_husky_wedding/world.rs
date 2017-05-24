@@ -2,7 +2,7 @@ use duck_husky_wedding::game_data::GroundData;
 use errors::*;
 
 use glm;
-use moho::shape::Rectangle;
+use moho::shape::{Rectangle, Shape, Intersect};
 use moho::renderer::{options, Scene, Renderer, Show, Texture, TextureLoader, TextureManager};
 use moho::errors as moho_errors;
 
@@ -40,6 +40,20 @@ impl<T> Ground<T> {
             .collect();
         Ok(Ground { tiles })
     }
+
+    fn mtv(&self, mut body: Rectangle) -> Option<glm::DVec2> {
+        let mut mtv = None;
+        for t in &self.tiles {
+            if let Some(f) = body.mtv(&t.body) {
+                body = body.nudge(f);
+                mtv = match mtv {
+                    Some(of) => Some(of + f),
+                    None => Some(f),
+                }
+            }
+        }
+        mtv
+    }
 }
 
 impl<'t, R> Scene<R> for Ground<R::Texture>
@@ -55,7 +69,7 @@ impl<'t, R> Scene<R> for Ground<R::Texture>
                                                              body.dims.x,
                                                              body.dims.y));
                      renderer.copy(&*t.texture, options::at(&dst_rect))
-            });
+                 });
         for r in results {
             r?
         }
@@ -68,12 +82,24 @@ pub struct World<T> {
 }
 
 impl<T> World<T> {
-    pub fn load<'t, TL>(texture_manager: &mut TextureManager<'t, TL>, data: GroundData) -> Result<Self>
+    pub fn load<'t, TL>(texture_manager: &mut TextureManager<'t, TL>,
+                        data: GroundData)
+                        -> Result<Self>
         where T: Texture,
               TL: TextureLoader<'t, Texture = T>
     {
         let ground = Ground::load(texture_manager, data)?;
         Ok(World { ground })
+    }
+
+    pub fn force(&self, body: &Rectangle) -> glm::DVec2 {
+        let gravity = glm::dvec2(0., 5.);
+        let mut force = gravity;
+        let body = body.nudge(gravity);
+        if let Some(f) = self.ground.mtv(body) {
+            force = force + f;
+        }
+        force
     }
 }
 
