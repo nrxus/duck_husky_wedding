@@ -6,11 +6,13 @@ use moho::renderer::{options, Renderer, Scene, Show, TextureFlip};
 use moho::shape::{Rectangle, Shape};
 use sdl2::keyboard::Keycode;
 
+use std::ops::AddAssign;
 use std::time::Duration;
 use std::rc::Rc;
 
 enum Action<T> {
     Moving(Animation<T>),
+    Jumping(Rc<T>, u32),
     Standing(Rc<T>),
 }
 
@@ -38,9 +40,22 @@ impl<T> Player<T> {
     pub fn process(&mut self, input: &input::State) {
         let left = input.is_key_down(Keycode::Left);
         let right = input.is_key_down(Keycode::Right);
-        let up = input.did_press_key(Keycode::Up);
+        let up = input.is_key_down(Keycode::Up);
+
         if up {
-            self.velocity.y -= 12.;
+            match self.action {
+                Action::Jumping(_, ref mut held) => {
+                    if *held < 10 {
+                        held.add_assign(1);
+                        self.velocity.y -= 0.5;
+                    }
+                }
+                _ => {
+                    if input.did_press_key(Keycode::Up) {
+                        self.velocity.y -= 12.;
+                    }
+                }
+            }
         }
 
         if left ^ right {
@@ -52,21 +67,44 @@ impl<T> Player<T> {
     }
 
     pub fn update(&mut self, force: glm::DVec2, delta: Duration) {
-        self.velocity = self.velocity + force;
-        if self.velocity.x != 0. {
-            match self.action {
-                Action::Moving(ref mut a) => {
+        let next_action = match self.action {
+            Action::Moving(ref mut a) => {
+                if self.velocity.y != 0. || force.y != 0. {
+                    Some(Action::Jumping(self.texture.clone(), 0))
+                } else if self.velocity.x == 0. {
+                    Some(Action::Standing(self.texture.clone()))
+                } else {
                     a.animate(delta);
-                }
-                Action::Standing(_) => {
-                    let animation = self.animation.clone().start();
-                    self.action = Action::Moving(animation);
+                    None
                 }
             }
-        } else if let Action::Moving(_) = self.action {
-            self.action = Action::Standing(self.texture.clone());
+            Action::Standing(_) => {
+                if self.velocity.y != 0. || force.y != 0. {
+                    Some(Action::Jumping(self.texture.clone(), 0))
+                } else if self.velocity.x == 0. {
+                    None
+                } else {
+                    let animation = self.animation.clone().start();
+                    Some(Action::Moving(animation))
+                }
+            }
+            Action::Jumping(_, _) => {
+                if self.velocity.y != 0. || force.y != 0. {
+                    None
+                } else if self.velocity.x == 0. {
+                    Some(Action::Standing(self.texture.clone()))
+                } else {
+                    let animation = self.animation.clone().start();
+                    Some(Action::Moving(animation))
+                }
+            }
+        };
+
+        if let Some(a) = next_action {
+            self.action = a;
         }
 
+        self.velocity = self.velocity + force;
         let window = Rectangle {
             top_left: glm::dvec2(0., 0.),
             dims: glm::dvec2(1280., 720.),
@@ -106,6 +144,7 @@ impl<'t, R> Scene<R> for Player<R::Texture>
         match self.action {
             Action::Moving(ref a) => renderer.copy_asset(&a.tile(), options),
             Action::Standing(ref t) => renderer.copy(&*t, options),
+            Action::Jumping(ref t, _) => renderer.copy(&*t, options),
         }
     }
 }
