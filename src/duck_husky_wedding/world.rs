@@ -1,4 +1,5 @@
 use duck_husky_wedding::game_data::GroundData;
+use duck_husky_wedding::player::Player;
 use errors::*;
 
 use glm;
@@ -63,11 +64,10 @@ impl<'t, R> Scene<R> for Ground<R::Texture>
         let results = self.tiles
             .iter()
             .map(|t| {
-                     let body = &t.body;
-                     let dst_rect = glm::to_ivec4(glm::dvec4(body.top_left.x,
-                                                             body.top_left.y,
-                                                             body.dims.x,
-                                                             body.dims.y));
+                     let tl = t.body.top_left;
+                     let dims = t.body.dims;
+                     let rect = glm::dvec4(tl.x, tl.y, dims.x, dims.y);
+                     let dst_rect = glm::to_ivec4(rect);
                      renderer.copy(&*t.texture, options::at(&dst_rect))
                  });
         for r in results {
@@ -92,10 +92,10 @@ impl<T> World<T> {
         Ok(World { ground })
     }
 
-    pub fn force(&self, body: &Rectangle) -> glm::DVec2 {
-        let gravity = glm::dvec2(0., 10.);
+    pub fn force(&self, player: &Player<T>) -> glm::DVec2 {
+        let gravity = glm::dvec2(0., 1.);
         let mut force = gravity;
-        let body = body.nudge(gravity);
+        let body = player.body.nudge(gravity + player.velocity);
         if let Some(f) = self.ground.mtv(body) {
             force = force + f;
         }

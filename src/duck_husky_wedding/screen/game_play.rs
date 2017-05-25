@@ -9,7 +9,7 @@ use moho::input;
 use moho::errors as moho_errors;
 use moho::renderer::{Renderer, Scene, Show};
 use moho::renderer::{Texture, TextureLoader, TextureManager};
-use moho::shape::{Rectangle, Shape};
+use moho::shape::Rectangle;
 
 use std::time::Duration;
 
@@ -47,9 +47,9 @@ impl<T> GamePlay<T> {
     }
 
     pub fn update(&mut self, delta: Duration, input: &input::State) -> Option<super::Kind> {
-        self.player.update(delta, input);
-        let force = self.world.force(&self.player.body);
-        self.player.body = self.player.body.nudge(force);
+        self.player.process(input);
+        let force = self.world.force(&self.player);
+        self.player.update(force, delta);
         None
     }
 }

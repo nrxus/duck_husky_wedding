@@ -15,10 +15,11 @@ enum Action<T> {
 }
 
 pub struct Player<T> {
+    pub body: Rectangle,
+    pub velocity: glm::DVec2,
     action: Action<T>,
     animation: animation::Data<T>,
     texture: Rc<T>,
-    pub body: Rectangle,
     backwards: bool,
 }
 
@@ -26,6 +27,7 @@ impl<T> Player<T> {
     pub fn new(animation: animation::Data<T>, texture: Rc<T>, body: Rectangle) -> Self {
         Player {
             action: Action::Standing(texture.clone()),
+            velocity: glm::dvec2(0., 0.),
             animation: animation,
             texture: texture,
             body: body,
@@ -33,16 +35,25 @@ impl<T> Player<T> {
         }
     }
 
-    pub fn update(&mut self, delta: Duration, input: &input::State) {
+    pub fn process(&mut self, input: &input::State) {
         let left = input.is_key_down(Keycode::Left);
         let right = input.is_key_down(Keycode::Right);
-        let up = input.is_key_down(Keycode::Up);
-
+        let up = input.did_press_key(Keycode::Up);
         if up {
-            self.body = self.body.nudge(glm::dvec2(0., -12.))
+            self.velocity.y -= 12.;
         }
 
         if left ^ right {
+            self.backwards = left;
+            self.velocity.x = if left { -5. } else { 5. };
+        } else {
+            self.velocity.x = 0.;
+        }
+    }
+
+    pub fn update(&mut self, force: glm::DVec2, delta: Duration) {
+        self.velocity = self.velocity + force;
+        if self.velocity.x != 0. {
             match self.action {
                 Action::Moving(ref mut a) => {
                     a.animate(delta);
@@ -52,17 +63,15 @@ impl<T> Player<T> {
                     self.action = Action::Moving(animation);
                 }
             }
-            let window = Rectangle {
-                top_left: glm::dvec2(0., 0.),
-                dims: glm::dvec2(1280., 720.),
-            };
-            self.backwards = left;
-            let velocity = if left { -5. } else { 5. };
-            self.body.top_left.x += velocity;
-            self.body = Self::clamp(&self.body, &window);
         } else if let Action::Moving(_) = self.action {
             self.action = Action::Standing(self.texture.clone());
         }
+
+        let window = Rectangle {
+            top_left: glm::dvec2(0., 0.),
+            dims: glm::dvec2(1280., 720.),
+        };
+        self.body = Self::clamp(&self.body.nudge(self.velocity), &window);
     }
 
     fn clamp(shape: &Rectangle, window: &Rectangle) -> Rectangle {
