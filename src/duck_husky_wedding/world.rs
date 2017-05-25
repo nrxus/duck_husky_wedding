@@ -93,7 +93,7 @@ impl<T> World<T> {
     }
 
     pub fn force(&self, body: &Rectangle) -> glm::DVec2 {
-        let gravity = glm::dvec2(0., 5.);
+        let gravity = glm::dvec2(0., 10.);
         let mut force = gravity;
         let body = body.nudge(gravity);
         if let Some(f) = self.ground.mtv(body) {

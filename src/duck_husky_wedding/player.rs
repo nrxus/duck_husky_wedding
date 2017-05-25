@@ -3,7 +3,7 @@ use moho::animation::{self, Animation};
 use moho::errors as moho_errors;
 use moho::input;
 use moho::renderer::{options, Renderer, Scene, Show, TextureFlip};
-use moho::shape::Rectangle;
+use moho::shape::{Rectangle, Shape};
 use sdl2::keyboard::Keycode;
 
 use std::time::Duration;
@@ -36,6 +36,11 @@ impl<T> Player<T> {
     pub fn update(&mut self, delta: Duration, input: &input::State) {
         let left = input.is_key_down(Keycode::Left);
         let right = input.is_key_down(Keycode::Right);
+        let up = input.is_key_down(Keycode::Up);
+
+        if up {
+            self.body = self.body.nudge(glm::dvec2(0., -12.))
+        }
 
         if left ^ right {
             match self.action {
