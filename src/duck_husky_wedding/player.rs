@@ -45,16 +45,12 @@ impl<T> Player<T> {
         if up {
             match self.action {
                 Action::Jumping(_, ref mut held) => {
-                    if *held < 10 {
+                    if *held < 15 {
                         held.add_assign(1);
-                        self.velocity.y -= 0.5;
+                        self.velocity.y -= 5. / (*held as f64);
                     }
                 }
-                _ => {
-                    if input.did_press_key(Keycode::Up) {
-                        self.velocity.y -= 12.;
-                    }
-                }
+                _ => self.velocity.y -= 5.,
             }
         }
 
@@ -69,7 +65,7 @@ impl<T> Player<T> {
     pub fn update(&mut self, force: glm::DVec2, delta: Duration) {
         let next_action = match self.action {
             Action::Moving(ref mut a) => {
-                if self.velocity.y != 0. || force.y != 0. {
+                if self.velocity.y.abs() > 0.000001 || force.y.abs() > 0.000001 {
                     Some(Action::Jumping(self.texture.clone(), 0))
                 } else if self.velocity.x == 0. {
                     Some(Action::Standing(self.texture.clone()))
@@ -79,7 +75,7 @@ impl<T> Player<T> {
                 }
             }
             Action::Standing(_) => {
-                if self.velocity.y != 0. || force.y != 0. {
+                if self.velocity.y.abs() > 0.000001 || force.y.abs() > 0.000001 {
                     Some(Action::Jumping(self.texture.clone(), 0))
                 } else if self.velocity.x == 0. {
                     None
@@ -89,7 +85,7 @@ impl<T> Player<T> {
                 }
             }
             Action::Jumping(_, _) => {
-                if self.velocity.y != 0. || force.y != 0. {
+                if self.velocity.y.abs() > 0.000001 || force.y.abs() > 0.000001 {
                     None
                 } else if self.velocity.x == 0. {
                     Some(Action::Standing(self.texture.clone()))
