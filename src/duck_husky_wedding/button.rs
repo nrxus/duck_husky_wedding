@@ -7,14 +7,14 @@ use moho::shape::{Rectangle, Shape};
 use moho::renderer::{options, ColorRGBA, FontTexturizer, Renderer, Scene, Texture};
 use sdl2::mouse::MouseButton;
 
-pub struct Button<T> {
+pub struct Static<T> {
     idle_texture: T,
     hover_texture: T,
     is_hovering: bool,
     pub body: Rectangle,
 }
 
-impl<T> Button<T> {
+impl<T> Static<T> {
     pub fn from_text<'f, 't, R>(text: &str,
                                 texturizer: &'t R,
                                 font: &R::Font,
@@ -52,7 +52,7 @@ impl<T> Button<T> {
     }
 
     pub fn new(idle_texture: T, hover_texture: T, body: Rectangle) -> Self {
-        Button {
+        Static {
             idle_texture: idle_texture,
             hover_texture: hover_texture,
             is_hovering: false,
@@ -67,7 +67,7 @@ impl<T> Button<T> {
     }
 }
 
-impl<'t, T, R> Scene<R> for Button<T>
+impl<'t, T, R> Scene<R> for Static<T>
     where T: Texture,
           R: Renderer<'t, Texture = T>
 {

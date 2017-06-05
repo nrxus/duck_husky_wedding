@@ -1,4 +1,4 @@
-use duck_husky_wedding::button::Button;
+use duck_husky_wedding::button;
 use errors::*;
 
 use glm;
@@ -18,7 +18,7 @@ struct ScoreEntry {
 
 pub struct HighScore<T> {
     title: T,
-    back: Button<T>,
+    back: button::Static<T>,
     scores: Vec<T>,
 }
 
@@ -37,7 +37,7 @@ impl<T> HighScore<T> {
         let font = font_manager.load(&font_details)?;
         let dims = font.measure("<")?;
         let top_left = glm::ivec2(10, 360 - dims.y as i32 / 2);
-        let back = Button::from_text("<", texturizer, &*font, top_left)?;
+        let back = button::Static::from_text("<", texturizer, &*font, top_left)?;
         let title_color = ColorRGBA(255, 255, 0, 255);
         let title = texturizer.texturize(&*font, "High Scores", &title_color)?;
         Ok(HighScore {

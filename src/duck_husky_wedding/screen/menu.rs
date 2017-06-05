@@ -1,5 +1,5 @@
 use errors::*;
-use duck_husky_wedding::button::Button;
+use duck_husky_wedding::button;
 
 use glm;
 use moho::errors as moho_errors;
@@ -10,8 +10,8 @@ use moho::shape::Rectangle;
 
 pub struct Menu<T> {
     title: T,
-    new_game: Button<T>,
-    high_score: Button<T>,
+    new_game: button::Static<T>,
+    high_score: button::Static<T>,
 }
 
 impl<T> Menu<T> {
@@ -33,7 +33,7 @@ impl<T> Menu<T> {
             top_left: glm::to_dvec2(top_left),
             dims: glm::to_dvec2(dims),
         };
-        let new_game = Button::text_at("New Game", texturizer, &*font, body)?;
+        let new_game = button::Static::text_at("New Game", texturizer, &*font, body)?;
         let title_color = ColorRGBA(255, 255, 0, 255);
         let title = texturizer
             .texturize(&*font, "Husky Loves Ducky", &title_color)?;
@@ -44,11 +44,11 @@ impl<T> Menu<T> {
             top_left: glm::to_dvec2(top_left),
             dims: glm::to_dvec2(dims),
         };
-        let high_score = Button::text_at("High Score", texturizer, &*font, body)?;
+        let high_score = button::Static::text_at("High Score", texturizer, &*font, body)?;
         Ok(Self::new(title, new_game, high_score))
     }
 
-    pub fn new(title: T, new_game: Button<T>, high_score: Button<T>) -> Self {
+    pub fn new(title: T, new_game: button::Static<T>, high_score: button::Static<T>) -> Self {
         Menu {
             title: title,
             new_game: new_game,
