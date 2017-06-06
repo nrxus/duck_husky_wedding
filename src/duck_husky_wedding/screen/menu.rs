@@ -1,5 +1,5 @@
 use errors::*;
-use duck_husky_wedding::button;
+use duck_husky_wedding::button::{self, Button};
 
 use glm;
 use moho::errors as moho_errors;

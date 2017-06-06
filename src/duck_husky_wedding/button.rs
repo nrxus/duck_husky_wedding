@@ -7,11 +7,37 @@ use moho::shape::{Rectangle, Shape};
 use moho::renderer::{options, ColorRGBA, FontTexturizer, Renderer, Scene, Texture};
 use sdl2::mouse::MouseButton;
 
+pub trait Button {
+    fn body(&self) -> &Rectangle;
+    fn on_hover(&mut self, _hovers: bool) {}
+
+    fn update(&mut self, input_state: &input::State) -> bool {
+        let mouse = input_state.mouse_coords();
+        if self.body().contains(&glm::to_dvec2(mouse)) {
+            self.on_hover(true);
+            input_state.did_click_mouse(MouseButton::Left)
+        } else {
+            self.on_hover(false);
+            false
+        }
+    }
+}
+
 pub struct Static<T> {
     idle_texture: T,
     hover_texture: T,
     is_hovering: bool,
     pub body: Rectangle,
+}
+
+impl<T> Button for Static<T> {
+    fn body(&self) -> &Rectangle {
+        &self.body
+    }
+
+    fn on_hover(&mut self, hovers: bool) {
+        self.is_hovering = hovers
+    }
 }
 
 impl<T> Static<T> {
@@ -58,12 +84,6 @@ impl<T> Static<T> {
             is_hovering: false,
             body: body,
         }
-    }
-
-    pub fn update(&mut self, input_state: &input::State) -> bool {
-        let mouse = input_state.mouse_coords();
-        self.is_hovering = self.body.contains(&glm::to_dvec2(mouse));
-        self.is_hovering && input_state.did_click_mouse(MouseButton::Left)
     }
 }
 
