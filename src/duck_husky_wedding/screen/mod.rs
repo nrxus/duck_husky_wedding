@@ -25,23 +25,23 @@ pub enum Kind {
     PlayerSelect,
 }
 
-pub enum Screen<'s, T: 's> {
+pub enum RefScreen<'s, T: 's> {
     Menu(&'s Menu<T>),
     GamePlay(&'s GamePlay<T>),
     HighScore(&'s HighScore<T>),
     PlayerSelect(&'s PlayerSelect<T>),
 }
 
-impl<'s, 't, T, R> Scene<R> for Screen<'s, T>
+impl<'s, 't, T, R> Scene<R> for RefScreen<'s, T>
     where T: Texture,
           R: Renderer<'t, Texture = T> + Show
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         match *self {
-            Screen::Menu(s) => renderer.show(s),
-            Screen::GamePlay(s) => renderer.show(s),
-            Screen::HighScore(s) => renderer.show(s),
-            Screen::PlayerSelect(s) => renderer.show(s),
+            RefScreen::Menu(s) => renderer.show(s),
+            RefScreen::GamePlay(s) => renderer.show(s),
+            RefScreen::HighScore(s) => renderer.show(s),
+            RefScreen::PlayerSelect(s) => renderer.show(s),
         }
     }
 }
@@ -106,12 +106,12 @@ impl<T> Manager<T> {
         }
     }
 
-    pub fn screen(&self) -> Screen<T> {
+    pub fn screen(&self) -> RefScreen<T> {
         match self.active {
-            Kind::Menu => Screen::Menu(&self.menu),
-            Kind::GamePlay => Screen::GamePlay(&self.game_play),
-            Kind::HighScore => Screen::HighScore(&self.high_score),
-            Kind::PlayerSelect => Screen::PlayerSelect(&self.player_select),
+            Kind::Menu => RefScreen::Menu(&self.menu),
+            Kind::GamePlay => RefScreen::GamePlay(&self.game_play),
+            Kind::HighScore => RefScreen::HighScore(&self.high_score),
+            Kind::PlayerSelect => RefScreen::PlayerSelect(&self.player_select),
         }
     }
 
