@@ -2,26 +2,8 @@ use errors::*;
 
 use glm;
 use moho::errors as moho_errors;
-use moho::input;
-use moho::shape::{Rectangle, Shape};
+use moho::shape::Rectangle;
 use moho::renderer::{options, ColorRGBA, FontTexturizer, Renderer, Scene, Texture};
-use sdl2::mouse::MouseButton;
-
-pub trait Button {
-    fn body(&self) -> &Rectangle;
-    fn on_hover(&mut self, _hovers: bool) {}
-
-    fn update(&mut self, input_state: &input::State) -> bool {
-        let mouse = input_state.mouse_coords();
-        if self.body().contains(&glm::to_dvec2(mouse)) {
-            self.on_hover(true);
-            input_state.did_click_mouse(MouseButton::Left)
-        } else {
-            self.on_hover(false);
-            false
-        }
-    }
-}
 
 pub struct Static<T> {
     idle_texture: T,
@@ -30,7 +12,7 @@ pub struct Static<T> {
     pub body: Rectangle,
 }
 
-impl<T> Button for Static<T> {
+impl<T> super::Button for Static<T> {
     fn body(&self) -> &Rectangle {
         &self.body
     }
