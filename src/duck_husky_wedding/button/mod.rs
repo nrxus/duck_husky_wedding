@@ -4,8 +4,10 @@ use moho::shape::{Rectangle, Shape};
 use sdl2::mouse::MouseButton;
 
 mod b_static;
+mod animated;
 
 pub use self::b_static::Static;
+pub use self::animated::Animated;
 
 pub trait Button {
     fn body(&self) -> &Rectangle;

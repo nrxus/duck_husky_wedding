@@ -1,3 +1,4 @@
+use super::Button;
 use errors::*;
 
 use glm;
@@ -12,7 +13,7 @@ pub struct Static<T> {
     pub body: Rectangle,
 }
 
-impl<T> super::Button for Static<T> {
+impl<T> Button for Static<T> {
     fn body(&self) -> &Rectangle {
         &self.body
     }

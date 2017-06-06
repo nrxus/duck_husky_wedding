@@ -58,7 +58,7 @@ impl<T> Menu<T> {
 
     pub fn update(&mut self, input: &input::State) -> Option<super::Kind> {
         if self.new_game.update(input) {
-            Some(super::Kind::GamePlay)
+            Some(super::Kind::PlayerSelect)
         } else if self.high_score.update(input) {
             Some(super::Kind::HighScore)
         } else {
