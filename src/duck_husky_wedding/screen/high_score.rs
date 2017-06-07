@@ -9,6 +9,7 @@ use moho::renderer::{options, ColorRGBA, Font, FontDetails, FontLoader, FontMana
                      FontTexturizer, Renderer, Scene, Show, Texture};
 
 use std::fs::File;
+use std::rc::Rc;
 
 #[derive(Debug, Deserialize, Clone)]
 struct ScoreEntry {
@@ -17,12 +18,17 @@ struct ScoreEntry {
 }
 
 pub struct HighScore<T> {
-    title: T,
+    title: Rc<T>,
     back: button::Static<T>,
     scores: Vec<T>,
 }
 
-impl<T> HighScore<T> {
+pub struct Data<T> {
+    title: Rc<T>,
+    back: button::Static<T>,
+}
+
+impl<T> Data<T> {
     pub fn load<'f, 't, FT, FL>(font_manager: &mut FontManager<'f, FL>,
                                 texturizer: &'t FT)
                                 -> Result<Self>
@@ -39,18 +45,17 @@ impl<T> HighScore<T> {
         let top_left = glm::ivec2(10, 360 - dims.y as i32 / 2);
         let back = button::Static::from_text("<", texturizer, &*font, top_left)?;
         let title_color = ColorRGBA(255, 255, 0, 255);
-        let title = texturizer.texturize(&*font, "High Scores", &title_color)?;
-        Ok(HighScore {
+        let title = Rc::new(texturizer.texturize(&*font, "High Scores", &title_color)?);
+        Ok(Data {
                title: title,
                back: back,
-               scores: vec![],
            })
     }
 
-    pub fn load_scores<'f, 't, FT, FL>(&mut self,
-                                       font_manager: &mut FontManager<'f, FL>,
-                                       texturizer: &'t FT)
-                                       -> Result<()>
+    pub fn activate<'f, 't, FT, FL>(&mut self,
+                                    font_manager: &mut FontManager<'f, FL>,
+                                    texturizer: &'t FT)
+                                    -> Result<HighScore<T>>
         where T: Texture,
               FL: FontLoader<'f>,
               FT: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>
@@ -65,7 +70,7 @@ impl<T> HighScore<T> {
         let f = File::open(path)?;
         let color = ColorRGBA(255, 255, 255, 255);
         let scores: Vec<ScoreEntry> = serde_yaml::from_reader(&f)?;
-        self.scores = scores
+        let scores = scores
             .iter()
             .map(|s| {
                      let score = format!("{:04}{:5}{:>3}", s.score, "", s.name);
@@ -74,9 +79,15 @@ impl<T> HighScore<T> {
                          .map_err(Into::into)
                  })
             .collect::<Result<Vec<_>>>()?;
-        Ok(())
+        Ok(HighScore {
+               scores: scores,
+               back: self.back.clone(),
+               title: self.title.clone(),
+           })
     }
+}
 
+impl<T> HighScore<T> {
     pub fn update(&mut self, input: &input::State) -> Option<super::Kind> {
         if self.back.update(input) {
             Some(super::Kind::Menu)

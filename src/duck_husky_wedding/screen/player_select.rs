@@ -10,15 +10,22 @@ use moho::renderer::{options, ColorRGBA, FontDetails, FontManager, FontLoader, F
                      Renderer, Scene, Show, Texture, TextureManager, TextureLoader};
 use moho::shape::Rectangle;
 
+use std::rc::Rc;
 use std::time::Duration;
 
 pub struct PlayerSelect<T> {
-    title: T,
+    title: Rc<T>,
     husky: button::Animated<T>,
     duck: button::Animated<T>,
 }
 
-impl<T> PlayerSelect<T> {
+pub struct Data<T> {
+    title: Rc<T>,
+    husky: button::Animated<T>,
+    duck: button::Animated<T>,
+}
+
+impl<T> Data<T> {
     pub fn load<'f, 't, FT, FL, TL>(font_manager: &mut FontManager<'f, FL>,
                                     texturizer: &'t FT,
                                     texture_manager: &mut TextureManager<'t, TL>,
@@ -35,8 +42,7 @@ impl<T> PlayerSelect<T> {
         };
         let font = font_manager.load(&font_details)?;
         let title_color = ColorRGBA(255, 255, 0, 255);
-        let title = texturizer
-            .texturize(&*font, "Select Player", &title_color)?;
+        let title = Rc::new(texturizer.texturize(&*font, "Select Player", &title_color)?);
 
         let husky = &data.husky;
         let file_name: &str = &format!("media/sprites/{}", husky.texture.file_name);
@@ -68,9 +74,19 @@ impl<T> PlayerSelect<T> {
         let animation = animation::Data::new(animator, sheet);
         let duck = button::Animated::new(idle, animation, body);
 
-        Ok(PlayerSelect { title, husky, duck })
+        Ok(Data { title, husky, duck })
     }
 
+    pub fn activate(&self) -> PlayerSelect<T> {
+        PlayerSelect {
+            title: self.title.clone(),
+            duck: self.duck.clone(),
+            husky: self.husky.clone(),
+        }
+    }
+}
+
+impl<T> PlayerSelect<T> {
     pub fn update(&mut self, delta: Duration, input: &input::State) -> Option<super::Kind> {
         if self.husky.update(input) {
             Some(super::Kind::GamePlay)

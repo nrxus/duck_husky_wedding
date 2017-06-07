@@ -4,13 +4,26 @@ use errors::*;
 use glm;
 use moho::errors as moho_errors;
 use moho::shape::Rectangle;
-use moho::renderer::{options, ColorRGBA, FontTexturizer, Renderer, Scene, Texture};
+use moho::renderer::{options, ColorRGBA, Font, FontTexturizer, Renderer, Scene, Texture};
+
+use std::rc::Rc;
 
 pub struct Static<T> {
-    idle_texture: T,
-    hover_texture: T,
+    idle: Rc<T>,
+    hover: Rc<T>,
     is_hovering: bool,
     pub body: Rectangle,
+}
+
+impl<T> Clone for Static<T> {
+    fn clone(&self) -> Static<T> {
+        Static {
+            idle: self.idle.clone(),
+            hover: self.hover.clone(),
+            body: self.body.clone(),
+            is_hovering: false,
+        }
+    }
 }
 
 impl<T> Button for Static<T> {
@@ -32,17 +45,13 @@ impl<T> Static<T> {
         where T: Texture,
               R: FontTexturizer<'f, 't, Texture = T>
     {
-        let idle_color = ColorRGBA(255, 255, 255, 255);
-        let hover_color = ColorRGBA(255, 255, 0, 0);
-        let idle_texture = texturizer.texturize(font, text, &idle_color)?;
-        let hover_texture = texturizer.texturize(font, text, &hover_color)?;
-        let dims = idle_texture.dims();
+        let dims = font.measure(text)?;
         let body = Rectangle {
             top_left: glm::to_dvec2(tl),
             dims: glm::to_dvec2(dims),
         };
 
-        Ok(Self::new(idle_texture, hover_texture, body))
+        Self::text_at(text, texturizer, font, body)
     }
 
     pub fn text_at<'f, 't, R>(text: &str,
@@ -53,20 +62,17 @@ impl<T> Static<T> {
         where T: Texture,
               R: FontTexturizer<'f, 't, Texture = T>
     {
-        let idle_color = ColorRGBA(255, 255, 255, 255);
-        let hover_color = ColorRGBA(255, 255, 0, 0);
-        let idle_texture = texturizer.texturize(font, text, &idle_color)?;
-        let hover_texture = texturizer.texturize(font, text, &hover_color)?;
-        Ok(Self::new(idle_texture, hover_texture, body))
-    }
-
-    pub fn new(idle_texture: T, hover_texture: T, body: Rectangle) -> Self {
-        Static {
-            idle_texture: idle_texture,
-            hover_texture: hover_texture,
-            is_hovering: false,
-            body: body,
-        }
+        let is_hovering = false;
+        let idle = Rc::new(texturizer
+                               .texturize(font, text, &ColorRGBA(255, 255, 255, 255))?);
+        let hover = Rc::new(texturizer
+                                .texturize(font, text, &ColorRGBA(255, 255, 0, 0))?);
+        Ok(Static {
+               idle,
+               hover,
+               is_hovering,
+               body,
+           })
     }
 }
 
@@ -75,15 +81,17 @@ impl<'t, T, R> Scene<R> for Static<T>
           R: Renderer<'t, Texture = T>
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        let texture = if self.is_hovering {
-            &self.hover_texture
-        } else {
-            &self.idle_texture
-        };
         let dst_rect = glm::to_ivec4(glm::dvec4(self.body.top_left.x,
                                                 self.body.top_left.y,
                                                 self.body.dims.x,
                                                 self.body.dims.y));
+
+        let texture = if self.is_hovering {
+            &*self.hover
+        } else {
+            &*self.idle
+        };
+
         renderer.copy(texture, options::at(&dst_rect))
     }
 }

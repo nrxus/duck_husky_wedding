@@ -77,7 +77,10 @@ impl<'f, 't, TL, FL, R, E> DuckHuskyWedding<'f, 't, TL, FL, R, E>
 
                 let next_screen = screen_manager.mut_screen().update(update_duration, state);
                 if let Some(s) = next_screen {
-                    screen_manager.select_screen(s, &mut self.font_manager, self.texture_loader);
+                    screen_manager.select_screen(s,
+                                                 &mut self.font_manager,
+                                                 &mut self.texture_manager,
+                                                 self.texture_loader);
                 }
 
                 delta -= update_duration;
@@ -86,7 +89,7 @@ impl<'f, 't, TL, FL, R, E> DuckHuskyWedding<'f, 't, TL, FL, R, E>
             let interpolation = delta.subsec_nanos() as f64 / update_duration.subsec_nanos() as f64;
             self.renderer.set_draw_color(color);
             self.renderer.clear();
-            self.renderer.show(&screen_manager.screen())?;
+            self.renderer.show(screen_manager.screen())?;
             self.renderer.present();
         }
         Ok(())

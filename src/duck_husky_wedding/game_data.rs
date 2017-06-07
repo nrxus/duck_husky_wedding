@@ -30,7 +30,7 @@ pub struct PlayerData {
     pub out_size: DimensionData,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct GroundData {
     pub file_name: String,
     pub out_size: DimensionData,

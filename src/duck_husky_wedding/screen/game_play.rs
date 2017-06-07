@@ -11,6 +11,7 @@ use moho::renderer::{Renderer, Scene, Show};
 use moho::renderer::{Texture, TextureLoader, TextureManager};
 use moho::shape::Rectangle;
 
+use std::rc::Rc;
 use std::time::Duration;
 
 pub struct GamePlay<T> {
@@ -18,34 +19,52 @@ pub struct GamePlay<T> {
     world: World<T>,
 }
 
-impl<T> GamePlay<T> {
+pub struct Data<T> {
+    tile: (Rc<T>, glm::DVec2),
+    data: GameData,
+}
+
+impl<T: Texture> Data<T> {
     pub fn load<'t, TL>(texture_manager: &mut TextureManager<'t, TL>,
                         data: GameData)
                         -> Result<Self>
-        where T: Texture,
-              TL: TextureLoader<'t, Texture = T>
+        where TL: TextureLoader<'t, Texture = T>
     {
-        let animation = data.duck.animation;
+        let file_name: &str = &format!("media/sprites/{}", data.ground.file_name);
+        let texture = texture_manager.load(file_name)?;
+        let dims = glm::dvec2(data.ground.out_size.x as f64, data.ground.out_size.y as f64);
+        let tile = (texture, dims);
+        Ok(Data { data, tile })
+    }
+
+    pub fn activate<'t, TL>(&self,
+                            texture_manager: &mut TextureManager<'t, TL>)
+                            -> Result<GamePlay<T>>
+        where TL: TextureLoader<'t, Texture = T>
+    {
+        let player = &self.data.duck;
+        let body = Rectangle {
+            top_left: glm::dvec2(0., 300.),
+            dims: glm::dvec2(player.out_size.x as f64, player.out_size.y as f64),
+        };
+
+        let animation = &player.animation;
         let file_name: &str = &format!("media/sprites/{}", animation.file_name);
         let texture = texture_manager.load(file_name)?;
         let sheet = TileSheet::new(animation.tiles.into(), texture);
         let animator = animator::Data::new(animation.frames, Duration::from_millis(40));
         let animation = animation::Data::new(animator, sheet);
 
-        let file_name: &str = &format!("media/sprites/{}", data.duck.texture.file_name);
+        let file_name: &str = &format!("media/sprites/{}", player.texture.file_name);
         let texture = texture_manager.load(file_name)?;
-        let body = Rectangle {
-            top_left: glm::dvec2(0., 300.),
-            dims: glm::dvec2(data.duck.out_size.x as f64, data.duck.out_size.y as f64),
-        };
-        let player = Player::new(animation, texture, body);
-        let world = World::load(texture_manager, data.ground)?;
-        Ok(GamePlay {
-               player: player,
-               world: world,
-           })
-    }
 
+        let player = Player::new(animation, texture, body);
+        let world = World::new((self.tile.0.clone(), self.tile.1));
+        Ok(GamePlay { player, world })
+    }
+}
+
+impl<T> GamePlay<T> {
     pub fn update(&mut self, delta: Duration, input: &input::State) -> Option<super::Kind> {
         self.player.process(input);
         let force = self.world.force(&self.player);

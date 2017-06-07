@@ -1,10 +1,8 @@
-use duck_husky_wedding::game_data::GroundData;
 use duck_husky_wedding::player::Player;
-use errors::*;
 
 use glm;
 use moho::shape::{Rectangle, Shape, Intersect};
-use moho::renderer::{options, Scene, Renderer, Show, Texture, TextureLoader, TextureManager};
+use moho::renderer::{options, Scene, Renderer, Show, Texture};
 use moho::errors as moho_errors;
 
 use std::rc::Rc;
@@ -19,13 +17,10 @@ pub struct Ground<T> {
 }
 
 impl<T> Ground<T> {
-    fn load<'t, TL>(texture_manager: &mut TextureManager<'t, TL>, data: GroundData) -> Result<Self>
-        where T: Texture,
-              TL: TextureLoader<'t, Texture = T>
+    fn new<'t>(tile: (Rc<T>, glm::DVec2)) -> Self
+        where T: Texture
     {
-        let file_name: &str = &format!("media/sprites/{}", data.file_name);
-        let texture = texture_manager.load(file_name)?;
-        let dims = glm::dvec2(data.out_size.x as f64, data.out_size.y as f64);
+        let (texture, dims) = tile;
         let tiles = (0..13)
             .map(|i| {
                 let top_left = glm::dvec2(dims.x * i as f64, 600.);
@@ -39,7 +34,7 @@ impl<T> Ground<T> {
                 }
             })
             .collect();
-        Ok(Ground { tiles })
+        Ground { tiles }
     }
 
     fn mtv(&self, mut body: Rectangle) -> Option<glm::DVec2> {
@@ -82,14 +77,11 @@ pub struct World<T> {
 }
 
 impl<T> World<T> {
-    pub fn load<'t, TL>(texture_manager: &mut TextureManager<'t, TL>,
-                        data: GroundData)
-                        -> Result<Self>
-        where T: Texture,
-              TL: TextureLoader<'t, Texture = T>
+    pub fn new<'t>(tile: (Rc<T>, glm::DVec2)) -> Self
+        where T: Texture
     {
-        let ground = Ground::load(texture_manager, data)?;
-        Ok(World { ground })
+        let ground = Ground::new(tile);
+        World { ground }
     }
 
     pub fn force(&self, player: &Player<T>) -> glm::DVec2 {

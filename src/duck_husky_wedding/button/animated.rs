@@ -22,6 +22,12 @@ pub struct Animated<T> {
     focus_changed: bool,
 }
 
+impl<T> Clone for Animated<T> {
+    fn clone(&self) -> Animated<T> {
+        Animated::new(self.idle.clone(), self.animation.clone(), self.body.clone())
+    }
+}
+
 impl<T> Button for Animated<T> {
     fn body(&self) -> &Rectangle {
         &self.body
