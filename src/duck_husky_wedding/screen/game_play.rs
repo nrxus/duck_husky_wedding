@@ -14,6 +14,11 @@ use moho::shape::Rectangle;
 use std::rc::Rc;
 use std::time::Duration;
 
+pub enum PlayerKind {
+    Duck,
+    Husky,
+}
+
 pub struct GamePlay<T> {
     player: Player<T>,
     world: World<T>,
@@ -38,11 +43,15 @@ impl<T: Texture> Data<T> {
     }
 
     pub fn activate<'t, TL>(&self,
-                            texture_manager: &mut TextureManager<'t, TL>)
+                            texture_manager: &mut TextureManager<'t, TL>,
+                            kind: PlayerKind)
                             -> Result<GamePlay<T>>
         where TL: TextureLoader<'t, Texture = T>
     {
-        let player = &self.data.duck;
+        let player = match kind {
+            PlayerKind::Duck => &self.data.duck,
+            PlayerKind::Husky => &self.data.husky,
+        };
         let body = Rectangle {
             top_left: glm::dvec2(0., 300.),
             dims: glm::dvec2(player.out_size.x as f64, player.out_size.y as f64),

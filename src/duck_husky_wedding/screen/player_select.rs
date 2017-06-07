@@ -89,9 +89,9 @@ impl<T> Data<T> {
 impl<T> PlayerSelect<T> {
     pub fn update(&mut self, delta: Duration, input: &input::State) -> Option<super::Kind> {
         if self.husky.update(input) {
-            Some(super::Kind::GamePlay)
+            Some(super::Kind::GamePlay(super::PlayerKind::Husky))
         } else if self.duck.update(input) {
-            Some(super::Kind::GamePlay)
+            Some(super::Kind::GamePlay(super::PlayerKind::Duck))
         } else {
             self.husky.animate(delta);
             self.duck.animate(delta);

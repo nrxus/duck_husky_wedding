@@ -4,7 +4,7 @@ mod high_score;
 mod player_select;
 
 use self::menu::Menu;
-use self::game_play::GamePlay;
+use self::game_play::{GamePlay, PlayerKind};
 use self::high_score::HighScore;
 use self::player_select::PlayerSelect;
 use super::game_data::GameData;
@@ -20,7 +20,7 @@ use std::time::Duration;
 
 pub enum Kind {
     Menu,
-    GamePlay,
+    GamePlay(PlayerKind),
     HighScore,
     PlayerSelect,
 }
@@ -113,7 +113,9 @@ impl<T> Manager<T> {
         self.active = match screen {
             Kind::Menu => Screen::Menu(self.menu.activate()),
             Kind::PlayerSelect => Screen::PlayerSelect(self.player_select.activate()),
-            Kind::GamePlay => Screen::GamePlay(self.game_play.activate(texture_manager).unwrap()),
+            Kind::GamePlay(k) => {
+                Screen::GamePlay(self.game_play.activate(texture_manager, k).unwrap())
+            }
             Kind::HighScore => {
                 Screen::HighScore(self.high_score.activate(font_manager, texturizer).unwrap())
             }
