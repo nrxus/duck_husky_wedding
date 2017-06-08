@@ -7,7 +7,7 @@ use moho::animation::{self, animator, TileSheet};
 use moho::errors as moho_errors;
 use moho::input;
 use moho::renderer::{options, ColorRGBA, FontDetails, FontManager, FontLoader, FontTexturizer,
-                     Renderer, Scene, Show, Texture, TextureManager, TextureLoader};
+                     Renderer, Scene, Texture, TextureManager, TextureLoader};
 use moho::shape::Rectangle;
 
 use std::rc::Rc;
@@ -102,7 +102,7 @@ impl<T> PlayerSelect<T> {
 
 impl<'t, T, R> Scene<R> for PlayerSelect<T>
     where T: Texture,
-          R: Renderer<'t, Texture = T> + Show
+          R: Renderer<'t, Texture = T>
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         let title_dims = glm::to_ivec2(self.title.dims());

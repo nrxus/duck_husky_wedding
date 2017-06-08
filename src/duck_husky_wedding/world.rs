@@ -2,7 +2,7 @@ use duck_husky_wedding::player::Player;
 
 use glm;
 use moho::shape::{Rectangle, Shape, Intersect};
-use moho::renderer::{options, Scene, Renderer, Show, Texture};
+use moho::renderer::{options, Scene, Renderer, Texture};
 use moho::errors as moho_errors;
 
 use std::rc::Rc;
@@ -53,7 +53,7 @@ impl<T> Ground<T> {
 }
 
 impl<'t, R> Scene<R> for Ground<R::Texture>
-    where R: Renderer<'t> + Show
+    where R: Renderer<'t>
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         let results = self.tiles
@@ -96,7 +96,7 @@ impl<T> World<T> {
 }
 
 impl<'t, R> Scene<R> for World<R::Texture>
-    where R: Renderer<'t> + Show
+    where R: Renderer<'t>
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         renderer.show(&self.ground)

@@ -12,7 +12,7 @@ use super::game_data::GameData;
 use moho::errors as moho_errors;
 use moho::input;
 use moho::renderer::{FontLoader, FontManager, FontTexturizer};
-use moho::renderer::{Renderer, Scene, Show, Texture, TextureLoader, TextureManager};
+use moho::renderer::{Renderer, Scene, Texture, TextureLoader, TextureManager};
 
 use errors::*;
 
@@ -34,7 +34,7 @@ pub enum Screen<T> {
 
 impl<'t, T, R> Scene<R> for Screen<T>
     where T: Texture,
-          R: Renderer<'t, Texture = T> + Show
+          R: Renderer<'t, Texture = T>
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         match *self {

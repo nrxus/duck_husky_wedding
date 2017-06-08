@@ -2,7 +2,7 @@ use glm;
 use moho::animation::{self, Animation};
 use moho::errors as moho_errors;
 use moho::input;
-use moho::renderer::{options, Renderer, Scene, Show, TextureFlip};
+use moho::renderer::{options, Renderer, Scene, TextureFlip};
 use moho::shape::{Rectangle, Shape};
 use sdl2::keyboard::Keycode;
 
@@ -126,7 +126,7 @@ impl<T> Player<T> {
 }
 
 impl<'t, R> Scene<R> for Player<R::Texture>
-    where R: Renderer<'t> + Show
+    where R: Renderer<'t>
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         let dst_rect = glm::to_ivec4(glm::dvec4(self.body.top_left.x,

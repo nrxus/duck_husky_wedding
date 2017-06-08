@@ -6,7 +6,7 @@ use serde_yaml;
 use moho::input;
 use moho::errors as moho_errors;
 use moho::renderer::{options, ColorRGBA, Font, FontDetails, FontLoader, FontManager,
-                     FontTexturizer, Renderer, Scene, Show, Texture};
+                     FontTexturizer, Renderer, Scene, Texture};
 
 use std::fs::File;
 use std::rc::Rc;
@@ -99,7 +99,7 @@ impl<T> HighScore<T> {
 
 impl<'t, T, R> Scene<R> for HighScore<T>
     where T: Texture,
-          R: Renderer<'t, Texture = T> + Show
+          R: Renderer<'t, Texture = T>
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         let title_dims = glm::to_ivec2(self.title.dims());
