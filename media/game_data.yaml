@@ -27,3 +27,5 @@ ground:
   out_size:
     x: 100
     y: 100
+background:
+  file_name: "background.png"

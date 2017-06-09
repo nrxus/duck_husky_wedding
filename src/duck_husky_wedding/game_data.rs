@@ -41,6 +41,7 @@ pub struct GameData {
     pub duck: PlayerData,
     pub husky: PlayerData,
     pub ground: GroundData,
+    pub background: TextureData,
 }
 
 impl GameData {

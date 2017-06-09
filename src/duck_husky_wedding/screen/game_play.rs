@@ -8,7 +8,7 @@ use moho::animation::{self, animator, TileSheet};
 use moho::input;
 use moho::errors as moho_errors;
 use moho::renderer::{Renderer, Scene};
-use moho::renderer::{Texture, TextureLoader, TextureManager};
+use moho::renderer::{options, Texture, TextureLoader, TextureManager};
 use moho::shape::Rectangle;
 
 use std::rc::Rc;
@@ -22,10 +22,12 @@ pub enum PlayerKind {
 pub struct GamePlay<T> {
     player: Player<T>,
     world: World<T>,
+    background: Rc<T>,
 }
 
 pub struct Data<T> {
     tile: (Rc<T>, glm::DVec2),
+    background: Rc<T>,
     data: GameData,
 }
 
@@ -37,9 +39,15 @@ impl<T: Texture> Data<T> {
     {
         let file_name: &str = &format!("media/sprites/{}", data.ground.file_name);
         let texture = texture_manager.load(file_name)?;
+        let file_name: &str = &format!("media/environment/{}", data.background.file_name);
+        let background = texture_manager.load(file_name)?;
         let dims = glm::dvec2(data.ground.out_size.x as f64, data.ground.out_size.y as f64);
         let tile = (texture, dims);
-        Ok(Data { data, tile })
+        Ok(Data {
+               data,
+               tile,
+               background,
+           })
     }
 
     pub fn activate<'t, TL>(&self,
@@ -69,7 +77,12 @@ impl<T: Texture> Data<T> {
 
         let player = Player::new(animation, texture, body);
         let world = World::new((self.tile.0.clone(), self.tile.1));
-        Ok(GamePlay { player, world })
+        let background = self.background.clone();
+        Ok(GamePlay {
+               player,
+               world,
+               background,
+           })
     }
 }
 
@@ -87,6 +100,7 @@ impl<'t, T, R> Scene<R> for GamePlay<T>
           R: Renderer<'t, Texture = T>
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+        renderer.copy(&*self.background, options::none())?;
         renderer.show(&self.world)?;
         renderer.show(&self.player)
     }
