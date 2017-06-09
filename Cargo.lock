@@ -138,7 +138,7 @@ dependencies = [
 [[package]]
 name = "moho"
 version = "0.0.10"
-source = "git+https://github.com/nrxus/moho#1e67b6cc2e0524faee29b8236002dfa797077cd4"
+source = "git+https://github.com/nrxus/moho#98cc410de765e85a5006f2443e9e6b65cc554bd7"
 dependencies = [
  "error-chain 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "glm 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
