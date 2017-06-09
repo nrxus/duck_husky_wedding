@@ -23,7 +23,7 @@ impl<T> Ground<T> {
         let (texture, dims) = tile;
         let tiles = (0..13)
             .map(|i| {
-                let top_left = glm::dvec2(dims.x * i as f64, 600.);
+                let top_left = glm::dvec2(dims.x * i as f64, 720. - dims.y);
                 let body = Rectangle {
                     top_left: top_left,
                     dims: dims,
