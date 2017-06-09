@@ -1,6 +1,6 @@
 use duck_husky_wedding::player::Player;
 use duck_husky_wedding::game_data::GameData;
-use duck_husky_wedding::ground::Ground;
+use duck_husky_wedding::world::World;
 use errors::*;
 
 use glm;
@@ -11,55 +11,73 @@ use moho::renderer::{Renderer, Scene, Show};
 use moho::renderer::{Texture, TextureLoader, TextureManager};
 use moho::shape::Rectangle;
 
+use std::rc::Rc;
 use std::time::Duration;
+
+pub enum PlayerKind {
+    Duck,
+    Husky,
+}
 
 pub struct GamePlay<T> {
     player: Player<T>,
-    ground: Vec<Ground<T>>,
+    world: World<T>,
 }
 
-impl<T> GamePlay<T> {
+pub struct Data<T> {
+    tile: (Rc<T>, glm::DVec2),
+    data: GameData,
+}
+
+impl<T: Texture> Data<T> {
     pub fn load<'t, TL>(texture_manager: &mut TextureManager<'t, TL>,
                         data: GameData)
                         -> Result<Self>
-        where T: Texture,
-              TL: TextureLoader<'t, Texture = T>
+        where TL: TextureLoader<'t, Texture = T>
     {
-        let animation = data.duck.animation;
+        let file_name: &str = &format!("media/sprites/{}", data.ground.file_name);
+        let texture = texture_manager.load(file_name)?;
+        let dims = glm::dvec2(data.ground.out_size.x as f64, data.ground.out_size.y as f64);
+        let tile = (texture, dims);
+        Ok(Data { data, tile })
+    }
+
+    pub fn activate<'t, TL>(&self,
+                            texture_manager: &mut TextureManager<'t, TL>,
+                            kind: PlayerKind)
+                            -> Result<GamePlay<T>>
+        where TL: TextureLoader<'t, Texture = T>
+    {
+        let player = match kind {
+            PlayerKind::Duck => &self.data.duck,
+            PlayerKind::Husky => &self.data.husky,
+        };
+        let body = Rectangle {
+            top_left: glm::dvec2(0., 300.),
+            dims: glm::dvec2(player.out_size.x as f64, player.out_size.y as f64),
+        };
+
+        let animation = &player.animation;
         let file_name: &str = &format!("media/sprites/{}", animation.file_name);
         let texture = texture_manager.load(file_name)?;
         let sheet = TileSheet::new(animation.tiles.into(), texture);
         let animator = animator::Data::new(animation.frames, Duration::from_millis(40));
         let animation = animation::Data::new(animator, sheet);
 
-        let file_name: &str = &format!("media/sprites/{}", data.duck.texture.file_name);
+        let file_name: &str = &format!("media/sprites/{}", player.texture.file_name);
         let texture = texture_manager.load(file_name)?;
-        let body = Rectangle {
-            top_left: glm::dvec2(0., 300.),
-            dims: glm::dvec2(data.duck.out_size.x as f64, data.duck.out_size.y as f64),
-        };
-        let player = Player::new(animation, texture, body);
-        let file_name: &str = &format!("media/sprites/{}", data.ground.file_name);
-        let texture = texture_manager.load(file_name)?;
-        let dims = glm::dvec2(data.ground.out_size.x as f64, data.ground.out_size.y as f64);
-        let ground = (0..13)
-            .map(|i| {
-                     let top_left = glm::dvec2(dims.x * i as f64, 600.);
-                     let body = Rectangle {
-                         top_left: top_left,
-                         dims: dims,
-                     };
-                     Ground::new(texture.clone(), body)
-                 })
-            .collect();
-        Ok(GamePlay {
-               player: player,
-               ground: ground,
-           })
-    }
 
+        let player = Player::new(animation, texture, body);
+        let world = World::new((self.tile.0.clone(), self.tile.1));
+        Ok(GamePlay { player, world })
+    }
+}
+
+impl<T> GamePlay<T> {
     pub fn update(&mut self, delta: Duration, input: &input::State) -> Option<super::Kind> {
-        self.player.update(delta, input);
+        self.player.process(input);
+        let force = self.world.force(&self.player);
+        self.player.update(force, delta);
         None
     }
 }
@@ -69,12 +87,7 @@ impl<'t, T, R> Scene<R> for GamePlay<T>
           R: Renderer<'t, Texture = T> + Show
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        self.ground
-            .iter()
-            .map(|g| renderer.show(g))
-            .take_while(moho_errors::Result::is_ok)
-            .last()
-            .unwrap_or(Ok(()))?;
+        renderer.show(&self.world)?;
         renderer.show(&self.player)
     }
 }

@@ -1,5 +1,5 @@
 use errors::*;
-use duck_husky_wedding::button::Button;
+use duck_husky_wedding::button::{self, Button};
 
 use glm;
 use moho::errors as moho_errors;
@@ -8,13 +8,21 @@ use moho::renderer::{options, ColorRGBA, Font, FontDetails, FontLoader, FontMana
                      FontTexturizer, Renderer, Scene, Show, Texture};
 use moho::shape::Rectangle;
 
+use std::rc::Rc;
+
 pub struct Menu<T> {
-    title: T,
-    new_game: Button<T>,
-    high_score: Button<T>,
+    title: Rc<T>,
+    new_game: button::Static<T>,
+    high_score: button::Static<T>,
 }
 
-impl<T> Menu<T> {
+pub struct Data<T> {
+    title: Rc<T>,
+    new_game: button::Static<T>,
+    high_score: button::Static<T>,
+}
+
+impl<T> Data<T> {
     pub fn load<'f, 't, FT, FL>(font_manager: &mut FontManager<'f, FL>,
                                 texturizer: &'t FT)
                                 -> Result<Self>
@@ -33,10 +41,10 @@ impl<T> Menu<T> {
             top_left: glm::to_dvec2(top_left),
             dims: glm::to_dvec2(dims),
         };
-        let new_game = Button::text_at("New Game", texturizer, &*font, body)?;
+        let new_game = button::Static::text_at("New Game", texturizer, &*font, body)?;
         let title_color = ColorRGBA(255, 255, 0, 255);
-        let title = texturizer
-            .texturize(&*font, "Husky Loves Ducky", &title_color)?;
+        let title = Rc::new(texturizer
+                                .texturize(&*font, "Husky Loves Ducky", &title_color)?);
 
         let dims = font.measure("High Score")?;
         let top_left = glm::ivec2(640 - dims.x as i32 / 2, 400);
@@ -44,21 +52,31 @@ impl<T> Menu<T> {
             top_left: glm::to_dvec2(top_left),
             dims: glm::to_dvec2(dims),
         };
-        let high_score = Button::text_at("High Score", texturizer, &*font, body)?;
-        Ok(Self::new(title, new_game, high_score))
+        let high_score = button::Static::text_at("High Score", texturizer, &*font, body)?;
+        Ok(Data {
+               title,
+               new_game,
+               high_score,
+           })
     }
 
-    pub fn new(title: T, new_game: Button<T>, high_score: Button<T>) -> Self {
+    pub fn activate(&self) -> Menu<T> {
+        let title = self.title.clone();
+        let new_game = self.new_game.clone();
+        let high_score = self.high_score.clone();
+
         Menu {
-            title: title,
-            new_game: new_game,
-            high_score: high_score,
+            title,
+            new_game,
+            high_score,
         }
     }
+}
 
+impl<T> Menu<T> {
     pub fn update(&mut self, input: &input::State) -> Option<super::Kind> {
         if self.new_game.update(input) {
-            Some(super::Kind::GamePlay)
+            Some(super::Kind::PlayerSelect)
         } else if self.high_score.update(input) {
             Some(super::Kind::HighScore)
         } else {
