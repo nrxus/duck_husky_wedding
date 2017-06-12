@@ -1,7 +1,7 @@
-use errors::*;
-
 use glm;
-use moho::renderer::{Asset, Options, Renderer};
+use moho::errors as moho_errors;
+use moho::renderer::{Options, Renderer};
+use sdl2::rect;
 
 struct Camera<'c, R: 'c> {
     viewport: &'c ViewPort,
@@ -35,18 +35,17 @@ impl ViewPort {
     }
 }
 
-impl<'c, R: Renderer<'c>> Camera<'c, R> {
-    fn display(&mut self, texture: &R::Texture, mut options: Options) -> Result<()> {
-        options.dst = options.dst.map(|r| r);
-        self.renderer.copy(texture, options).map_err(Into::into)
+impl<'c, 't, R: Renderer<'t>> Renderer<'t> for Camera<'c, R> {
+    type Texture = R::Texture;
+
+    fn fill_rects(&mut self, rects: &[rect::Rect]) -> moho_errors::Result<()> {
+        //TODO: move rectangles
+        self.renderer.fill_rects(rects)
     }
 
-    fn display_asset<A>(&mut self, drawable: &A, mut options: Options) -> Result<()>
-        where A: Asset<R>
-    {
+    fn copy(&mut self, texture: &Self::Texture, mut options: Options) -> moho_errors::Result<()> {
+        //TODO: move dst
         options.dst = options.dst.map(|r| r);
-        self.renderer
-            .copy_asset(drawable, options)
-            .map_err(Into::into)
+        self.renderer.copy(texture, options)
     }
 }
