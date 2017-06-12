@@ -9,8 +9,8 @@ use errors::*;
 use self::game_data::GameData;
 
 use moho::input;
-use moho::renderer::{ColorRGBA, FontTexturizer, FontLoader, Renderer, TextureLoader,
-                     TextureManager, FontManager};
+use moho::renderer::{ColorRGBA, FontTexturizer, FontLoader, Canvas, TextureLoader, TextureManager,
+                     FontManager};
 use moho::timer::Timer;
 
 use std::time::Duration;
@@ -51,7 +51,7 @@ impl<'f, 't, TL, FL, R, E> DuckHuskyWedding<'f, 't, TL, FL, R, E>
                                  't,
                                  Texture = <TL as TextureLoader<'t>>::Texture,
                                  Font = FL::Font>,
-              R: Renderer<'t, Texture = <TL as TextureLoader<'t>>::Texture>,
+              R: Canvas<'t, Texture = <TL as TextureLoader<'t>>::Texture>,
               E: input::EventPump
     {
         let game_data = GameData::load("media/game_data.yaml")?;
