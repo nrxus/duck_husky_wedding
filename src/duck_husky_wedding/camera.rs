@@ -3,31 +3,31 @@ use moho::errors as moho_errors;
 use moho::renderer::{Options, Renderer};
 use sdl2::rect;
 
-struct Camera<'c, R: 'c> {
+pub struct Camera<'c, R: 'c> {
     viewport: &'c ViewPort,
     renderer: &'c mut R,
 }
 
-struct ViewPort {
+pub struct ViewPort {
     dims: glm::IVec2,
     translation: glm::IVec2,
 }
 
 impl ViewPort {
-    fn new(dims: glm::IVec2) -> ViewPort {
+    pub fn new(dims: glm::IVec2) -> ViewPort {
         let translation = glm::ivec2(0, 0);
         ViewPort { dims, translation }
     }
 
-    fn translate(&mut self, t: glm::IVec2) {
+    pub fn translate(&mut self, t: glm::IVec2) {
         self.translation = self.translation + t;
     }
 
-    fn center(&mut self, center: glm::IVec2) {
+    pub fn center(&mut self, center: glm::IVec2) {
         self.translation = self.dims / 2 + self.translation - center;
     }
 
-    fn camera<'c, 't, R: Renderer<'t>>(&'c self, renderer: &'c mut R) -> Camera<'c, R> {
+    pub fn camera<'c, 't, R: Renderer<'t>>(&'c self, renderer: &'c mut R) -> Camera<'c, R> {
         Camera {
             viewport: self,
             renderer: renderer,

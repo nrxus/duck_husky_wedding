@@ -1,6 +1,7 @@
 use duck_husky_wedding::player::Player;
 use duck_husky_wedding::game_data::GameData;
 use duck_husky_wedding::world::World;
+use duck_husky_wedding::camera::ViewPort;
 use errors::*;
 
 use glm;
@@ -23,6 +24,7 @@ pub struct GamePlay<T> {
     player: Player<T>,
     world: World<T>,
     background: Rc<T>,
+    viewport: ViewPort,
 }
 
 pub struct Data<T> {
@@ -78,10 +80,12 @@ impl<T: Texture> Data<T> {
         let player = Player::new(animation, texture, body);
         let world = World::new((self.tile.0.clone(), self.tile.1));
         let background = self.background.clone();
+        let viewport = ViewPort::new(glm::ivec2(1280, 720));
         Ok(GamePlay {
                player,
                world,
                background,
+               viewport,
            })
     }
 }
@@ -100,8 +104,9 @@ impl<'t, T, R> Scene<R> for GamePlay<T>
           R: Renderer<'t, Texture = T>
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        renderer.copy(&*self.background, options::none())?;
-        renderer.show(&self.world)?;
-        renderer.show(&self.player)
+        let mut camera = self.viewport.camera(renderer);
+        camera.copy(&*self.background, options::none())?;
+        camera.show(&self.world)?;
+        camera.show(&self.player)
     }
 }
