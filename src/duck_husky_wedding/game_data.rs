@@ -1,9 +1,12 @@
 use errors::*;
+use moho::animation::{self, animator, TileSheet};
+use moho::renderer::{TextureLoader, TextureManager};
 
 use glm;
 use serde_yaml;
 
 use std::fs::File;
+use std::time::Duration;
 
 #[derive(Debug,Deserialize,Clone,Copy)]
 pub struct DimensionData {
@@ -16,6 +19,20 @@ pub struct SpriteData {
     pub file_name: String,
     pub frames: u32,
     pub tiles: DimensionData,
+    pub duration: u64,
+}
+
+impl SpriteData {
+    pub fn load<'t, TL: TextureLoader<'t>>(&self,
+                                       texture_manager: &mut TextureManager<'t, TL>)
+                                       -> Result<animation::Data<TL::Texture>> {
+        let file_name: &str = &format!("media/sprites/{}", self.file_name);
+        let texture = texture_manager.load(file_name)?;
+        let sheet = TileSheet::new(self.tiles.into(), texture);
+        let duration = Duration::from_millis(self.duration);
+        let animator = animator::Data::new(self.frames, duration);
+        Ok(animation::Data::new(animator, sheet))
+    }
 }
 
 #[derive(Debug, Deserialize)]

@@ -3,7 +3,6 @@ use duck_husky_wedding::game_data::GameData;
 use errors::*;
 
 use glm;
-use moho::animation::{self, animator, TileSheet};
 use moho::errors as moho_errors;
 use moho::input;
 use moho::renderer::{options, ColorRGBA, FontDetails, FontManager, FontLoader, FontTexturizer,
@@ -51,12 +50,7 @@ impl<T> Data<T> {
             top_left: glm::dvec2(100., 300.),
             dims: glm::dvec2(husky.out_size.x as f64 * 2., husky.out_size.y as f64 * 2.),
         };
-        let animation = &husky.animation;
-        let file_name: &str = &format!("media/sprites/{}", animation.file_name);
-        let texture = texture_manager.load(file_name)?;
-        let sheet = TileSheet::new(animation.tiles.into(), texture);
-        let animator = animator::Data::new(animation.frames, Duration::from_millis(40));
-        let animation = animation::Data::new(animator, sheet);
+        let animation = husky.animation.load(texture_manager)?;
         let husky = button::Animated::new(idle, animation, body);
 
         let duck = &data.duck;
@@ -66,12 +60,7 @@ impl<T> Data<T> {
             top_left: glm::dvec2(850., 350.),
             dims: glm::dvec2(duck.out_size.x as f64 * 2., duck.out_size.y as f64 * 2.),
         };
-        let animation = &duck.animation;
-        let file_name: &str = &format!("media/sprites/{}", animation.file_name);
-        let texture = texture_manager.load(file_name)?;
-        let sheet = TileSheet::new(animation.tiles.into(), texture);
-        let animator = animator::Data::new(animation.frames, Duration::from_millis(40));
-        let animation = animation::Data::new(animator, sheet);
+        let animation = duck.animation.load(texture_manager)?;
         let duck = button::Animated::new(idle, animation, body);
 
         Ok(Data { title, husky, duck })

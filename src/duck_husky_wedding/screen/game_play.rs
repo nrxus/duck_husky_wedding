@@ -5,7 +5,6 @@ use duck_husky_wedding::camera::ViewPort;
 use errors::*;
 
 use glm;
-use moho::animation::{self, animator, TileSheet};
 use moho::input;
 use moho::errors as moho_errors;
 use moho::renderer::{Renderer, Scene};
@@ -105,12 +104,7 @@ impl<T: Texture> Data<T> {
             dims: glm::dvec2(player.out_size.x as f64, player.out_size.y as f64),
         };
 
-        let animation = &player.animation;
-        let file_name: &str = &format!("media/sprites/{}", animation.file_name);
-        let texture = texture_manager.load(file_name)?;
-        let sheet = TileSheet::new(animation.tiles.into(), texture);
-        let animator = animator::Data::new(animation.frames, Duration::from_millis(40));
-        let animation = animation::Data::new(animator, sheet);
+        let animation = player.animation.load(texture_manager)?;
 
         let file_name: &str = &format!("media/sprites/{}", player.texture.file_name);
         let texture = texture_manager.load(file_name)?;
