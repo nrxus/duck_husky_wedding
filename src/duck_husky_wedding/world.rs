@@ -21,7 +21,7 @@ impl<T> Ground<T> {
         where T: Texture
     {
         let (texture, dims) = tile;
-        let tiles = (0..13)
+        let tiles = (0..60)
             .map(|i| {
                 let top_left = glm::dvec2(dims.x * i as f64, 720. - dims.y);
                 let body = Rectangle {
