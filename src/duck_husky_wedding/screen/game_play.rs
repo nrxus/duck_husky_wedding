@@ -10,7 +10,7 @@ use moho::input;
 use moho::errors as moho_errors;
 use moho::renderer::{Renderer, Scene};
 use moho::renderer::{options, Texture, TextureLoader, TextureManager};
-use moho::shape::Rectangle;
+use moho::shape::{Rectangle, Shape};
 
 use std::rc::Rc;
 use std::time::Duration;
@@ -95,6 +95,8 @@ impl<T> GamePlay<T> {
         self.player.process(input);
         let force = self.world.force(&self.player);
         self.player.update(force, delta);
+        let center = self.player.body.center();
+        self.viewport.center(glm::to_ivec2(center));
         None
     }
 }
@@ -105,7 +107,8 @@ impl<'t, T, R> Scene<R> for GamePlay<T>
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         let mut camera = self.viewport.camera(renderer);
-        camera.copy(&*self.background, options::none())?;
+        camera
+            .copy(&*self.background, options::at(&glm::ivec4(0, 0, 2560, 720)))?;
         camera.show(&self.world)?;
         camera.show(&self.player)
     }

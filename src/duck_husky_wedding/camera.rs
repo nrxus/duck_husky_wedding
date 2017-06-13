@@ -3,6 +3,8 @@ use moho::errors as moho_errors;
 use moho::renderer::{Options, Renderer};
 use sdl2::rect;
 
+use std::cmp;
+
 pub struct Camera<'c, R: 'c> {
     viewport: &'c ViewPort,
     renderer: &'c mut R,
@@ -24,7 +26,7 @@ impl ViewPort {
     }
 
     pub fn center(&mut self, center: glm::IVec2) {
-        self.translation = self.dims / 2 + self.translation - center;
+        self.translation.x = cmp::min(self.dims.x / 2 - center.x, 0);
     }
 
     pub fn camera<'c, 't, R: Renderer<'t>>(&'c self, renderer: &'c mut R) -> Camera<'c, R> {
@@ -43,9 +45,20 @@ impl<'c, 't, R: Renderer<'t>> Renderer<'t> for Camera<'c, R> {
         self.renderer.fill_rects(rects)
     }
 
-    fn copy(&mut self, texture: &Self::Texture, mut options: Options) -> moho_errors::Result<()> {
-        //TODO: move dst
-        options.dst = options.dst.map(|r| r);
+    fn copy(&mut self, texture: &Self::Texture, options: Options) -> moho_errors::Result<()> {
+        let mut dst = glm::ivec4(self.viewport.translation.x,
+                                 self.viewport.translation.y,
+                                 0,
+                                 0);
+        let dst = options
+            .dst
+            .map(|d| {
+                     dst = dst + *d;
+                     &dst
+                 });
+        let mut options = options;
+        options.dst = dst;
+
         self.renderer.copy(texture, options)
     }
 }
