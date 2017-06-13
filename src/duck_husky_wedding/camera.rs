@@ -10,6 +10,7 @@ pub struct Camera<'c, R: 'c> {
     renderer: &'c mut R,
 }
 
+#[derive(Debug)]
 pub struct ViewPort {
     dims: glm::IVec2,
     translation: glm::IVec2,
@@ -26,7 +27,13 @@ impl ViewPort {
     }
 
     pub fn center(&mut self, center: glm::IVec2) {
-        self.translation.x = cmp::min(self.dims.x / 2 - center.x, 0);
+        self.translation.x = cmp::max(center.x - self.dims.x / 2, 0);
+    }
+
+    pub fn contains(&self, rect: &glm::IVec4) -> bool {
+        !(self.translation.x > rect.x + rect.z) && !(self.translation.x + self.dims.x < rect.x) &&
+        !(self.translation.y > rect.y + rect.w) &&
+        !(self.translation.y + self.dims.y < rect.y)
     }
 
     pub fn camera<'c, 't, R: Renderer<'t>>(&'c self, renderer: &'c mut R) -> Camera<'c, R> {
@@ -46,19 +53,17 @@ impl<'c, 't, R: Renderer<'t>> Renderer<'t> for Camera<'c, R> {
     }
 
     fn copy(&mut self, texture: &Self::Texture, options: Options) -> moho_errors::Result<()> {
-        let mut dst = glm::ivec4(self.viewport.translation.x,
-                                 self.viewport.translation.y,
-                                 0,
-                                 0);
-        let dst = options
-            .dst
-            .map(|d| {
-                     dst = dst + *d;
-                     &dst
-                 });
-        let mut options = options;
-        options.dst = dst;
-
-        self.renderer.copy(texture, options)
+        match options.dst {
+            Some(d) if self.viewport.contains(d) => {
+                let dst = glm::ivec4(d.x - self.viewport.translation.x,
+                                     d.y - self.viewport.translation.y,
+                                     d.z,
+                                     d.w);
+                let options = options.at(&dst);
+                self.renderer.copy(texture, options)
+            }
+            Some(_) => Ok(()),
+            None => self.renderer.copy(texture, options),
+        }
     }
 }
