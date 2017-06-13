@@ -15,6 +15,40 @@ use moho::shape::{Rectangle, Shape};
 use std::rc::Rc;
 use std::time::Duration;
 
+struct Background<T> {
+    texture: Rc<T>,
+    dimensions: glm::IVec2,
+}
+
+impl<T> Clone for Background<T> {
+    fn clone(&self) -> Self {
+        Background {
+            texture: self.texture.clone(),
+            dimensions: self.dimensions,
+        }
+    }
+}
+
+impl<'t, T, R> Scene<R> for Background<T>
+    where T: Texture,
+          R: Renderer<'t, Texture = T>
+{
+    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+        let results = (0..4).map(|i| {
+                                     let dst = glm::ivec4(i * self.dimensions.x,
+                                                          0,
+                                                          self.dimensions.x,
+                                                          self.dimensions.y);
+                                     renderer.copy(&*self.texture, options::at(&dst))
+
+                                 });
+        for r in results {
+            r?
+        }
+        Ok(())
+    }
+}
+
 pub enum PlayerKind {
     Duck,
     Husky,
@@ -23,13 +57,13 @@ pub enum PlayerKind {
 pub struct GamePlay<T> {
     player: Player<T>,
     world: World<T>,
-    background: Rc<T>,
+    background: Background<T>,
     viewport: ViewPort,
 }
 
 pub struct Data<T> {
     tile: (Rc<T>, glm::DVec2),
-    background: Rc<T>,
+    background: Background<T>,
     data: GameData,
 }
 
@@ -43,6 +77,10 @@ impl<T: Texture> Data<T> {
         let texture = texture_manager.load(file_name)?;
         let file_name: &str = &format!("media/environment/{}", data.background.file_name);
         let background = texture_manager.load(file_name)?;
+        let background = Background {
+            texture: background,
+            dimensions: glm::ivec2(2560, 720),
+        };
         let dims = glm::dvec2(data.ground.out_size.x as f64, data.ground.out_size.y as f64);
         let tile = (texture, dims);
         Ok(Data {
@@ -107,8 +145,7 @@ impl<'t, T, R> Scene<R> for GamePlay<T>
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         let mut camera = self.viewport.camera(renderer);
-        camera
-            .copy(&*self.background, options::at(&glm::ivec4(0, 0, 2560, 720)))?;
+        camera.show(&self.background)?;
         camera.show(&self.world)?;
         camera.show(&self.player)
     }
