@@ -63,7 +63,7 @@ impl<T: Texture> Data<T> {
             PlayerKind::Husky => &self.data.husky,
         };
         let body = Rectangle {
-            top_left: glm::dvec2(0., 300.),
+            top_left: glm::dvec2(100., 300.),
             dims: glm::dvec2(player.out_size.x as f64, player.out_size.y as f64),
         };
 

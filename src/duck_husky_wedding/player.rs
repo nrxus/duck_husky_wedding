@@ -52,6 +52,10 @@ impl<T> Player<T> {
                 }
                 _ => self.velocity.y -= 5.,
             }
+        } else {
+            if let Action::Jumping(_, ref mut held) = self.action {
+                held.add_assign(15);
+            }
         }
 
         if left ^ right {
@@ -65,7 +69,7 @@ impl<T> Player<T> {
     pub fn update(&mut self, force: glm::DVec2, delta: Duration) {
         let next_action = match self.action {
             Action::Moving(ref mut a) => {
-                if self.velocity.y.abs() > 0.000001 || force.y.abs() > 0.000001 {
+                if self.velocity.y.abs() > 0.0000001 || force.y.abs() > 0.0000001 {
                     Some(Action::Jumping(self.texture.clone(), 0))
                 } else if self.velocity.x == 0. {
                     Some(Action::Standing(self.texture.clone()))
@@ -75,7 +79,7 @@ impl<T> Player<T> {
                 }
             }
             Action::Standing(_) => {
-                if self.velocity.y.abs() > 0.000001 || force.y.abs() > 0.000001 {
+                if self.velocity.y.abs() > 0.0000001 || force.y.abs() > 0.0000001 {
                     Some(Action::Jumping(self.texture.clone(), 0))
                 } else if self.velocity.x == 0. {
                     None
@@ -85,7 +89,7 @@ impl<T> Player<T> {
                 }
             }
             Action::Jumping(_, _) => {
-                if self.velocity.y.abs() > 0.000001 || force.y.abs() > 0.000001 {
+                if self.velocity.y.abs() > 0.0000001 || force.y.abs() > 0.0000001 {
                     None
                 } else if self.velocity.x == 0. {
                     Some(Action::Standing(self.texture.clone()))
@@ -101,27 +105,7 @@ impl<T> Player<T> {
         }
 
         self.velocity = self.velocity + force;
-        let window = Rectangle {
-            top_left: glm::dvec2(0., 0.),
-            dims: glm::dvec2(1280., 720.),
-        };
-        self.body = Self::clamp(&self.body.nudge(self.velocity), &window);
-    }
-
-    fn clamp(shape: &Rectangle, window: &Rectangle) -> Rectangle {
-        let tl = shape.top_left;
-
-        let left = tl.x
-            .max(window.top_left.x)
-            .min(window.top_left.x + window.dims.x - shape.dims.x);
-        let top = tl.y
-            .max(window.top_left.y)
-            .min(window.top_left.y + window.dims.y - shape.dims.y);
-
-        Rectangle {
-            top_left: glm::dvec2(left, top),
-            dims: shape.dims,
-        }
+        self.body = self.body.nudge(self.velocity);
     }
 }
 
