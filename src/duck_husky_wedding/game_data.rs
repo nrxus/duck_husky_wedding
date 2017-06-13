@@ -29,7 +29,7 @@ impl SpriteData {
         let file_name: &str = &format!("media/sprites/{}", self.file_name);
         let texture = texture_manager.load(file_name)?;
         let sheet = TileSheet::new(self.tiles.into(), texture);
-        let duration = Duration::from_millis(self.duration);
+        let duration = Duration::from_millis(self.duration / self.frames as u64);
         let animator = animator::Data::new(self.frames, duration);
         Ok(animation::Data::new(animator, sheet))
     }

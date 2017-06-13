@@ -1,8 +1,8 @@
 duck:
   animation:
     file_name: "duck.png"
-    duration: 40
     frames: 10
+    duration: 600
     tiles:
       x: 10
       y: 1
@@ -15,7 +15,7 @@ husky:
   animation:
     file_name: "husky.png"
     frames: 10
-    duration: 40
+    duration: 600
     tiles:
       x: 10
       y: 1
