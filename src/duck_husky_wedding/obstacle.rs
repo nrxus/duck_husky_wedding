@@ -38,15 +38,17 @@ impl<T> Obstacle<T> {
 
 impl<'t, R: Renderer<'t>> Scene<R> for Obstacle<R::Texture> {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        for i in 0..self.count.x {
-            for j in 0..self.count.y {
-                let dims = &self.tile.dims;
-                let dst = glm::ivec4(self.tl.x + (dims.x * i) as i32,
-                                     self.tl.y + (dims.y * j) as i32,
-                                     dims.x as i32,
-                                     dims.y as i32);
-                renderer.copy(&*self.tile.texture, options::at(&dst))?;
-            }
+        let results = (0..self.count.x)
+            .flat_map(|i| (0..self.count.y).map(move |j| (i, j)))
+            .map(|(i, j)| {
+                     glm::ivec4(self.tl.x + (self.tile.dims.x * i) as i32,
+                                self.tl.y + (self.tile.dims.y * j) as i32,
+                                self.tile.dims.x as i32,
+                                self.tile.dims.y as i32)
+                 })
+            .map(|d| renderer.copy(&*self.tile.texture, options::at(&d)));
+        for r in results {
+            r?;
         }
         Ok(())
     }
