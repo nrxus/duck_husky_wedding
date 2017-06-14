@@ -1,4 +1,5 @@
 use duck_husky_wedding::player::Player;
+use duck_husky_wedding::obstacle::{self, Obstacle};
 
 use glm;
 use moho::shape::{Rectangle, Shape, Intersect};
@@ -13,42 +14,30 @@ pub struct Tile<T> {
 }
 
 pub struct Ground<T> {
-    tiles: Vec<Tile<T>>,
+    obstacle: Obstacle<T>,
 }
 
 impl<T> Ground<T> {
-    fn new<'t>(tile: (Rc<T>, glm::DVec2)) -> Self
+    fn new<'t>(tile: (Rc<T>, glm::UVec2)) -> Self
         where T: Texture
     {
+
         let (texture, dims) = tile;
-        let tiles = (0..60)
-            .map(|i| {
-                let top_left = glm::dvec2(dims.x * i as f64, 720. - dims.y);
-                let body = Rectangle {
-                    top_left: top_left,
-                    dims: dims,
-                };
-                Tile {
-                    texture: texture.clone(),
-                    body: body,
-                }
-            })
-            .collect();
-        Ground { tiles }
+        let tile = obstacle::Tile {
+            texture: texture,
+            dims: dims,
+        };
+
+        let obstacle = Obstacle {
+            tile: tile,
+            tl: glm::ivec2(0, 720 - dims.y as i32),
+            count: glm::uvec2(60, 1),
+        };
+        Ground { obstacle }
     }
 
-    fn mtv(&self, mut body: Rectangle) -> Option<glm::DVec2> {
-        let mut mtv = None;
-        for t in &self.tiles {
-            if let Some(f) = body.mtv(&t.body) {
-                body = body.nudge(f);
-                mtv = match mtv {
-                    Some(of) => Some(of + f),
-                    None => Some(f),
-                }
-            }
-        }
-        mtv
+    fn mtv(&self, body: Rectangle) -> Option<glm::DVec2> {
+        self.obstacle.mtv(&body)
     }
 }
 
@@ -56,19 +45,7 @@ impl<'t, R> Scene<R> for Ground<R::Texture>
     where R: Renderer<'t>
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        let results = self.tiles
-            .iter()
-            .map(|t| {
-                     let tl = t.body.top_left;
-                     let dims = t.body.dims;
-                     let rect = glm::dvec4(tl.x, tl.y, dims.x, dims.y);
-                     let dst_rect = glm::to_ivec4(rect);
-                     renderer.copy(&*t.texture, options::at(&dst_rect))
-                 });
-        for r in results {
-            r?
-        }
-        Ok(())
+        renderer.show(&self.obstacle)
     }
 }
 
@@ -78,17 +55,17 @@ pub struct World<T> {
 }
 
 impl<T> World<T> {
-    pub fn new<'t>(tile: (Rc<T>, glm::DVec2)) -> Self
+    pub fn new<'t>(tile: (Rc<T>, glm::UVec2)) -> Self
         where T: Texture
     {
         let ground = Ground::new(tile.clone());
         let (texture, dims) = tile;
         let border = (1..9)
             .map(|i| {
-                let top_left = glm::dvec2(0., 720. - dims.y * i as f64);
+                let top_left = glm::dvec2(0., 720. - (dims.y * i) as f64);
                 let body = Rectangle {
                     top_left: top_left,
-                    dims: dims,
+                    dims: glm::to_dvec2(dims),
                 };
                 Tile {
                     texture: texture.clone(),

@@ -61,7 +61,7 @@ pub struct GamePlay<T> {
 }
 
 pub struct Data<T> {
-    tile: (Rc<T>, glm::DVec2),
+    tile: (Rc<T>, glm::UVec2),
     background: Background<T>,
     data: GameData,
 }
@@ -80,8 +80,7 @@ impl<T: Texture> Data<T> {
             texture: background,
             dimensions: glm::ivec2(2560, 720),
         };
-        let dims = glm::dvec2(data.ground.out_size.x as f64, data.ground.out_size.y as f64);
-        let tile = (texture, dims);
+        let tile = (texture, data.ground.out_size.into());
         Ok(Data {
                data,
                tile,
