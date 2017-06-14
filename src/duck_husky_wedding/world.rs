@@ -2,20 +2,15 @@ use duck_husky_wedding::player::Player;
 use duck_husky_wedding::obstacle::{self, Obstacle};
 
 use glm;
-use moho::shape::{Rectangle, Shape, Intersect};
-use moho::renderer::{options, Scene, Renderer, Texture};
+use moho::shape::Shape;
+use moho::renderer::{Scene, Renderer, Texture};
 use moho::errors as moho_errors;
 
 use std::rc::Rc;
 
-pub struct Tile<T> {
-    texture: Rc<T>,
-    body: Rectangle,
-}
-
 pub struct World<T> {
     ground: Obstacle<T>,
-    border: Vec<Tile<T>>,
+    border: Obstacle<T>,
 }
 
 impl<T> World<T> {
@@ -24,29 +19,22 @@ impl<T> World<T> {
     {
         let (texture, dims) = tile;
         let tile = obstacle::Tile {
-            texture: texture.clone(),
+            texture: texture,
             dims: dims,
         };
 
         let ground = Obstacle {
-            tile: tile,
+            tile: tile.clone(),
             tl: glm::ivec2(0, 720 - dims.y as i32),
             count: glm::uvec2(60, 1),
         };
 
-        let border = (1..9)
-            .map(|i| {
-                let top_left = glm::dvec2(0., 720. - (dims.y * i) as f64);
-                let body = Rectangle {
-                    top_left: top_left,
-                    dims: glm::to_dvec2(dims),
-                };
-                Tile {
-                    texture: texture.clone(),
-                    body: body,
-                }
-            })
-            .collect();
+        let border = Obstacle {
+            tile: tile,
+            tl: glm::ivec2(0, 0),
+            count: glm::uvec2(1, 720 / dims.y),
+        };
+
         World { ground, border }
     }
 
@@ -55,21 +43,9 @@ impl<T> World<T> {
         let mut force = gravity;
         let mut body = player.body.nudge(gravity + player.velocity);
 
-        {
-            let mut mtv = None;
-            for t in &self.border {
-                if let Some(f) = body.mtv(&t.body) {
-                    body = body.nudge(f);
-                    mtv = match mtv {
-                        Some(of) => Some(of + f),
-                        None => Some(f),
-                    }
-                }
-            }
-
-            if let Some(f) = mtv {
-                force = force + f;
-            }
+        if let Some(f) = self.border.mtv(&body) {
+            force = force + f;
+            body = body.nudge(f);
         }
 
         if let Some(f) = self.ground.mtv(&body) {
@@ -84,18 +60,6 @@ impl<'t, R> Scene<R> for World<R::Texture>
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         renderer.show(&self.ground)?;
-        let results = self.border
-            .iter()
-            .map(|t| {
-                     let tl = t.body.top_left;
-                     let dims = t.body.dims;
-                     let rect = glm::dvec4(tl.x, tl.y, dims.x, dims.y);
-                     let dst_rect = glm::to_ivec4(rect);
-                     renderer.copy(&*t.texture, options::at(&dst_rect))
-                 });
-        for r in results {
-            r?
-        }
-        Ok(())
+        renderer.show(&self.border)
     }
 }

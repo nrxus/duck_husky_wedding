@@ -11,6 +11,15 @@ pub struct Tile<T> {
     pub dims: glm::UVec2,
 }
 
+impl<T> Clone for Tile<T> {
+    fn clone(&self) -> Self {
+        Tile {
+            texture: self.texture.clone(),
+            dims: self.dims,
+        }
+    }
+}
+
 pub struct Obstacle<T> {
     pub tile: Tile<T>,
     pub tl: glm::IVec2,
