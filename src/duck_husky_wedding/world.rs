@@ -13,44 +13,8 @@ pub struct Tile<T> {
     body: Rectangle,
 }
 
-pub struct Ground<T> {
-    obstacle: Obstacle<T>,
-}
-
-impl<T> Ground<T> {
-    fn new<'t>(tile: (Rc<T>, glm::UVec2)) -> Self
-        where T: Texture
-    {
-
-        let (texture, dims) = tile;
-        let tile = obstacle::Tile {
-            texture: texture,
-            dims: dims,
-        };
-
-        let obstacle = Obstacle {
-            tile: tile,
-            tl: glm::ivec2(0, 720 - dims.y as i32),
-            count: glm::uvec2(60, 1),
-        };
-        Ground { obstacle }
-    }
-
-    fn mtv(&self, body: Rectangle) -> Option<glm::DVec2> {
-        self.obstacle.mtv(&body)
-    }
-}
-
-impl<'t, R> Scene<R> for Ground<R::Texture>
-    where R: Renderer<'t>
-{
-    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        renderer.show(&self.obstacle)
-    }
-}
-
 pub struct World<T> {
-    ground: Ground<T>,
+    ground: Obstacle<T>,
     border: Vec<Tile<T>>,
 }
 
@@ -58,8 +22,18 @@ impl<T> World<T> {
     pub fn new<'t>(tile: (Rc<T>, glm::UVec2)) -> Self
         where T: Texture
     {
-        let ground = Ground::new(tile.clone());
         let (texture, dims) = tile;
+        let tile = obstacle::Tile {
+            texture: texture.clone(),
+            dims: dims,
+        };
+
+        let ground = Obstacle {
+            tile: tile,
+            tl: glm::ivec2(0, 720 - dims.y as i32),
+            count: glm::uvec2(60, 1),
+        };
+
         let border = (1..9)
             .map(|i| {
                 let top_left = glm::dvec2(0., 720. - (dims.y * i) as f64);
@@ -98,7 +72,7 @@ impl<T> World<T> {
             }
         }
 
-        if let Some(f) = self.ground.mtv(body) {
+        if let Some(f) = self.ground.mtv(&body) {
             force = force + f;
         }
         force
