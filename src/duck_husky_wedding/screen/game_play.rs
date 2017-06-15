@@ -72,10 +72,8 @@ impl<T: Texture> Data<T> {
                         -> Result<Self>
         where TL: TextureLoader<'t, Texture = T>
     {
-        let file_name: &str = &format!("media/sprites/{}", data.ground.file_name);
-        let texture = texture_manager.load(file_name)?;
-        let file_name: &str = &format!("media/environment/{}", data.background.file_name);
-        let background = texture_manager.load(file_name)?;
+        let texture = data.ground.texture.load(texture_manager)?;
+        let background = data.background.texture.load(texture_manager)?;
         let background = Background {
             texture: background,
             dimensions: glm::ivec2(2560, 720),
@@ -104,9 +102,7 @@ impl<T: Texture> Data<T> {
         };
 
         let animation = player.animation.load(texture_manager)?;
-
-        let file_name: &str = &format!("media/sprites/{}", player.texture.file_name);
-        let texture = texture_manager.load(file_name)?;
+        let texture = player.idle_texture.load(texture_manager)?;
 
         let player = Player::new(animation, texture, body);
         let world = World::new((self.tile.0.clone(), self.tile.1));

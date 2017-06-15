@@ -8,6 +8,8 @@ use serde_yaml;
 use std::fs::File;
 use std::time::Duration;
 
+use std::rc::Rc;
+
 #[derive(Debug,Deserialize,Clone,Copy)]
 pub struct DimensionData {
     pub x: u32,
@@ -16,7 +18,7 @@ pub struct DimensionData {
 
 #[derive(Debug, Deserialize)]
 pub struct SpriteData {
-    pub file_name: String,
+    pub texture: TextureData,
     pub frames: u32,
     pub tiles: DimensionData,
     pub duration: u64,
@@ -24,10 +26,9 @@ pub struct SpriteData {
 
 impl SpriteData {
     pub fn load<'t, TL: TextureLoader<'t>>(&self,
-                                       texture_manager: &mut TextureManager<'t, TL>)
-                                       -> Result<animation::Data<TL::Texture>> {
-        let file_name: &str = &format!("media/sprites/{}", self.file_name);
-        let texture = texture_manager.load(file_name)?;
+                                           texture_manager: &mut TextureManager<'t, TL>)
+                                           -> Result<animation::Data<TL::Texture>> {
+        let texture = self.texture.load(texture_manager)?;
         let sheet = TileSheet::new(self.tiles.into(), texture);
         let duration = Duration::from_millis(self.duration / self.frames as u64);
         let animator = animator::Data::new(self.frames, duration);
@@ -35,21 +36,27 @@ impl SpriteData {
     }
 }
 
-#[derive(Debug, Deserialize)]
-pub struct TextureData {
-    pub file_name: String,
+#[derive(Debug, Deserialize, Clone)]
+pub struct TextureData(String);
+
+impl TextureData {
+    pub fn load<'t, TL: TextureLoader<'t>>(&self,
+                                           texture_manager: &mut TextureManager<'t, TL>)
+                                           -> Result<Rc<TL::Texture>> {
+        texture_manager.load(&format!("media/sprites/{}", self.0)).map_err(Into::into)
+    }
 }
 
 #[derive(Debug, Deserialize)]
 pub struct PlayerData {
     pub animation: SpriteData,
-    pub texture: TextureData,
+    pub idle_texture: TextureData,
     pub out_size: DimensionData,
 }
 
 #[derive(Debug, Deserialize, Clone)]
-pub struct GroundData {
-    pub file_name: String,
+pub struct ImageData {
+    pub texture: TextureData,
     pub out_size: DimensionData,
 }
 
@@ -57,8 +64,8 @@ pub struct GroundData {
 pub struct GameData {
     pub duck: PlayerData,
     pub husky: PlayerData,
-    pub ground: GroundData,
-    pub background: TextureData,
+    pub ground: ImageData,
+    pub background: ImageData,
 }
 
 impl GameData {

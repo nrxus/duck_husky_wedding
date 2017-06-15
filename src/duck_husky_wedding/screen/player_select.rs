@@ -44,23 +44,21 @@ impl<T> Data<T> {
         let title = Rc::new(texturizer.texturize(&*font, "Select Player", &title_color)?);
 
         let husky = &data.husky;
-        let file_name: &str = &format!("media/sprites/{}", husky.texture.file_name);
-        let idle = texture_manager.load(file_name)?;
+        let idle = husky.idle_texture.load(texture_manager)?;
+        let animation = husky.animation.load(texture_manager)?;
         let body = Rectangle {
             top_left: glm::dvec2(300., 300.),
             dims: glm::dvec2(husky.out_size.x as f64 * 2., husky.out_size.y as f64 * 2.),
         };
-        let animation = husky.animation.load(texture_manager)?;
         let husky = button::Animated::new(idle, animation, body);
 
         let duck = &data.duck;
-        let file_name: &str = &format!("media/sprites/{}", duck.texture.file_name);
-        let idle = texture_manager.load(file_name)?;
+        let idle = duck.idle_texture.load(texture_manager)?;
+        let animation = duck.animation.load(texture_manager)?;
         let body = Rectangle {
             top_left: glm::dvec2(750., 350.),
             dims: glm::dvec2(duck.out_size.x as f64 * 2., duck.out_size.y as f64 * 2.),
         };
-        let animation = duck.animation.load(texture_manager)?;
         let duck = button::Animated::new(idle, animation, body);
 
         Ok(Data { title, husky, duck })
