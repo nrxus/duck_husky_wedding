@@ -47,7 +47,7 @@ impl<T> Data<T> {
         let file_name: &str = &format!("media/sprites/{}", husky.texture.file_name);
         let idle = texture_manager.load(file_name)?;
         let body = Rectangle {
-            top_left: glm::dvec2(100., 300.),
+            top_left: glm::dvec2(300., 300.),
             dims: glm::dvec2(husky.out_size.x as f64 * 2., husky.out_size.y as f64 * 2.),
         };
         let animation = husky.animation.load(texture_manager)?;
@@ -57,7 +57,7 @@ impl<T> Data<T> {
         let file_name: &str = &format!("media/sprites/{}", duck.texture.file_name);
         let idle = texture_manager.load(file_name)?;
         let body = Rectangle {
-            top_left: glm::dvec2(850., 350.),
+            top_left: glm::dvec2(750., 350.),
             dims: glm::dvec2(duck.out_size.x as f64 * 2., duck.out_size.y as f64 * 2.),
         };
         let animation = duck.animation.load(texture_manager)?;
