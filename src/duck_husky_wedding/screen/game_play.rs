@@ -17,7 +17,7 @@ use std::time::Duration;
 
 struct Background<T> {
     texture: Rc<T>,
-    dimensions: glm::IVec2,
+    dimensions: glm::UVec2,
 }
 
 impl<T> Clone for Background<T> {
@@ -36,10 +36,10 @@ impl<'t, T, R> Scene<R> for Background<T>
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         (0..4)
             .map(|i| {
-                     glm::ivec4(self.dimensions.x * i,
+                     glm::ivec4(self.dimensions.x as i32 * i,
                                 0,
-                                self.dimensions.x,
-                                self.dimensions.y)
+                                self.dimensions.x as i32,
+                                self.dimensions.y as i32)
                  })
             .map(|d| renderer.copy(&*self.texture, options::at(&d)))
             .try()
@@ -70,13 +70,18 @@ impl<T: Texture> Data<T> {
                         -> Result<Self>
         where TL: TextureLoader<'t, Texture = T>
     {
-        let texture = data.ground.texture.load(texture_manager)?;
-        let background = data.background.texture.load(texture_manager)?;
-        let background = Background {
-            texture: background,
-            dimensions: glm::ivec2(2560, 720),
+        let background = {
+            let texture = data.background.texture.load(texture_manager)?;
+            let dimensions = data.background.out_size.into();
+            Background {
+                texture,
+                dimensions,
+            }
         };
-        let world = World::new(texture, data.ground.out_size.into());
+        let world = {
+            let texture = data.ground.texture.load(texture_manager)?;
+            World::new(texture, data.ground.out_size.into())
+        };
         Ok(Data {
                data,
                world,
