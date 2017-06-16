@@ -24,7 +24,8 @@ impl<T> Clone for World<T> {
 
 impl<T> World<T> {
     pub fn new<'t>(texture: Rc<T>, dims: glm::UVec2) -> Self
-        where T: Texture
+    where
+        T: Texture,
     {
         let tile = obstacle::Tile {
             texture: texture,
@@ -64,7 +65,8 @@ impl<T> World<T> {
 }
 
 impl<'t, R> Scene<R> for World<R::Texture>
-    where R: Renderer<'t>
+where
+    R: Renderer<'t>,
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         renderer.show(&self.ground)?;

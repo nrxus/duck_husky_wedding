@@ -70,14 +70,17 @@ impl<T> Animated<T> {
 }
 
 impl<'t, T, R> Scene<R> for Animated<T>
-    where T: Texture,
-          R: Renderer<'t, Texture = T>
+where
+    T: Texture,
+    R: Renderer<'t, Texture = T>,
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        let dst_rect = glm::to_ivec4(glm::dvec4(self.body.top_left.x,
-                                                self.body.top_left.y,
-                                                self.body.dims.x,
-                                                self.body.dims.y));
+        let dst_rect = glm::to_ivec4(glm::dvec4(
+            self.body.top_left.x,
+            self.body.top_left.y,
+            self.body.dims.x,
+            self.body.dims.y,
+        ));
         match self.state {
             State::Idle(ref t) => renderer.copy(&*t, options::at(&dst_rect)),
             State::Hovering(ref a) => renderer.copy_asset(&a.tile(), options::at(&dst_rect)),

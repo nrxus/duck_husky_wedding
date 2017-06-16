@@ -10,7 +10,7 @@ use std::time::Duration;
 
 use std::rc::Rc;
 
-#[derive(Debug,Deserialize,Clone,Copy)]
+#[derive(Debug, Deserialize, Clone, Copy)]
 pub struct DimensionData {
     pub x: u32,
     pub y: u32,
@@ -25,9 +25,10 @@ pub struct SpriteData {
 }
 
 impl SpriteData {
-    pub fn load<'t, TL: TextureLoader<'t>>(&self,
-                                           texture_manager: &mut TextureManager<'t, TL>)
-                                           -> Result<animation::Data<TL::Texture>> {
+    pub fn load<'t, TL: TextureLoader<'t>>(
+        &self,
+        texture_manager: &mut TextureManager<'t, TL>,
+    ) -> Result<animation::Data<TL::Texture>> {
         let texture = self.texture.load(texture_manager)?;
         let sheet = TileSheet::new(self.tiles.into(), texture);
         let duration = Duration::from_millis(self.duration / self.frames as u64);
@@ -40,10 +41,13 @@ impl SpriteData {
 pub struct TextureData(String);
 
 impl TextureData {
-    pub fn load<'t, TL: TextureLoader<'t>>(&self,
-                                           texture_manager: &mut TextureManager<'t, TL>)
-                                           -> Result<Rc<TL::Texture>> {
-        texture_manager.load(&format!("media/sprites/{}", self.0)).map_err(Into::into)
+    pub fn load<'t, TL: TextureLoader<'t>>(
+        &self,
+        texture_manager: &mut TextureManager<'t, TL>,
+    ) -> Result<Rc<TL::Texture>> {
+        texture_manager
+            .load(&format!("media/sprites/{}", self.0))
+            .map_err(Into::into)
     }
 }
 
@@ -60,7 +64,7 @@ pub struct ImageData {
     pub out_size: DimensionData,
 }
 
-#[derive(Debug,Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct GameData {
     pub duck: PlayerData,
     pub husky: PlayerData,

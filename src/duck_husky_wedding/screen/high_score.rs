@@ -30,12 +30,14 @@ pub struct Data<T> {
 }
 
 impl<T> Data<T> {
-    pub fn load<'f, 't, FT, FL>(font_manager: &mut FontManager<'f, FL>,
-                                texturizer: &'t FT)
-                                -> Result<Self>
-        where T: Texture,
-              FL: FontLoader<'f>,
-              FT: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>
+    pub fn load<'f, 't, FT, FL>(
+        font_manager: &mut FontManager<'f, FL>,
+        texturizer: &'t FT,
+    ) -> Result<Self>
+    where
+        T: Texture,
+        FL: FontLoader<'f>,
+        FT: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>,
     {
         let font_details = FontDetails {
             path: "media/fonts/kenpixel_mini.ttf",
@@ -48,18 +50,20 @@ impl<T> Data<T> {
         let title_color = ColorRGBA(255, 255, 0, 255);
         let title = Rc::new(texturizer.texturize(&*font, "High Scores", &title_color)?);
         Ok(Data {
-               title: title,
-               back: back,
-           })
+            title: title,
+            back: back,
+        })
     }
 
-    pub fn activate<'f, 't, FT, FL>(&mut self,
-                                    font_manager: &mut FontManager<'f, FL>,
-                                    texturizer: &'t FT)
-                                    -> Result<HighScore<T>>
-        where T: Texture,
-              FL: FontLoader<'f>,
-              FT: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>
+    pub fn activate<'f, 't, FT, FL>(
+        &mut self,
+        font_manager: &mut FontManager<'f, FL>,
+        texturizer: &'t FT,
+    ) -> Result<HighScore<T>>
+    where
+        T: Texture,
+        FL: FontLoader<'f>,
+        FT: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>,
     {
         let font_details = FontDetails {
             path: "media/fonts/joystix.monospace.ttf",
@@ -74,17 +78,17 @@ impl<T> Data<T> {
         let scores = scores
             .iter()
             .map(|s| {
-                     let score = format!("{:04}{:5}{:>3}", s.score, "", s.name);
-                     texturizer
-                         .texturize(&*font, &score, &color)
-                         .map_err(Into::into)
-                 })
+                let score = format!("{:04}{:5}{:>3}", s.score, "", s.name);
+                texturizer.texturize(&*font, &score, &color).map_err(
+                    Into::into,
+                )
+            })
             .collect::<Result<Vec<_>>>()?;
         Ok(HighScore {
-               scores: scores,
-               back: self.back.clone(),
-               title: self.title.clone(),
-           })
+            scores: scores,
+            back: self.back.clone(),
+            title: self.title.clone(),
+        })
     }
 }
 
@@ -99,8 +103,9 @@ impl<T> HighScore<T> {
 }
 
 impl<'t, T, R> Scene<R> for HighScore<T>
-    where T: Texture,
-          R: Renderer<'t, Texture = T>
+where
+    T: Texture,
+    R: Renderer<'t, Texture = T>,
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         let title_dims = glm::to_ivec2(self.title.dims());
@@ -112,9 +117,13 @@ impl<'t, T, R> Scene<R> for HighScore<T>
             .iter()
             .enumerate()
             .map(|(i, s)| {
-                     let dims = glm::to_ivec2(s.dims());
-                     (s, glm::ivec4(640 - dims.x / 2, 200 * i as i32 + dims.y, dims.x, dims.y))
-                 })
-            .map(|(s, d)| renderer.copy(s, options::at(&d))).try()
+                let dims = glm::to_ivec2(s.dims());
+                (
+                    s,
+                    glm::ivec4(640 - dims.x / 2, 200 + dims.y * i as i32, dims.x, dims.y),
+                )
+            })
+            .map(|(s, d)| renderer.copy(s, options::at(&d)))
+            .try()
     }
 }

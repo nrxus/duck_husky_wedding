@@ -32,8 +32,8 @@ impl ViewPort {
 
     pub fn contains(&self, rect: &glm::IVec4) -> bool {
         !(self.translation.x > rect.x + rect.z) && !(self.translation.x + self.dims.x < rect.x) &&
-        !(self.translation.y > rect.y + rect.w) &&
-        !(self.translation.y + self.dims.y < rect.y)
+            !(self.translation.y > rect.y + rect.w) &&
+            !(self.translation.y + self.dims.y < rect.y)
     }
 
     pub fn camera<'c, 't, R: Renderer<'t>>(&'c self, renderer: &'c mut R) -> Camera<'c, R> {
@@ -55,10 +55,12 @@ impl<'c, 't, R: Renderer<'t>> Renderer<'t> for Camera<'c, R> {
     fn copy(&mut self, texture: &Self::Texture, options: Options) -> moho_errors::Result<()> {
         match options.dst {
             Some(d) if self.viewport.contains(d) => {
-                let dst = glm::ivec4(d.x - self.viewport.translation.x,
-                                     d.y - self.viewport.translation.y,
-                                     d.z,
-                                     d.w);
+                let dst = glm::ivec4(
+                    d.x - self.viewport.translation.x,
+                    d.y - self.viewport.translation.y,
+                    d.z,
+                    d.w,
+                );
                 let options = options.at(&dst);
                 self.renderer.copy(texture, options)
             }

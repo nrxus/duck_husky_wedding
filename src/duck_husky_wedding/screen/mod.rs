@@ -33,8 +33,9 @@ pub enum Screen<T> {
 }
 
 impl<'t, T, R> Scene<R> for Screen<T>
-    where T: Texture,
-          R: Renderer<'t, Texture = T>
+where
+    T: Texture,
+    R: Renderer<'t, Texture = T>,
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         match *self {
@@ -67,15 +68,17 @@ pub struct Manager<T> {
 }
 
 impl<T> Manager<T> {
-    pub fn load<'f, 't, R, TL, FL>(font_manager: &mut FontManager<'f, FL>,
-                                   texture_manager: &mut TextureManager<'t, TL>,
-                                   texturizer: &'t R,
-                                   data: GameData)
-                                   -> Result<Self>
-        where T: Texture,
-              TL: TextureLoader<'t, Texture = T>,
-              FL: FontLoader<'f>,
-              R: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>
+    pub fn load<'f, 't, R, TL, FL>(
+        font_manager: &mut FontManager<'f, FL>,
+        texture_manager: &mut TextureManager<'t, TL>,
+        texturizer: &'t R,
+        data: GameData,
+    ) -> Result<Self>
+    where
+        T: Texture,
+        TL: TextureLoader<'t, Texture = T>,
+        FL: FontLoader<'f>,
+        R: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>,
     {
         let player_select =
             player_select::Data::load(font_manager, texturizer, texture_manager, &data)?;
@@ -84,12 +87,12 @@ impl<T> Manager<T> {
         let game_play = game_play::Data::load(texture_manager, data)?;
         let high_score = high_score::Data::load(font_manager, texturizer)?;
         Ok(Manager {
-               menu: menu,
-               game_play: game_play,
-               high_score: high_score,
-               player_select: player_select,
-               active: active,
-           })
+            menu: menu,
+            game_play: game_play,
+            high_score: high_score,
+            player_select: player_select,
+            active: active,
+        })
     }
 
     pub fn mut_screen(&mut self) -> &mut Screen<T> {
@@ -100,15 +103,17 @@ impl<T> Manager<T> {
         &self.active
     }
 
-    pub fn select_screen<'f, 't, R, FL, TL>(&mut self,
-                                            screen: Kind,
-                                            font_manager: &mut FontManager<'f, FL>,
-                                            texture_manager: &mut TextureManager<'t, TL>,
-                                            texturizer: &'t R)
-        where T: Texture,
-              FL: FontLoader<'f>,
-              TL: TextureLoader<'t, Texture = T>,
-              R: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>
+    pub fn select_screen<'f, 't, R, FL, TL>(
+        &mut self,
+        screen: Kind,
+        font_manager: &mut FontManager<'f, FL>,
+        texture_manager: &mut TextureManager<'t, TL>,
+        texturizer: &'t R,
+    ) where
+        T: Texture,
+        FL: FontLoader<'f>,
+        TL: TextureLoader<'t, Texture = T>,
+        R: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>,
     {
         self.active = match screen {
             Kind::Menu => Screen::Menu(self.menu.activate()),

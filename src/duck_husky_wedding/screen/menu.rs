@@ -23,12 +23,14 @@ pub struct Data<T> {
 }
 
 impl<T> Data<T> {
-    pub fn load<'f, 't, FT, FL>(font_manager: &mut FontManager<'f, FL>,
-                                texturizer: &'t FT)
-                                -> Result<Self>
-        where T: Texture,
-              FL: FontLoader<'f>,
-              FT: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>
+    pub fn load<'f, 't, FT, FL>(
+        font_manager: &mut FontManager<'f, FL>,
+        texturizer: &'t FT,
+    ) -> Result<Self>
+    where
+        T: Texture,
+        FL: FontLoader<'f>,
+        FT: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>,
     {
         let font_details = FontDetails {
             path: "media/fonts/kenpixel_mini.ttf",
@@ -43,8 +45,11 @@ impl<T> Data<T> {
         };
         let new_game = button::Static::text_at("New Game", texturizer, &*font, body)?;
         let title_color = ColorRGBA(255, 255, 0, 255);
-        let title = Rc::new(texturizer
-                                .texturize(&*font, "Husky Loves Ducky", &title_color)?);
+        let title = Rc::new(texturizer.texturize(
+            &*font,
+            "Husky Loves Ducky",
+            &title_color,
+        )?);
 
         let dims = font.measure("High Score")?;
         let top_left = glm::ivec2(640 - dims.x as i32 / 2, 400);
@@ -54,10 +59,10 @@ impl<T> Data<T> {
         };
         let high_score = button::Static::text_at("High Score", texturizer, &*font, body)?;
         Ok(Data {
-               title,
-               new_game,
-               high_score,
-           })
+            title,
+            new_game,
+            high_score,
+        })
     }
 
     pub fn activate(&self) -> Menu<T> {
@@ -86,8 +91,9 @@ impl<T> Menu<T> {
 }
 
 impl<'t, T, R> Scene<R> for Menu<T>
-    where T: Texture,
-          R: Renderer<'t, Texture = T>
+where
+    T: Texture,
+    R: Renderer<'t, Texture = T>,
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         let title_dims = glm::to_ivec2(self.title.dims());

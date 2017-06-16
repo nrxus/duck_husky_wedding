@@ -30,17 +30,20 @@ impl<T> Clone for Background<T> {
 }
 
 impl<'t, T, R> Scene<R> for Background<T>
-    where T: Texture,
-          R: Renderer<'t, Texture = T>
+where
+    T: Texture,
+    R: Renderer<'t, Texture = T>,
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         (0..4)
             .map(|i| {
-                     glm::ivec4(self.dimensions.x as i32 * i,
-                                0,
-                                self.dimensions.x as i32,
-                                self.dimensions.y as i32)
-                 })
+                glm::ivec4(
+                    self.dimensions.x as i32 * i,
+                    0,
+                    self.dimensions.x as i32,
+                    self.dimensions.y as i32,
+                )
+            })
             .map(|d| renderer.copy(&*self.texture, options::at(&d)))
             .try()
     }
@@ -65,10 +68,12 @@ pub struct Data<T> {
 }
 
 impl<T: Texture> Data<T> {
-    pub fn load<'t, TL>(texture_manager: &mut TextureManager<'t, TL>,
-                        data: GameData)
-                        -> Result<Self>
-        where TL: TextureLoader<'t, Texture = T>
+    pub fn load<'t, TL>(
+        texture_manager: &mut TextureManager<'t, TL>,
+        data: GameData,
+    ) -> Result<Self>
+    where
+        TL: TextureLoader<'t, Texture = T>,
     {
         let background = {
             let texture = data.background.texture.load(texture_manager)?;
@@ -83,17 +88,19 @@ impl<T: Texture> Data<T> {
             World::new(texture, data.ground.out_size.into())
         };
         Ok(Data {
-               data,
-               world,
-               background,
-           })
+            data,
+            world,
+            background,
+        })
     }
 
-    pub fn activate<'t, TL>(&self,
-                            texture_manager: &mut TextureManager<'t, TL>,
-                            kind: PlayerKind)
-                            -> Result<GamePlay<T>>
-        where TL: TextureLoader<'t, Texture = T>
+    pub fn activate<'t, TL>(
+        &self,
+        texture_manager: &mut TextureManager<'t, TL>,
+        kind: PlayerKind,
+    ) -> Result<GamePlay<T>>
+    where
+        TL: TextureLoader<'t, Texture = T>,
     {
         let player = match kind {
             PlayerKind::Duck => &self.data.duck,
@@ -112,11 +119,11 @@ impl<T: Texture> Data<T> {
         let background = self.background.clone();
         let viewport = ViewPort::new(glm::ivec2(1280, 720));
         Ok(GamePlay {
-               player,
-               world,
-               background,
-               viewport,
-           })
+            player,
+            world,
+            background,
+            viewport,
+        })
     }
 }
 
@@ -132,8 +139,9 @@ impl<T> GamePlay<T> {
 }
 
 impl<'t, T, R> Scene<R> for GamePlay<T>
-    where T: Texture,
-          R: Renderer<'t, Texture = T>
+where
+    T: Texture,
+    R: Renderer<'t, Texture = T>,
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         let mut camera = self.viewport.camera(renderer);

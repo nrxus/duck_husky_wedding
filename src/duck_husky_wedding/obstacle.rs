@@ -53,11 +53,13 @@ impl<'t, R: Renderer<'t>> Scene<R> for Obstacle<R::Texture> {
         (0..self.count.x)
             .flat_map(|i| (0..self.count.y).map(move |j| (i, j)))
             .map(|(i, j)| {
-                     glm::ivec4(self.tl.x + (self.tile.dims.x * i) as i32,
-                                self.tl.y + (self.tile.dims.y * j) as i32,
-                                self.tile.dims.x as i32,
-                                self.tile.dims.y as i32)
-                 })
+                glm::ivec4(
+                    self.tl.x + (self.tile.dims.x * i) as i32,
+                    self.tl.y + (self.tile.dims.y * j) as i32,
+                    self.tile.dims.x as i32,
+                    self.tile.dims.y as i32,
+                )
+            })
             .map(|d| renderer.copy(&*self.tile.texture, options::at(&d)))
             .try()
     }

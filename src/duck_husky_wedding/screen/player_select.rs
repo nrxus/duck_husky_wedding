@@ -25,15 +25,17 @@ pub struct Data<T> {
 }
 
 impl<T> Data<T> {
-    pub fn load<'f, 't, FT, FL, TL>(font_manager: &mut FontManager<'f, FL>,
-                                    texturizer: &'t FT,
-                                    texture_manager: &mut TextureManager<'t, TL>,
-                                    data: &GameData)
-                                    -> Result<Self>
-        where T: Texture,
-              TL: TextureLoader<'t, Texture = T>,
-              FL: FontLoader<'f>,
-              FT: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>
+    pub fn load<'f, 't, FT, FL, TL>(
+        font_manager: &mut FontManager<'f, FL>,
+        texturizer: &'t FT,
+        texture_manager: &mut TextureManager<'t, TL>,
+        data: &GameData,
+    ) -> Result<Self>
+    where
+        T: Texture,
+        TL: TextureLoader<'t, Texture = T>,
+        FL: FontLoader<'f>,
+        FT: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>,
     {
         let font_details = FontDetails {
             path: "media/fonts/kenpixel_mini.ttf",
@@ -88,8 +90,9 @@ impl<T> PlayerSelect<T> {
 }
 
 impl<'t, T, R> Scene<R> for PlayerSelect<T>
-    where T: Texture,
-          R: Renderer<'t, Texture = T>
+where
+    T: Texture,
+    R: Renderer<'t, Texture = T>,
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         let title_dims = glm::to_ivec2(self.title.dims());

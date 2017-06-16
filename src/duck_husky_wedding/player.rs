@@ -110,13 +110,16 @@ impl<T> Player<T> {
 }
 
 impl<'t, R> Scene<R> for Player<R::Texture>
-    where R: Renderer<'t>
+where
+    R: Renderer<'t>,
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        let dst_rect = glm::to_ivec4(glm::dvec4(self.body.top_left.x,
-                                                self.body.top_left.y,
-                                                self.body.dims.x,
-                                                self.body.dims.y));
+        let dst_rect = glm::to_ivec4(glm::dvec4(
+            self.body.top_left.x,
+            self.body.top_left.y,
+            self.body.dims.x,
+            self.body.dims.y,
+        ));
         let mut options = options::at(&dst_rect);
         if self.backwards {
             options = options.flip(TextureFlip::Horizontal);

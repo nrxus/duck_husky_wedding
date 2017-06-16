@@ -37,13 +37,15 @@ impl<T> Button for Static<T> {
 }
 
 impl<T> Static<T> {
-    pub fn from_text<'f, 't, R>(text: &str,
-                                texturizer: &'t R,
-                                font: &R::Font,
-                                tl: glm::IVec2)
-                                -> Result<Self>
-        where T: Texture,
-              R: FontTexturizer<'f, 't, Texture = T>
+    pub fn from_text<'f, 't, R>(
+        text: &str,
+        texturizer: &'t R,
+        font: &R::Font,
+        tl: glm::IVec2,
+    ) -> Result<Self>
+    where
+        T: Texture,
+        R: FontTexturizer<'f, 't, Texture = T>,
     {
         let dims = font.measure(text)?;
         let body = Rectangle {
@@ -54,37 +56,46 @@ impl<T> Static<T> {
         Self::text_at(text, texturizer, font, body)
     }
 
-    pub fn text_at<'f, 't, R>(text: &str,
-                              texturizer: &'t R,
-                              font: &R::Font,
-                              body: Rectangle)
-                              -> Result<Self>
-        where T: Texture,
-              R: FontTexturizer<'f, 't, Texture = T>
+    pub fn text_at<'f, 't, R>(
+        text: &str,
+        texturizer: &'t R,
+        font: &R::Font,
+        body: Rectangle,
+    ) -> Result<Self>
+    where
+        T: Texture,
+        R: FontTexturizer<'f, 't, Texture = T>,
     {
         let is_hovering = false;
-        let idle = Rc::new(texturizer
-                               .texturize(font, text, &ColorRGBA(255, 255, 255, 255))?);
-        let hover = Rc::new(texturizer
-                                .texturize(font, text, &ColorRGBA(255, 255, 0, 0))?);
+        let idle = Rc::new(texturizer.texturize(
+            font,
+            text,
+            &ColorRGBA(255, 255, 255, 255),
+        )?);
+        let hover = Rc::new(
+            texturizer.texturize(font, text, &ColorRGBA(255, 255, 0, 0))?,
+        );
         Ok(Static {
-               idle,
-               hover,
-               is_hovering,
-               body,
-           })
+            idle,
+            hover,
+            is_hovering,
+            body,
+        })
     }
 }
 
 impl<'t, T, R> Scene<R> for Static<T>
-    where T: Texture,
-          R: Renderer<'t, Texture = T>
+where
+    T: Texture,
+    R: Renderer<'t, Texture = T>,
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        let dst_rect = glm::to_ivec4(glm::dvec4(self.body.top_left.x,
-                                                self.body.top_left.y,
-                                                self.body.dims.x,
-                                                self.body.dims.y));
+        let dst_rect = glm::to_ivec4(glm::dvec4(
+            self.body.top_left.x,
+            self.body.top_left.y,
+            self.body.dims.x,
+            self.body.dims.y,
+        ));
 
         let texture = if self.is_hovering {
             &*self.hover

@@ -18,8 +18,9 @@ use moho::timer::Timer;
 use std::time::Duration;
 
 pub struct DuckHuskyWedding<'f, 't, TL, FL, R, E>
-    where TL: 't + TextureLoader<'t>,
-          FL: 'f + FontLoader<'f>
+where
+    TL: 't + TextureLoader<'t>,
+    FL: 'f + FontLoader<'f>,
 {
     input_manager: input::Manager<E>,
     texture_manager: TextureManager<'t, TL>,
@@ -29,14 +30,16 @@ pub struct DuckHuskyWedding<'f, 't, TL, FL, R, E>
 }
 
 impl<'f, 't, TL, FL, R, E> DuckHuskyWedding<'f, 't, TL, FL, R, E>
-    where TL: TextureLoader<'t>,
-          FL: FontLoader<'f>
+where
+    TL: TextureLoader<'t>,
+    FL: FontLoader<'f>,
 {
-    pub fn new(renderer: R,
-               font_loader: &'f FL,
-               texture_loader: &'t TL,
-               input_manager: input::Manager<E>)
-               -> Self {
+    pub fn new(
+        renderer: R,
+        font_loader: &'f FL,
+        texture_loader: &'t TL,
+        input_manager: input::Manager<E>,
+    ) -> Self {
         let texture_manager = TextureManager::new(texture_loader);
         let font_manager = FontManager::new(font_loader);
         DuckHuskyWedding {
@@ -49,18 +52,18 @@ impl<'f, 't, TL, FL, R, E> DuckHuskyWedding<'f, 't, TL, FL, R, E>
     }
 
     pub fn run(&mut self) -> Result<()>
-        where TL: FontTexturizer<'f,
-                                 't,
-                                 Texture = <TL as TextureLoader<'t>>::Texture,
-                                 Font = FL::Font>,
-              R: Canvas<'t, Texture = <TL as TextureLoader<'t>>::Texture>,
-              E: input::EventPump
+    where
+        TL: FontTexturizer<'f, 't, Texture = <TL as TextureLoader<'t>>::Texture, Font = FL::Font>,
+        R: Canvas<'t, Texture = <TL as TextureLoader<'t>>::Texture>,
+        E: input::EventPump,
     {
         let game_data = GameData::load("media/game_data.yaml")?;
-        let mut screen_manager = screen::Manager::load(&mut self.font_manager,
-                                                       &mut self.texture_manager,
-                                                       self.texture_loader,
-                                                       game_data)?;
+        let mut screen_manager = screen::Manager::load(
+            &mut self.font_manager,
+            &mut self.texture_manager,
+            self.texture_loader,
+            game_data,
+        )?;
 
         const GAME_SPEED: u32 = 60;
         const MAX_SKIP: u32 = 10;
@@ -80,10 +83,12 @@ impl<'f, 't, TL, FL, R, E> DuckHuskyWedding<'f, 't, TL, FL, R, E>
 
                 let next_screen = screen_manager.mut_screen().update(update_duration, state);
                 if let Some(s) = next_screen {
-                    screen_manager.select_screen(s,
-                                                 &mut self.font_manager,
-                                                 &mut self.texture_manager,
-                                                 self.texture_loader);
+                    screen_manager.select_screen(
+                        s,
+                        &mut self.font_manager,
+                        &mut self.texture_manager,
+                        self.texture_loader,
+                    );
                 }
 
                 delta -= update_duration;
