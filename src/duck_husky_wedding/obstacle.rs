@@ -26,6 +26,16 @@ pub struct Obstacle<T> {
     pub count: glm::UVec2,
 }
 
+impl<T> Clone for Obstacle<T> {
+    fn clone(&self) -> Self {
+        Obstacle {
+            tile: self.tile.clone(),
+            tl: self.tl,
+            count: self.count,
+        }
+    }
+}
+
 impl<T> Obstacle<T> {
     pub fn mtv(&self, object: &Rectangle) -> Option<glm::DVec2> {
         let obstacle = Rectangle {

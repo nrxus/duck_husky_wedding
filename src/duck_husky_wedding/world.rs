@@ -13,11 +13,19 @@ pub struct World<T> {
     border: Obstacle<T>,
 }
 
+impl<T> Clone for World<T> {
+    fn clone(&self) -> Self {
+        World {
+            ground: self.ground.clone(),
+            border: self.border.clone(),
+        }
+    }
+}
+
 impl<T> World<T> {
-    pub fn new<'t>(tile: (Rc<T>, glm::UVec2)) -> Self
+    pub fn new<'t>(texture: Rc<T>, dims: glm::UVec2) -> Self
         where T: Texture
     {
-        let (texture, dims) = tile;
         let tile = obstacle::Tile {
             texture: texture,
             dims: dims,

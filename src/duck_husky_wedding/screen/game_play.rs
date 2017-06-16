@@ -61,7 +61,7 @@ pub struct GamePlay<T> {
 }
 
 pub struct Data<T> {
-    tile: (Rc<T>, glm::UVec2),
+    world: World<T>,
     background: Background<T>,
     data: GameData,
 }
@@ -78,10 +78,10 @@ impl<T: Texture> Data<T> {
             texture: background,
             dimensions: glm::ivec2(2560, 720),
         };
-        let tile = (texture, data.ground.out_size.into());
+        let world = World::new(texture, data.ground.out_size.into());
         Ok(Data {
                data,
-               tile,
+               world,
                background,
            })
     }
@@ -105,7 +105,7 @@ impl<T: Texture> Data<T> {
         let texture = player.idle_texture.load(texture_manager)?;
 
         let player = Player::new(animation, texture, body);
-        let world = World::new((self.tile.0.clone(), self.tile.1));
+        let world = self.world.clone();
         let background = self.background.clone();
         let viewport = ViewPort::new(glm::ivec2(1280, 720));
         Ok(GamePlay {
