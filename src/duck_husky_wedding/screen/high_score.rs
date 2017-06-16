@@ -1,4 +1,5 @@
 use duck_husky_wedding::button::{self, Button};
+use duck_husky_wedding::try::Try;
 use errors::*;
 
 use glm;
@@ -107,17 +108,13 @@ impl<'t, T, R> Scene<R> for HighScore<T>
         renderer.show(&self.back)?;
         renderer.copy(&self.title, options::at(&title_rectangle))?;
 
-        let results = self.scores
+        self.scores
             .iter()
             .enumerate()
             .map(|(i, s)| {
                      let dims = glm::to_ivec2(s.dims());
                      (s, glm::ivec4(640 - dims.x / 2, 200 * i as i32 + dims.y, dims.x, dims.y))
                  })
-            .map(|(s, d)| renderer.copy(s, options::at(&d)));
-        for r in results {
-            r?;
-        }
-        Ok(())
+            .map(|(s, d)| renderer.copy(s, options::at(&d))).try()
     }
 }

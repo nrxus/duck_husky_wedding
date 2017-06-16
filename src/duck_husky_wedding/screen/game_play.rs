@@ -2,6 +2,7 @@ use duck_husky_wedding::player::Player;
 use duck_husky_wedding::game_data::GameData;
 use duck_husky_wedding::world::World;
 use duck_husky_wedding::camera::ViewPort;
+use duck_husky_wedding::try::Try;
 use errors::*;
 
 use glm;
@@ -33,18 +34,15 @@ impl<'t, T, R> Scene<R> for Background<T>
           R: Renderer<'t, Texture = T>
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        let results = (0..4)
+        (0..4)
             .map(|i| {
                      glm::ivec4(self.dimensions.x * i,
                                 0,
                                 self.dimensions.x,
                                 self.dimensions.y)
                  })
-            .map(|d| renderer.copy(&*self.texture, options::at(&d)));
-        for r in results {
-            r?
-        }
-        Ok(())
+            .map(|d| renderer.copy(&*self.texture, options::at(&d)))
+            .try()
     }
 }
 

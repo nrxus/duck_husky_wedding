@@ -1,3 +1,5 @@
+use duck_husky_wedding::try::Try;
+
 use moho::shape::{Intersect, Rectangle};
 use moho::renderer::{options, Renderer, Scene};
 use moho::errors as moho_errors;
@@ -48,7 +50,7 @@ impl<T> Obstacle<T> {
 
 impl<'t, R: Renderer<'t>> Scene<R> for Obstacle<R::Texture> {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        let results = (0..self.count.x)
+        (0..self.count.x)
             .flat_map(|i| (0..self.count.y).map(move |j| (i, j)))
             .map(|(i, j)| {
                      glm::ivec4(self.tl.x + (self.tile.dims.x * i) as i32,
@@ -56,10 +58,7 @@ impl<'t, R: Renderer<'t>> Scene<R> for Obstacle<R::Texture> {
                                 self.tile.dims.x as i32,
                                 self.tile.dims.y as i32)
                  })
-            .map(|d| renderer.copy(&*self.tile.texture, options::at(&d)));
-        for r in results {
-            r?;
-        }
-        Ok(())
+            .map(|d| renderer.copy(&*self.tile.texture, options::at(&d)))
+            .try()
     }
 }

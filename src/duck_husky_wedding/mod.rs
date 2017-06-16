@@ -5,6 +5,7 @@ mod button;
 mod screen;
 mod world;
 mod obstacle;
+mod try;
 
 use errors::*;
 use self::game_data::GameData;
