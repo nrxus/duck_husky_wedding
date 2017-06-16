@@ -105,18 +105,19 @@ impl<'t, T, R> Scene<R> for HighScore<T>
         let title_dims = glm::to_ivec2(self.title.dims());
         let title_rectangle = glm::ivec4(640 - title_dims.x / 2, 0, title_dims.x, title_dims.y);
         renderer.show(&self.back)?;
-        let mut height = 200;
-        self.scores
+        renderer.copy(&self.title, options::at(&title_rectangle))?;
+
+        let results = self.scores
             .iter()
-            .map(|s| {
+            .enumerate()
+            .map(|(i, s)| {
                      let dims = glm::to_ivec2(s.dims());
-                     let dst = glm::ivec4(640 - dims.x / 2, height, dims.x, dims.y);
-                     height += dims.y;
-                     renderer.copy(s, options::at(&dst))
+                     (s, glm::ivec4(640 - dims.x / 2, 200 * i as i32 + dims.y, dims.x, dims.y))
                  })
-            .take_while(moho_errors::Result::is_ok)
-            .last()
-            .unwrap_or(Ok(()))?;
-        renderer.copy(&self.title, options::at(&title_rectangle))
+            .map(|(s, d)| renderer.copy(s, options::at(&d)));
+        for r in results {
+            r?;
+        }
+        Ok(())
     }
 }
