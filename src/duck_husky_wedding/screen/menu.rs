@@ -45,11 +45,8 @@ impl<T> Data<T> {
         };
         let new_game = button::Static::text_at("New Game", texturizer, &*font, body)?;
         let title_color = ColorRGBA(255, 255, 0, 255);
-        let title = Rc::new(texturizer.texturize(
-            &*font,
-            "Husky Loves Ducky",
-            &title_color,
-        )?);
+        let title = Rc::new(texturizer
+            .texturize(&*font, "Husky Loves Ducky", &title_color)?);
 
         let dims = font.measure("High Score")?;
         let top_left = glm::ivec2(640 - dims.x as i32 / 2, 400);

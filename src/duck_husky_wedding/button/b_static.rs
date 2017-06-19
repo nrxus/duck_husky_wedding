@@ -67,14 +67,10 @@ impl<T> Static<T> {
         R: FontTexturizer<'f, 't, Texture = T>,
     {
         let is_hovering = false;
-        let idle = Rc::new(texturizer.texturize(
-            font,
-            text,
-            &ColorRGBA(255, 255, 255, 255),
-        )?);
-        let hover = Rc::new(
-            texturizer.texturize(font, text, &ColorRGBA(255, 255, 0, 0))?,
-        );
+        let idle = Rc::new(texturizer
+            .texturize(font, text, &ColorRGBA(255, 255, 255, 255))?);
+        let hover = Rc::new(texturizer
+            .texturize(font, text, &ColorRGBA(255, 255, 0, 0))?);
         Ok(Static {
             idle,
             hover,

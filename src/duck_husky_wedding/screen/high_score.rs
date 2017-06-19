@@ -79,9 +79,9 @@ impl<T> Data<T> {
             .iter()
             .map(|s| {
                 let score = format!("{:04}{:5}{:>3}", s.score, "", s.name);
-                texturizer.texturize(&*font, &score, &color).map_err(
-                    Into::into,
-                )
+                texturizer
+                    .texturize(&*font, &score, &color)
+                    .map_err(Into::into)
             })
             .collect::<Result<Vec<_>>>()?;
         Ok(HighScore {
