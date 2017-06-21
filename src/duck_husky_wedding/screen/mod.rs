@@ -7,7 +7,7 @@ use self::menu::Menu;
 use self::game_play::{GamePlay, PlayerKind};
 use self::high_score::HighScore;
 use self::player_select::PlayerSelect;
-use super::game_data::GameData;
+use game_data::GameData;
 
 use moho::errors as moho_errors;
 use moho::input;

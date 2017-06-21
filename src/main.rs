@@ -8,6 +8,7 @@ extern crate serde_yaml;
 extern crate sdl2;
 
 mod duck_husky_wedding;
+mod game_data;
 
 use duck_husky_wedding::DuckHuskyWedding;
 

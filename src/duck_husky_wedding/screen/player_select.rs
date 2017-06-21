@@ -1,6 +1,6 @@
 use duck_husky_wedding::button::{self, Button};
-use duck_husky_wedding::game_data::GameData;
 use errors::*;
+use game_data::GameData;
 
 use glm;
 use moho::errors as moho_errors;

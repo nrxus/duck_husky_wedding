@@ -1,5 +1,4 @@
 mod camera;
-mod game_data;
 mod player;
 mod button;
 mod screen;
@@ -8,7 +7,7 @@ mod obstacle;
 mod try;
 
 use errors::*;
-use self::game_data::GameData;
+use game_data::GameData;
 
 use moho::input;
 use moho::renderer::{ColorRGBA, FontTexturizer, FontLoader, Canvas, TextureLoader, TextureManager,

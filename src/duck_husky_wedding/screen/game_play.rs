@@ -1,8 +1,8 @@
 use duck_husky_wedding::player::Player;
-use duck_husky_wedding::game_data::GameData;
 use duck_husky_wedding::world::World;
 use duck_husky_wedding::camera::ViewPort;
 use duck_husky_wedding::try::Try;
+use game_data::GameData;
 use errors::*;
 
 use glm;
