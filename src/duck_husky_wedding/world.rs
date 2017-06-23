@@ -76,10 +76,7 @@ impl<T> World<T> {
     }
 }
 
-impl<'t, R> Scene<R> for World<R::Texture>
-where
-    R: Renderer<'t>,
-{
+impl<'t, R: Renderer<'t>> Scene<R> for World<R::Texture> {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         renderer.show(&self.background)?;
         renderer.show(&self.ground)?;

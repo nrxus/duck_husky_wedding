@@ -87,10 +87,9 @@ impl<T> Menu<T> {
     }
 }
 
-impl<'t, T, R> Scene<R> for Menu<T>
+impl<'t, R: Renderer<'t>> Scene<R> for Menu<R::Texture>
 where
-    T: Texture,
-    R: Renderer<'t, Texture = T>,
+    R::Texture: Texture,
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         let title_dims = glm::to_ivec2(self.title.dims());

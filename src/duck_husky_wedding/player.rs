@@ -109,10 +109,7 @@ impl<T> Player<T> {
     }
 }
 
-impl<'t, R> Scene<R> for Player<R::Texture>
-where
-    R: Renderer<'t>,
-{
+impl<'t, R: Renderer<'t>> Scene<R> for Player<R::Texture> {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         let dst_rect = glm::to_ivec4(glm::dvec4(
             self.body.top_left.x,

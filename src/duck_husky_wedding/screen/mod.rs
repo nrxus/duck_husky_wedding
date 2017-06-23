@@ -32,10 +32,9 @@ pub enum Screen<T> {
     PlayerSelect(PlayerSelect<T>),
 }
 
-impl<'t, T, R> Scene<R> for Screen<T>
+impl<'t, R: Renderer<'t>> Scene<R> for Screen<R::Texture>
 where
-    T: Texture,
-    R: Renderer<'t, Texture = T>,
+    R::Texture: Texture,
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         match *self {
@@ -67,7 +66,7 @@ pub struct Manager<T> {
     active: Screen<T>,
 }
 
-impl<T> Manager<T> {
+impl<T: Texture> Manager<T> {
     pub fn load<'f, 't, R, TL, FL>(
         font_manager: &mut FontManager<'f, FL>,
         texture_manager: &mut TextureManager<'t, TL>,
@@ -75,7 +74,6 @@ impl<T> Manager<T> {
         data: GameData,
     ) -> Result<Self>
     where
-        T: Texture,
         TL: TextureLoader<'t, Texture = T>,
         FL: FontLoader<'f>,
         R: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>,
@@ -110,7 +108,6 @@ impl<T> Manager<T> {
         texture_manager: &mut TextureManager<'t, TL>,
         texturizer: &'t R,
     ) where
-        T: Texture,
         FL: FontLoader<'f>,
         TL: TextureLoader<'t, Texture = T>,
         R: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>,

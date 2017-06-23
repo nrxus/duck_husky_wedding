@@ -24,7 +24,7 @@ pub struct Data<T> {
     duck: button::Animated<T>,
 }
 
-impl<T> Data<T> {
+impl<T: Texture> Data<T> {
     pub fn load<'f, 't, FT, FL, TL>(
         font_manager: &mut FontManager<'f, FL>,
         texturizer: &'t FT,
@@ -32,7 +32,6 @@ impl<T> Data<T> {
         data: &GameData,
     ) -> Result<Self>
     where
-        T: Texture,
         TL: TextureLoader<'t, Texture = T>,
         FL: FontLoader<'f>,
         FT: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>,
@@ -89,10 +88,9 @@ impl<T> PlayerSelect<T> {
     }
 }
 
-impl<'t, T, R> Scene<R> for PlayerSelect<T>
+impl<'t, R: Renderer<'t>> Scene<R> for PlayerSelect<R::Texture>
 where
-    T: Texture,
-    R: Renderer<'t, Texture = T>,
+    R::Texture: Texture,
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         let title_dims = glm::to_ivec2(self.title.dims());

@@ -83,11 +83,7 @@ impl<T> GamePlay<T> {
     }
 }
 
-impl<'t, T, R> Scene<R> for GamePlay<T>
-where
-    T: Texture,
-    R: Renderer<'t, Texture = T>,
-{
+impl<'t, R: Renderer<'t>> Scene<R> for GamePlay<R::Texture> {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         let mut camera = self.viewport.camera(renderer);
         camera.show(&self.world)?;
