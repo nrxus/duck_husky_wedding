@@ -1,6 +1,6 @@
 use duck_husky_wedding::try::Try;
 use errors::*;
-use game_data::ImageData;
+use data;
 
 use glm;
 use moho::errors as moho_errors;
@@ -25,7 +25,7 @@ impl<T> Clone for Background<T> {
 impl<T: Texture> Background<T> {
     pub fn load<'t, TL>(
         texture_manager: &mut TextureManager<'t, TL>,
-        data: &ImageData,
+        data: &data::Image,
     ) -> Result<Self>
     where
         TL: TextureLoader<'t, Texture = T>,

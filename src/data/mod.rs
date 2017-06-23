@@ -6,25 +6,24 @@ use glm;
 use serde_yaml;
 
 use std::fs::File;
+use std::rc::Rc;
 use std::time::Duration;
 
-use std::rc::Rc;
-
 #[derive(Debug, Deserialize, Clone, Copy)]
-pub struct DimensionData {
+pub struct Dimension {
     pub x: u32,
     pub y: u32,
 }
 
 #[derive(Debug, Deserialize)]
-pub struct SpriteData {
-    pub texture: TextureData,
+pub struct Sprite {
+    pub texture: Texture,
     pub frames: u32,
-    pub tiles: DimensionData,
+    pub tiles: Dimension,
     pub duration: u64,
 }
 
-impl SpriteData {
+impl Sprite {
     pub fn load<'t, TL: TextureLoader<'t>>(
         &self,
         texture_manager: &mut TextureManager<'t, TL>,
@@ -38,9 +37,9 @@ impl SpriteData {
 }
 
 #[derive(Debug, Deserialize, Clone)]
-pub struct TextureData(String);
+pub struct Texture(String);
 
-impl TextureData {
+impl Texture {
     pub fn load<'t, TL: TextureLoader<'t>>(
         &self,
         texture_manager: &mut TextureManager<'t, TL>,
@@ -52,47 +51,47 @@ impl TextureData {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct PlayerData {
-    pub animation: SpriteData,
-    pub idle_texture: TextureData,
-    pub out_size: DimensionData,
+pub struct Player {
+    pub animation: Sprite,
+    pub idle_texture: Texture,
+    pub out_size: Dimension,
 }
 
 #[derive(Debug, Deserialize, Clone)]
-pub struct ImageData {
-    pub texture: TextureData,
-    pub out_size: DimensionData,
+pub struct Image {
+    pub texture: Texture,
+    pub out_size: Dimension,
 }
 
 #[derive(Debug, Deserialize)]
-pub struct GroundData {
-    pub center: TextureData,
-    pub left: TextureData,
-    pub right: TextureData,
-    pub top: TextureData,
-    pub top_left: TextureData,
-    pub top_right: TextureData,
-    pub out_size: DimensionData,
+pub struct Ground {
+    pub center: Texture,
+    pub left: Texture,
+    pub right: Texture,
+    pub top: Texture,
+    pub top_left: Texture,
+    pub top_right: Texture,
+    pub out_size: Dimension,
 }
 
 #[derive(Debug, Deserialize)]
-pub struct GameData {
-    pub duck: PlayerData,
-    pub husky: PlayerData,
-    pub ground: GroundData,
-    pub background: ImageData,
+pub struct Game {
+    pub duck: Player,
+    pub husky: Player,
+    pub ground: Ground,
+    pub background: Image,
 }
 
-impl GameData {
-    pub fn load(path: &'static str) -> Result<GameData> {
+impl Game {
+    pub fn load(path: &'static str) -> Result<Game> {
         let f = File::open(path)?;
         serde_yaml::from_reader(&f).map_err(Into::into)
     }
 }
 
-impl<'a> From<DimensionData> for glm::UVec2 {
-    fn from(data: DimensionData) -> glm::UVec2 {
-        let DimensionData { x, y } = data;
+impl<'a> From<Dimension> for glm::UVec2 {
+    fn from(dim: Dimension) -> glm::UVec2 {
+        let Dimension { x, y } = dim;
         glm::uvec2(x, y)
     }
 }

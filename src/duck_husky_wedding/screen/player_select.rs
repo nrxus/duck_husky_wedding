@@ -1,6 +1,6 @@
+use data;
 use duck_husky_wedding::button::{self, Button};
 use errors::*;
-use game_data::GameData;
 
 use glm;
 use moho::errors as moho_errors;
@@ -29,7 +29,7 @@ impl<T: Texture> Data<T> {
         font_manager: &mut FontManager<'f, FL>,
         texturizer: &'t FT,
         texture_manager: &mut TextureManager<'t, TL>,
-        data: &GameData,
+        data: &data::Game,
     ) -> Result<Self>
     where
         TL: TextureLoader<'t, Texture = T>,

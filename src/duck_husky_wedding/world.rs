@@ -1,5 +1,5 @@
+use data;
 use errors::*;
-use game_data::GameData;
 use duck_husky_wedding::background::Background;
 use duck_husky_wedding::player::Player;
 use duck_husky_wedding::obstacle::{self, Obstacle};
@@ -28,7 +28,7 @@ impl<T> Clone for World<T> {
 impl<T> World<T> {
     pub fn load<'t, TL>(
         texture_manager: &mut TextureManager<'t, TL>,
-        data: &GameData,
+        data: &data::Game,
     ) -> Result<Self>
     where
         TL: TextureLoader<'t, Texture = T>,

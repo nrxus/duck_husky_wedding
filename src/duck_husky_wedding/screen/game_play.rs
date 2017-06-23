@@ -1,7 +1,7 @@
 use duck_husky_wedding::player::Player;
 use duck_husky_wedding::world::World;
 use duck_husky_wedding::camera::ViewPort;
-use game_data::GameData;
+use data;
 use errors::*;
 
 use glm;
@@ -26,13 +26,13 @@ pub struct GamePlay<T> {
 
 pub struct Data<T> {
     world: World<T>,
-    data: GameData,
+    data: data::Game,
 }
 
 impl<T: Texture> Data<T> {
     pub fn load<'t, TL>(
         texture_manager: &mut TextureManager<'t, TL>,
-        data: GameData,
+        data: data::Game,
     ) -> Result<Self>
     where
         TL: TextureLoader<'t, Texture = T>,

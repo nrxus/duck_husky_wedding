@@ -3,11 +3,11 @@ mod game_play;
 mod high_score;
 mod player_select;
 
+use data;
 use self::menu::Menu;
 use self::game_play::{GamePlay, PlayerKind};
 use self::high_score::HighScore;
 use self::player_select::PlayerSelect;
-use game_data::GameData;
 
 use moho::errors as moho_errors;
 use moho::input;
@@ -71,7 +71,7 @@ impl<T: Texture> Manager<T> {
         font_manager: &mut FontManager<'f, FL>,
         texture_manager: &mut TextureManager<'t, TL>,
         texturizer: &'t R,
-        data: GameData,
+        data: data::Game,
     ) -> Result<Self>
     where
         TL: TextureLoader<'t, Texture = T>,

@@ -8,7 +8,7 @@ mod obstacle;
 mod try;
 
 use errors::*;
-use game_data::GameData;
+use data;
 
 use moho::input;
 use moho::renderer::{ColorRGBA, FontTexturizer, FontLoader, Canvas, TextureLoader, TextureManager,
@@ -57,7 +57,7 @@ where
         R: Canvas<'t, Texture = <TL as TextureLoader<'t>>::Texture>,
         E: input::EventPump,
     {
-        let game_data = GameData::load("media/game_data.yaml")?;
+        let game_data = data::Game::load("media/game_data.yaml")?;
         let mut screen_manager = screen::Manager::load(
             &mut self.font_manager,
             &mut self.texture_manager,

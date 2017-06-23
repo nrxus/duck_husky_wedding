@@ -1,6 +1,6 @@
+use data;
 use duck_husky_wedding::camera::ViewPort;
 use duck_husky_wedding::world::World;
-use game_data::GameData;
 use errors::*;
 
 use glm;
@@ -35,7 +35,7 @@ where
         R: Canvas<'t, Texture = TL::Texture>,
         E: input::EventPump,
     {
-        let game_data = GameData::load("media/game_data.yaml")?;
+        let game_data = data::Game::load("media/game_data.yaml")?;
         let world = World::load(&mut self.texture_manager, &game_data)?;
         let mut viewport = ViewPort::new(glm::ivec2(1280, 720));
         loop {
