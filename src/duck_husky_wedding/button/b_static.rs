@@ -80,11 +80,7 @@ impl<T> Static<T> {
     }
 }
 
-impl<'t, T, R> Scene<R> for Static<T>
-where
-    T: Texture,
-    R: Renderer<'t, Texture = T>,
-{
+impl<'t, R: Renderer<'t>> Scene<R> for Static<R::Texture> {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         let dst_rect = glm::to_ivec4(glm::dvec4(
             self.body.top_left.x,
