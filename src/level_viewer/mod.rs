@@ -1,8 +1,12 @@
+use duck_husky_wedding::camera::ViewPort;
+use duck_husky_wedding::world::World;
 use game_data::GameData;
 use errors::*;
 
+use glm;
 use moho::input;
-use moho::renderer::{Canvas, TextureLoader, TextureManager};
+use moho::renderer::{Canvas, Renderer, TextureLoader, TextureManager};
+use sdl2::keyboard::Keycode;
 
 pub struct LevelViewer<'t, TL, R, E>
 where
@@ -32,12 +36,36 @@ where
         E: input::EventPump,
     {
         let game_data = GameData::load("media/game_data.yaml")?;
+        let world = World::load(&mut self.texture_manager, &game_data)?;
+        let mut viewport = ViewPort::new(glm::ivec2(1280, 720));
         loop {
-            let state = self.input_manager.update();
-            if state.game_quit() {
+            let input = self.input_manager.update();
+            if input.game_quit() {
                 break;
+            };
+
+            let mut t = glm::ivec2(0, 0);
+            if input.is_key_down(Keycode::Left) {
+                t.x -= 5;
             }
+            if input.is_key_down(Keycode::Right) {
+                t.x += 5;
+            }
+            if input.is_key_down(Keycode::Up) {
+                t.y -= 5;
+            }
+            if input.is_key_down(Keycode::Down) {
+                t.y += 5;
+            }
+
+            viewport.translate(t);
+
+            //draw
             self.renderer.clear();
+            {
+                let mut camera = viewport.camera(&mut self.renderer);
+                camera.show(&world)?;
+            }
             self.renderer.present();
         }
         Ok(())
