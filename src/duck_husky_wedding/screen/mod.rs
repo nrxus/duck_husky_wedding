@@ -71,7 +71,8 @@ impl<T: Texture> Manager<T> {
         font_manager: &mut FontManager<'f, FL>,
         texture_manager: &mut TextureManager<'t, TL>,
         texturizer: &'t R,
-        data: data::Game,
+        level: &data::Level,
+        game: data::Game,
     ) -> Result<Self>
     where
         TL: TextureLoader<'t, Texture = T>,
@@ -79,10 +80,10 @@ impl<T: Texture> Manager<T> {
         R: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>,
     {
         let player_select =
-            player_select::Data::load(font_manager, texturizer, texture_manager, &data)?;
+            player_select::Data::load(font_manager, texturizer, texture_manager, &game)?;
         let menu = menu::Data::load(font_manager, texturizer)?;
         let active = Screen::Menu(menu.activate());
-        let game_play = game_play::Data::load(texture_manager, data)?;
+        let game_play = game_play::Data::load(texture_manager, level, game)?;
         let high_score = high_score::Data::load(font_manager, texturizer)?;
         Ok(Manager {
             menu: menu,

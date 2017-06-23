@@ -1,3 +1,7 @@
+mod level;
+
+pub use self::level::Level;
+
 use errors::*;
 use moho::animation::{self, animator, TileSheet};
 use moho::renderer::{TextureLoader, TextureManager};

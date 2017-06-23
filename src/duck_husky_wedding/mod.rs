@@ -58,10 +58,12 @@ where
         E: input::EventPump,
     {
         let game_data = data::Game::load("media/game_data.yaml")?;
+        let level_data = data::Level::load("media/level.yaml")?;
         let mut screen_manager = screen::Manager::load(
             &mut self.font_manager,
             &mut self.texture_manager,
             self.texture_loader,
+            &level_data,
             game_data,
         )?;
 

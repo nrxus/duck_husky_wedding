@@ -28,15 +28,16 @@ impl<T> Clone for World<T> {
 impl<T> World<T> {
     pub fn load<'t, TL>(
         texture_manager: &mut TextureManager<'t, TL>,
-        data: &data::Game,
+        level: &data::Level,
+        game: &data::Game,
     ) -> Result<Self>
     where
         TL: TextureLoader<'t, Texture = T>,
         T: Texture,
     {
-        let background = Background::load(texture_manager, &data.background)?;
-        let texture = data.ground.center.load(texture_manager)?;
-        let dims = data.ground.out_size.into();
+        let background = Background::load(texture_manager, &game.background)?;
+        let texture = game.ground.center.load(texture_manager)?;
+        let dims = game.ground.out_size.into();
 
         let tile = obstacle::Tile { texture, dims };
 

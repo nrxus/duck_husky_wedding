@@ -36,7 +36,8 @@ where
         E: input::EventPump,
     {
         let game_data = data::Game::load("media/game_data.yaml")?;
-        let world = World::load(&mut self.texture_manager, &game_data)?;
+        let level_data = data::Level::load("media/level.yaml")?;
+        let world = World::load(&mut self.texture_manager, &level_data, &game_data)?;
         let mut viewport = ViewPort::new(glm::ivec2(1280, 720));
         loop {
             let input = self.input_manager.update();

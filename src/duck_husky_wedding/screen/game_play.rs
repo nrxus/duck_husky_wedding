@@ -26,19 +26,20 @@ pub struct GamePlay<T> {
 
 pub struct Data<T> {
     world: World<T>,
-    data: data::Game,
+    game: data::Game,
 }
 
 impl<T: Texture> Data<T> {
     pub fn load<'t, TL>(
         texture_manager: &mut TextureManager<'t, TL>,
-        data: data::Game,
+        level: &data::Level,
+        game: data::Game,
     ) -> Result<Self>
     where
         TL: TextureLoader<'t, Texture = T>,
     {
-        let world = World::load(texture_manager, &data)?;
-        Ok(Data { data, world })
+        let world = World::load(texture_manager, level, &game)?;
+        Ok(Data { game, world })
     }
 
     pub fn activate<'t, TL>(
@@ -50,8 +51,8 @@ impl<T: Texture> Data<T> {
         TL: TextureLoader<'t, Texture = T>,
     {
         let player = match kind {
-            PlayerKind::Duck => &self.data.duck,
-            PlayerKind::Husky => &self.data.husky,
+            PlayerKind::Duck => &self.game.duck,
+            PlayerKind::Husky => &self.game.husky,
         };
         let body = Rectangle {
             top_left: glm::dvec2(100., 300.),
