@@ -35,5 +35,5 @@ ground:
 background:
   texture: "background.png"
   out_size:
-    x: 1280
+    x: 2560
     y: 720
