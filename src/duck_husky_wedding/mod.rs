@@ -1,3 +1,4 @@
+mod background;
 mod camera;
 mod player;
 mod button;

@@ -1,14 +1,16 @@
+use errors::*;
+use game_data::GameData;
+use duck_husky_wedding::background::Background;
 use duck_husky_wedding::player::Player;
 use duck_husky_wedding::obstacle::{self, Obstacle};
 
 use glm;
 use moho::shape::Shape;
-use moho::renderer::{Scene, Renderer, Texture};
+use moho::renderer::{Scene, Renderer, Texture, TextureLoader, TextureManager};
 use moho::errors as moho_errors;
 
-use std::rc::Rc;
-
 pub struct World<T> {
+    background: Background<T>,
     ground: Obstacle<T>,
     border: Obstacle<T>,
 }
@@ -18,19 +20,25 @@ impl<T> Clone for World<T> {
         World {
             ground: self.ground.clone(),
             border: self.border.clone(),
+            background: self.background.clone(),
         }
     }
 }
 
 impl<T> World<T> {
-    pub fn new<'t>(texture: Rc<T>, dims: glm::UVec2) -> Self
+    pub fn load<'t, TL>(
+        texture_manager: &mut TextureManager<'t, TL>,
+        data: &GameData,
+    ) -> Result<Self>
     where
+        TL: TextureLoader<'t, Texture = T>,
         T: Texture,
     {
-        let tile = obstacle::Tile {
-            texture: texture,
-            dims: dims,
-        };
+        let background = Background::load(texture_manager, &data.background)?;
+        let texture = data.ground.center.load(texture_manager)?;
+        let dims = data.ground.out_size.into();
+
+        let tile = obstacle::Tile { texture, dims };
 
         let ground = Obstacle {
             tile: tile.clone(),
@@ -44,7 +52,11 @@ impl<T> World<T> {
             count: glm::uvec2(1, 720 / dims.y),
         };
 
-        World { ground, border }
+        Ok(World {
+            ground,
+            border,
+            background,
+        })
     }
 
     pub fn force(&self, player: &Player<T>) -> glm::DVec2 {
@@ -69,6 +81,7 @@ where
     R: Renderer<'t>,
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+        renderer.show(&self.background)?;
         renderer.show(&self.ground)?;
         renderer.show(&self.border)
     }

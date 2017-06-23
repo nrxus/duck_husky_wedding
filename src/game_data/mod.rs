@@ -65,10 +65,21 @@ pub struct ImageData {
 }
 
 #[derive(Debug, Deserialize)]
+pub struct GroundData {
+    pub center: TextureData,
+    pub left: TextureData,
+    pub right: TextureData,
+    pub top: TextureData,
+    pub top_left: TextureData,
+    pub top_right: TextureData,
+    pub out_size: DimensionData,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct GameData {
     pub duck: PlayerData,
     pub husky: PlayerData,
-    pub ground: ImageData,
+    pub ground: GroundData,
     pub background: ImageData,
 }
 

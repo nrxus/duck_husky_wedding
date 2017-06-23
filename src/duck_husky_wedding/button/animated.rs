@@ -3,7 +3,7 @@ use super::Button;
 use glm;
 use moho::animation::{self, Animation};
 use moho::errors as moho_errors;
-use moho::renderer::{options, Renderer, Scene, Texture};
+use moho::renderer::{options, Renderer, Scene};
 use moho::shape::Rectangle;
 
 use std::rc::Rc;
@@ -69,11 +69,7 @@ impl<T> Animated<T> {
     }
 }
 
-impl<'t, T, R> Scene<R> for Animated<T>
-where
-    T: Texture,
-    R: Renderer<'t, Texture = T>,
-{
+impl<'t, R: Renderer<'t>> Scene<R> for Animated<R::Texture> {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         let dst_rect = glm::to_ivec4(glm::dvec4(
             self.body.top_left.x,
