@@ -1,0 +1,13 @@
+obstacles:
+  - count:
+      x: 20
+      y: 1
+    top_left:
+      x: 0
+      y: 17
+  - count:
+      x: 1
+      y: 18
+    top_left:
+      x: 0
+      y: 0
