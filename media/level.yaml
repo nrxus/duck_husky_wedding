@@ -11,3 +11,9 @@ obstacles:
     top_left:
       x: 0
       y: 0
+  - count:
+      x: 15
+      y: 4
+    top_left:
+      x: 10
+      y: 14

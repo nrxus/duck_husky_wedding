@@ -66,7 +66,11 @@ impl<T> Player<T> {
         }
     }
 
-    pub fn update(&mut self, force: glm::DVec2, delta: Duration) {
+    pub fn update(&mut self, mut force: glm::DVec2, delta: Duration) {
+        if force.y.abs() < 0.0000001 {
+            force.y = 0.
+        }
+
         let next_action = match self.action {
             Action::Moving(ref mut a) => {
                 if self.velocity.y.abs() > 0.0000001 || force.y.abs() > 0.0000001 {
