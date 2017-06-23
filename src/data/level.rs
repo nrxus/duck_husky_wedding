@@ -7,13 +7,13 @@ use std::fs::File;
 
 #[derive(Debug, Deserialize)]
 pub struct Obstacle {
-    count: Dimension,
-    top_left: Dimension,
+    pub count: Dimension,
+    pub top_left: Dimension,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct Level {
-    obstacles: Vec<Obstacle>,
+    pub obstacles: Vec<Obstacle>,
 }
 
 impl Level {

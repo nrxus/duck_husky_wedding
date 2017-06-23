@@ -2,7 +2,8 @@ use data;
 use errors::*;
 use duck_husky_wedding::background::Background;
 use duck_husky_wedding::player::Player;
-use duck_husky_wedding::obstacle::{self, Obstacle};
+use duck_husky_wedding::obstacle::Obstacle;
+use duck_husky_wedding::try::Try;
 
 use glm;
 use moho::shape::Shape;
@@ -11,15 +12,13 @@ use moho::errors as moho_errors;
 
 pub struct World<T> {
     background: Background<T>,
-    ground: Obstacle<T>,
-    border: Obstacle<T>,
+    obstacles: Vec<Obstacle<T>>,
 }
 
 impl<T> Clone for World<T> {
     fn clone(&self) -> Self {
         World {
-            ground: self.ground.clone(),
-            border: self.border.clone(),
+            obstacles: self.obstacles.clone(),
             background: self.background.clone(),
         }
     }
@@ -36,27 +35,15 @@ impl<T> World<T> {
         T: Texture,
     {
         let background = Background::load(texture_manager, &game.background)?;
-        let texture = game.ground.center.load(texture_manager)?;
-        let dims = game.ground.out_size.into();
-
-        let tile = obstacle::Tile { texture, dims };
-
-        let ground = Obstacle {
-            tile: tile.clone(),
-            tl: glm::ivec2(0, 720 - dims.y as i32),
-            count: glm::uvec2(60, 1),
-        };
-
-        let border = Obstacle {
-            tile: tile,
-            tl: glm::ivec2(0, 0),
-            count: glm::uvec2(1, 720 / dims.y),
-        };
+        let obstacles = level
+            .obstacles
+            .iter()
+            .map(|o| Obstacle::load(texture_manager, &game.ground, o))
+            .collect::<Result<Vec<_>>>()?;
 
         Ok(World {
-            ground,
-            border,
             background,
+            obstacles,
         })
     }
 
@@ -65,14 +52,13 @@ impl<T> World<T> {
         let mut force = gravity;
         let mut body = player.body.nudge(gravity + player.velocity);
 
-        if let Some(f) = self.border.mtv(&body) {
-            force = force + f;
-            body = body.nudge(f);
+        for o in &self.obstacles {
+            if let Some(f) = o.mtv(&body) {
+                force = force + f;
+                body = body.nudge(f);
+            }
         }
 
-        if let Some(f) = self.ground.mtv(&body) {
-            force = force + f;
-        }
         force
     }
 }
@@ -80,7 +66,6 @@ impl<T> World<T> {
 impl<'t, R: Renderer<'t>> Scene<R> for World<R::Texture> {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         renderer.show(&self.background)?;
-        renderer.show(&self.ground)?;
-        renderer.show(&self.border)
+        self.obstacles.iter().map(|o| renderer.show(o)).try()
     }
 }

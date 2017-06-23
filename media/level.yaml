@@ -1,6 +1,6 @@
 obstacles:
   - count:
-      x: 20
+      x: 50
       y: 1
     top_left:
       x: 0
