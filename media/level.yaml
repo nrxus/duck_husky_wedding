@@ -4,16 +4,22 @@ obstacles:
       y: 1
     top_left:
       x: 0
-      y: 17
+      y: 19
   - count:
       x: 1
-      y: 18
+      y: 20
     top_left:
       x: 0
       y: 0
   - count:
       x: 15
-      y: 4
+      y: 2
     top_left:
       x: 10
-      y: 14
+      y: 15
+  - count:
+      x: 10
+      y: 1
+    top_left:
+      x: 14
+      y: 11

@@ -30,8 +30,8 @@ ground:
   top_left: "ground_tl.png"
   top_right: "ground_tr.png"
   out_size:
-    x: 40
-    y: 40
+    x: 36
+    y: 36
 background:
   texture: "background.png"
   out_size:

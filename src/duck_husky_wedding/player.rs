@@ -47,10 +47,10 @@ impl<T> Player<T> {
                 Action::Jumping(_, ref mut held) => {
                     if *held < 15 {
                         held.add_assign(1);
-                        self.velocity.y -= 5. / (*held as f64);
+                        self.velocity.y -= 6. / (*held as f64);
                     }
                 }
-                _ => self.velocity.y -= 5.,
+                _ => self.velocity.y -= 6.,
             }
         } else {
             if let Action::Jumping(_, ref mut held) = self.action {
