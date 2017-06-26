@@ -84,6 +84,7 @@ pub struct Game {
     pub husky: Player,
     pub ground: Ground,
     pub background: Image,
+    pub goal: Image,
 }
 
 impl Game {
@@ -97,5 +98,12 @@ impl<'a> From<Dimension> for glm::UVec2 {
     fn from(dim: Dimension) -> glm::UVec2 {
         let Dimension { x, y } = dim;
         glm::uvec2(x, y)
+    }
+}
+
+impl<'a> From<Dimension> for glm::DVec2 {
+    fn from(dim: Dimension) -> glm::DVec2 {
+        let Dimension { x, y } = dim;
+        glm::dvec2(x as f64, y as f64)
     }
 }

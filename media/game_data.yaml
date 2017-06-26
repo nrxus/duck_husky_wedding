@@ -37,3 +37,8 @@ background:
   out_size:
     x: 2560
     y: 720
+goal:
+  texture: "goal.png"
+  out_size:
+    x: 149
+    y: 479

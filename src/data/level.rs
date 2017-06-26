@@ -14,6 +14,7 @@ pub struct Obstacle {
 #[derive(Debug, Deserialize)]
 pub struct Level {
     pub obstacles: Vec<Obstacle>,
+    pub goal: Dimension,
 }
 
 impl Level {

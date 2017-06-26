@@ -23,3 +23,6 @@ obstacles:
     top_left:
       x: 14
       y: 11
+goal:
+  x: 45
+  y: 6
