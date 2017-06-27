@@ -77,7 +77,7 @@ impl<T: Texture> Manager<T> {
     where
         TL: TextureLoader<'t, Texture = T>,
         FL: FontLoader<'f>,
-        R: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>,
+        R: FontTexturizer<'t, FL::Font, Texture = T>,
     {
         let player_select =
             player_select::Data::load(font_manager, texturizer, texture_manager, &game)?;
@@ -102,16 +102,16 @@ impl<T: Texture> Manager<T> {
         &self.active
     }
 
-    pub fn select_screen<'f, 't, R, FL, TL>(
+    pub fn select_screen<'f, 't, FT, FL, TL>(
         &mut self,
         screen: Kind,
         font_manager: &mut FontManager<'f, FL>,
         texture_manager: &mut TextureManager<'t, TL>,
-        texturizer: &'t R,
+        texturizer: &'t FT,
     ) where
         FL: FontLoader<'f>,
         TL: TextureLoader<'t, Texture = T>,
-        R: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>,
+        FT: FontTexturizer<'t, FL::Font, Texture = T>,
     {
         self.active = match screen {
             Kind::Menu => Screen::Menu(self.menu.activate()),

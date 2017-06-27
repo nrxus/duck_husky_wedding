@@ -53,7 +53,7 @@ where
 
     pub fn run(&mut self) -> Result<()>
     where
-        TL: FontTexturizer<'f, 't, Texture = <TL as TextureLoader<'t>>::Texture, Font = FL::Font>,
+        TL: FontTexturizer<'t, FL::Font, Texture = <TL as TextureLoader<'t>>::Texture>,
         R: Canvas<'t, Texture = <TL as TextureLoader<'t>>::Texture>,
         E: input::EventPump,
     {

@@ -29,15 +29,14 @@ pub struct Data<T> {
     back: button::Static<T>,
 }
 
-impl<T> Data<T> {
+impl<T: Texture> Data<T> {
     pub fn load<'f, 't, FT, FL>(
         font_manager: &mut FontManager<'f, FL>,
         texturizer: &'t FT,
     ) -> Result<Self>
     where
-        T: Texture,
         FL: FontLoader<'f>,
-        FT: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>,
+        FT: FontTexturizer<'t, FL::Font, Texture = T>,
     {
         let font_details = FontDetails {
             path: "media/fonts/kenpixel_mini.ttf",
@@ -61,9 +60,8 @@ impl<T> Data<T> {
         texturizer: &'t FT,
     ) -> Result<HighScore<T>>
     where
-        T: Texture,
         FL: FontLoader<'f>,
-        FT: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>,
+        FT: FontTexturizer<'t, FL::Font, Texture = T>,
     {
         let font_details = FontDetails {
             path: "media/fonts/joystix.monospace.ttf",

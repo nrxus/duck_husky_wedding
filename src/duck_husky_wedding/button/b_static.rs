@@ -36,16 +36,16 @@ impl<T> Button for Static<T> {
     }
 }
 
-impl<T> Static<T> {
-    pub fn from_text<'f, 't, R>(
+impl<T: Texture> Static<T> {
+    pub fn from_text<'t, F, FT>(
         text: &str,
-        texturizer: &'t R,
-        font: &R::Font,
+        texturizer: &'t FT,
+        font: &F,
         tl: glm::IVec2,
     ) -> Result<Self>
     where
-        T: Texture,
-        R: FontTexturizer<'f, 't, Texture = T>,
+        F: Font,
+        FT: FontTexturizer<'t, F, Texture = T>,
     {
         let dims = font.measure(text)?;
         let body = Rectangle {
@@ -56,15 +56,14 @@ impl<T> Static<T> {
         Self::text_at(text, texturizer, font, body)
     }
 
-    pub fn text_at<'f, 't, R>(
+    pub fn text_at<'t, F, FT>(
         text: &str,
-        texturizer: &'t R,
-        font: &R::Font,
+        texturizer: &'t FT,
+        font: &F,
         body: Rectangle,
     ) -> Result<Self>
     where
-        T: Texture,
-        R: FontTexturizer<'f, 't, Texture = T>,
+        FT: FontTexturizer<'t, F, Texture = T>,
     {
         let is_hovering = false;
         let idle = Rc::new(texturizer

@@ -34,7 +34,7 @@ impl<T: Texture> Data<T> {
     where
         TL: TextureLoader<'t, Texture = T>,
         FL: FontLoader<'f>,
-        FT: FontTexturizer<'f, 't, Font = FL::Font, Texture = T>,
+        FT: FontTexturizer<'t, FL::Font, Texture = T>,
     {
         let font_details = FontDetails {
             path: "media/fonts/kenpixel_mini.ttf",
