@@ -1,14 +1,16 @@
 use duck_husky_wedding::player::Player;
 use duck_husky_wedding::world::World;
 use duck_husky_wedding::camera::ViewPort;
+use duck_husky_wedding::hud::Timer;
 use data;
 use errors::*;
 
 use glm;
 use moho::input;
 use moho::errors as moho_errors;
-use moho::renderer::{Renderer, Scene};
-use moho::renderer::{Texture, TextureLoader, TextureManager};
+use moho::renderer::{options, Renderer, Scene};
+use moho::renderer::{FontManager, FontLoader, FontTexturizer, Texture, TextureLoader,
+                     TextureManager};
 use moho::shape::{Rectangle, Shape};
 
 use std::time::Duration;
@@ -18,10 +20,11 @@ pub enum PlayerKind {
     Husky,
 }
 
-pub struct GamePlay<T> {
+pub struct GamePlay<T, F> {
     player: Player<T>,
     world: World<T>,
     viewport: ViewPort,
+    timer: Timer<T, F>,
 }
 
 pub struct Data<T> {
@@ -42,13 +45,17 @@ impl<T: Texture> Data<T> {
         Ok(Data { game, world })
     }
 
-    pub fn activate<'t, TL>(
+    pub fn activate<'t, 'f, TL, FL, FT>(
         &self,
         texture_manager: &mut TextureManager<'t, TL>,
+        font_manager: &mut FontManager<'f, FL>,
+        texturizer: &'t FT,
         kind: PlayerKind,
-    ) -> Result<GamePlay<T>>
+    ) -> Result<GamePlay<T, FL::Font>>
     where
         TL: TextureLoader<'t, Texture = T>,
+        FL: FontLoader<'f>,
+        FT: FontTexturizer<'t, FL::Font, Texture = T>,
     {
         let player = match kind {
             PlayerKind::Duck => &self.game.duck,
@@ -65,29 +72,50 @@ impl<T: Texture> Data<T> {
         let player = Player::new(animation, texture, body);
         let world = self.world.clone();
         let viewport = ViewPort::new(glm::ivec2(1280, 720));
+        let timer = Timer::load(font_manager, texturizer)?;
         Ok(GamePlay {
             player,
             world,
             viewport,
+            timer,
         })
     }
 }
 
-impl<T> GamePlay<T> {
+impl<T, F> GamePlay<T, F> {
     pub fn update(&mut self, delta: Duration, input: &input::State) -> Option<super::Kind> {
         self.player.process(input);
+        self.timer.update(delta);
         let force = self.world.force(&self.player);
         self.player.update(force, delta);
         let center = self.player.body.center();
         self.viewport.center(glm::to_ivec2(center));
         None
     }
+
+    pub fn before_draw<'t, FT>(&mut self, texturizer: &'t FT) -> Result<()>
+    where
+        T: Texture,
+        FT: FontTexturizer<'t, F, Texture = T>,
+    {
+        self.timer.before_draw(texturizer)
+    }
 }
 
-impl<'t, R: Renderer<'t>> Scene<R> for GamePlay<R::Texture> {
+impl<'t, R: Renderer<'t>, F> Scene<R> for GamePlay<R::Texture, F>
+where
+    R::Texture: Texture,
+{
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        let mut camera = self.viewport.camera(renderer);
-        camera.show(&self.world)?;
-        camera.show(&self.player)
+        {
+            let mut camera = self.viewport.camera(renderer);
+            camera.show(&self.world)?;
+            camera.show(&self.player)?;
+        }
+        let td = glm::to_ivec2(self.timer.dims());
+        renderer.copy_asset(
+            &self.timer,
+            options::at(&glm::ivec4(640 - td.x / 2, 0, td.x, td.y)),
+        )
     }
 }

@@ -6,6 +6,7 @@ mod screen;
 pub mod world;
 mod obstacle;
 mod try;
+mod hud;
 
 use errors::*;
 use data;
@@ -99,6 +100,9 @@ where
             let interpolation = delta.subsec_nanos() as f64 / update_duration.subsec_nanos() as f64;
             self.renderer.set_draw_color(color);
             self.renderer.clear();
+            screen_manager
+                .mut_screen()
+                .before_draw(self.texture_loader)?;
             self.renderer.show(screen_manager.screen())?;
             self.renderer.present();
         }

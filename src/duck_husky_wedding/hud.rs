@@ -1,10 +1,10 @@
 use errors::*;
 
+use glm;
 use moho::errors as moho_errors;
-use moho::renderer::{ColorRGBA, FontDetails, FontLoader, FontManager, FontTexturizer, Renderer,
-                     Asset, Options};
+use moho::renderer::{ColorRGBA, Font, FontDetails, FontLoader, FontManager, FontTexturizer,
+                     Renderer, Texture, Asset, Options};
 
-use std::cell::RefCell;
 use std::rc::Rc;
 use std::time::Duration;
 
@@ -13,23 +13,22 @@ struct TextCache<T> {
     texture: T,
 }
 
-pub struct Timer<'f, 't, FT>
-where
-    FT: 't + FontTexturizer<'f, 't>,
-{
-    text: RefCell<TextCache<FT::Texture>>,
-    font: Rc<FT::Font>,
-    texturizer: &'t FT,
+pub struct Timer<T, F> {
+    text: TextCache<T>,
+    font: Rc<F>,
     remaining: Duration,
 }
 
-impl<'f, 't, FT> Timer<'f, 't, FT>
-where
-    FT: FontTexturizer<'f, 't>,
-{
-    pub fn load<FL>(font_manager: &mut FontManager<'f, FL>, texturizer: &'t FT) -> Result<Self>
+impl<F, T> Timer<T, F> {
+    pub fn load<'t, 'f, FT, FL>(
+        font_manager: &mut FontManager<'f, FL>,
+        texturizer: &'t FT,
+    ) -> Result<Self>
     where
-        FL: FontLoader<'f, Font = FT::Font>,
+        F: Font,
+        T: Texture,
+        FT: FontTexturizer<'t, F, Texture = T>,
+        FL: FontLoader<'f, Font = F>,
     {
         let secs = 100;
         let details = FontDetails {
@@ -41,42 +40,50 @@ where
             let text = format!("Time: {:03}", 100);
             let color = ColorRGBA(255, 255, 0, 255);
             let texture = texturizer.texturize(&*font, &text, &color)?;
-            RefCell::new(TextCache { secs, texture })
+            TextCache { secs, texture }
         };
         let remaining = Duration::from_secs(secs);
         Ok(
             (Timer {
                  text,
                  font,
-                 texturizer,
                  remaining,
              }),
         )
     }
 
-    fn update(&mut self, elapsed: Duration) {
+    pub fn before_draw<'t, FT>(&mut self, texturizer: &'t FT) -> Result<()>
+    where
+        T: Texture,
+        FT: FontTexturizer<'t, F, Texture = T>,
+    {
+        let secs = self.remaining.as_secs();
+        if secs != self.text.secs {
+            self.text.secs = secs;
+            let text = format!("Time: {:03}", self.text.secs);
+            let color = ColorRGBA(255, 255, 0, 255);
+            self.text.texture = texturizer.texturize(&*self.font, &text, &color)?;
+        }
+        Ok(())
+    }
+
+    pub fn update(&mut self, elapsed: Duration) {
         self.remaining = match self.remaining.checked_sub(elapsed) {
             Some(d) => d,
             None => Duration::default(),
         }
     }
+
+    pub fn dims(&self) -> glm::UVec2
+    where
+        T: Texture,
+    {
+        self.text.texture.dims()
+    }
 }
 
-impl<'f, 't, R, FT> Asset<R> for Timer<'f, 't, FT>
-where
-    R: Renderer<'t, Texture = FT::Texture>,
-    FT: FontTexturizer<'f, 't>,
-{
+impl<'t, R: Renderer<'t>, F> Asset<R> for Timer<R::Texture, F> {
     fn draw(&self, options: Options, renderer: &mut R) -> moho_errors::Result<()> {
-        let mut cache = self.text.borrow_mut();
-        let secs = self.remaining.as_secs();
-        if secs != cache.secs {
-            cache.secs = secs;
-            let text = format!("Time: {:03}", cache.secs);
-            let color = ColorRGBA(255, 255, 0, 255);
-            cache.texture = self.texturizer.texturize(&*self.font, &text, &color)?;
-        }
-        
-        renderer.copy(&cache.texture, options)
+        renderer.copy(&self.text.texture, options)
     }
 }
