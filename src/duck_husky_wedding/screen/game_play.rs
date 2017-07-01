@@ -11,7 +11,7 @@ use moho::errors as moho_errors;
 use moho::renderer::{options, Renderer, Scene};
 use moho::renderer::{FontManager, FontLoader, FontTexturizer, Texture, TextureLoader,
                      TextureManager};
-use moho::shape::{Rectangle, Shape};
+use moho::shape::Shape;
 
 use std::time::Duration;
 
@@ -61,15 +61,7 @@ impl<T: Texture> Data<T> {
             PlayerKind::Duck => &self.game.duck,
             PlayerKind::Husky => &self.game.husky,
         };
-        let body = Rectangle {
-            top_left: glm::dvec2(100., 300.),
-            dims: glm::dvec2(player.out_size.x as f64, player.out_size.y as f64),
-        };
-
-        let animation = player.animation.load(texture_manager)?;
-        let texture = player.idle_texture.load(texture_manager)?;
-
-        let player = Player::new(animation, texture, body);
+        let player = Player::load(player, glm::uvec2(100, 300), texture_manager)?;
         let world = self.world.clone();
         let viewport = ViewPort::new(glm::ivec2(1280, 720));
         let timer = Timer::load(font_manager, texturizer)?;

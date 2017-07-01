@@ -1,8 +1,11 @@
+use data;
+use errors::*;
+
 use glm;
 use moho::animation::{self, Animation};
 use moho::errors as moho_errors;
 use moho::input;
-use moho::renderer::{options, Renderer, Scene, TextureFlip};
+use moho::renderer::{options, Renderer, Scene, Texture, TextureFlip, TextureLoader, TextureManager};
 use moho::shape::{Rectangle, Shape};
 use sdl2::keyboard::Keycode;
 
@@ -26,6 +29,25 @@ pub struct Player<T> {
 }
 
 impl<T> Player<T> {
+    pub fn load<'t, TL>(
+        data: &data::Player,
+        tl: glm::UVec2,
+        texture_manager: &mut TextureManager<'t, TL>,
+    ) -> Result<Self>
+    where
+        T: Texture,
+        TL: TextureLoader<'t, Texture = T>,
+    {
+        let body = {
+            let top_left = glm::to_dvec2(tl);
+            let dims = data.out_size.into();
+            Rectangle { top_left, dims }
+        };
+        let animation = data.animation.load(texture_manager)?;
+        let texture = data.idle_texture.load(texture_manager)?;
+        Ok((Player::new(animation, texture, body)))
+    }
+
     pub fn new(animation: animation::Data<T>, texture: Rc<T>, body: Rectangle) -> Self {
         Player {
             action: Action::Standing(texture.clone()),
