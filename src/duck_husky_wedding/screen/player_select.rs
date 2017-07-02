@@ -24,7 +24,7 @@ pub struct Data<T> {
     duck: button::Animated<T>,
 }
 
-impl<T: Texture> Data<T> {
+impl<T> Data<T> {
     pub fn load<'f, 't, FT, FL, TL>(
         font_manager: &mut FontManager<'f, FL>,
         texturizer: &'t FT,
@@ -32,6 +32,7 @@ impl<T: Texture> Data<T> {
         data: &data::Game,
     ) -> Result<Self>
     where
+        T: Texture,
         TL: TextureLoader<'t, Texture = T>,
         FL: FontLoader<'f>,
         FT: FontTexturizer<'t, FL::Font, Texture = T>,
