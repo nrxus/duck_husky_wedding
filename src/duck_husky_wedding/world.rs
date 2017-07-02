@@ -1,6 +1,7 @@
 use data;
 use errors::*;
 use duck_husky_wedding::background::Background;
+use duck_husky_wedding::npc::Npc;
 use duck_husky_wedding::player::Player;
 use duck_husky_wedding::obstacle::Obstacle;
 use duck_husky_wedding::try::Try;
@@ -38,23 +39,21 @@ impl<'t, R: Renderer<'t>> Scene<R> for Goal<R::Texture> {
     }
 }
 
+pub struct Data<T> {
+    background: Background<T>,
+    obstacles: Vec<Obstacle<T>>,
+    goal: Goal<T>,
+    npc_pos: glm::UVec2,
+}
+
 pub struct World<T> {
     background: Background<T>,
     obstacles: Vec<Obstacle<T>>,
     goal: Goal<T>,
+    pub npc: Npc<T>,
 }
 
-impl<T> Clone for World<T> {
-    fn clone(&self) -> Self {
-        World {
-            obstacles: self.obstacles.clone(),
-            background: self.background.clone(),
-            goal: self.goal.clone(),
-        }
-    }
-}
-
-impl<T> World<T> {
+impl<T> Data<T> {
     pub fn load<'t, TL>(
         texture_manager: &mut TextureManager<'t, TL>,
         level: &data::Level,
@@ -79,14 +78,37 @@ impl<T> World<T> {
             };
             Goal { texture, body }
         };
+        let npc_pos = glm::uvec2(goal.body.top_left.x as u32, 720 - game.ground.out_size.y);
 
-        Ok(World {
+        Ok(Data {
             background,
             obstacles,
             goal,
+            npc_pos,
         })
     }
 
+    pub fn activate<'t, TL>(
+        &self,
+        npc: &data::Player,
+        texture_manager: &mut TextureManager<'t, TL>,
+    ) -> Result<World<T>>
+    where
+        TL: TextureLoader<'t, Texture = T>,
+    {
+        let mut tl = self.npc_pos;
+        tl.y -= npc.out_size.y;
+        let npc = Npc::load(npc, tl, texture_manager)?;
+        Ok(World {
+            npc,
+            background: self.background.clone(),
+            obstacles: self.obstacles.clone(),
+            goal: self.goal.clone(),
+        })
+    }
+}
+
+impl<T> World<T> {
     pub fn force(&self, player: &Player<T>) -> glm::DVec2 {
         let gravity = glm::dvec2(0., 1.);
         let mut force = gravity;
@@ -107,6 +129,7 @@ impl<'t, R: Renderer<'t>> Scene<R> for World<R::Texture> {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         renderer.show(&self.background)?;
         renderer.show(&self.goal)?;
-        self.obstacles.iter().map(|o| renderer.show(o)).try()
+        self.obstacles.iter().map(|o| renderer.show(o)).try()?;
+        renderer.show(&self.npc)
     }
 }

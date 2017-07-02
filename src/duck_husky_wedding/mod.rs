@@ -3,6 +3,7 @@ pub mod camera;
 mod player;
 mod button;
 mod screen;
+mod npc;
 pub mod world;
 mod obstacle;
 mod try;

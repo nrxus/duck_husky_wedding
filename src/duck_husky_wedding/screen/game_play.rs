@@ -1,5 +1,5 @@
 use duck_husky_wedding::player::Player;
-use duck_husky_wedding::world::World;
+use duck_husky_wedding::world::{self, World};
 use duck_husky_wedding::camera::ViewPort;
 use duck_husky_wedding::hud::Timer;
 use data;
@@ -28,7 +28,7 @@ pub struct GamePlay<T, F> {
 }
 
 pub struct Data<T> {
-    world: World<T>,
+    world: world::Data<T>,
     game: data::Game,
 }
 
@@ -41,7 +41,7 @@ impl<T> Data<T> {
     where
         TL: TextureLoader<'t, Texture = T>,
     {
-        let world = World::load(texture_manager, level, &game)?;
+        let world = world::Data::load(texture_manager, level, &game)?;
         Ok(Data { game, world })
     }
 
@@ -58,12 +58,12 @@ impl<T> Data<T> {
         FL: FontLoader<'f>,
         FT: FontTexturizer<'t, FL::Font, Texture = T>,
     {
-        let player = match kind {
-            PlayerKind::Duck => &self.game.duck,
-            PlayerKind::Husky => &self.game.husky,
+        let (player, npc) = match kind {
+            PlayerKind::Duck => (&self.game.duck, &self.game.husky),
+            PlayerKind::Husky => (&self.game.husky, &self.game.duck),
         };
         let player = Player::load(player, glm::uvec2(100, 300), texture_manager)?;
-        let world = self.world.clone();
+        let world = self.world.activate(npc, texture_manager)?;
         let viewport = ViewPort::new(glm::ivec2(1280, 720));
         let timer = Timer::load(font_manager, texturizer)?;
         Ok(GamePlay {
@@ -83,7 +83,11 @@ impl<T, F> GamePlay<T, F> {
         self.player.update(force, delta);
         let center = self.player.body.center();
         self.viewport.center(glm::to_ivec2(center));
-        None
+        if (self.player.body.top_left.x + self.player.body.dims.x) as i32 > self.world.npc.x() {
+            Some(super::Kind::Menu)
+        } else {
+            None
+        }
     }
 
     pub fn before_draw<'t, FT>(&mut self, texturizer: &'t FT) -> Result<()>

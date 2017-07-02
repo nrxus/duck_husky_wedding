@@ -1,6 +1,6 @@
 use data;
 use duck_husky_wedding::camera::ViewPort;
-use duck_husky_wedding::world::World;
+use duck_husky_wedding::world;
 use errors::*;
 
 use glm;
@@ -37,7 +37,8 @@ where
     {
         let game_data = data::Game::load("media/game_data.yaml")?;
         let level_data = data::Level::load("media/level.yaml")?;
-        let mut world = World::load(&mut self.texture_manager, &level_data, &game_data)?;
+        let mut world = world::Data::load(&mut self.texture_manager, &level_data, &game_data)?
+            .activate(&game_data.duck, &mut self.texture_manager)?;
         let mut viewport = ViewPort::new(glm::ivec2(1280, 720));
         loop {
             let input = self.input_manager.update();
@@ -60,7 +61,8 @@ where
             }
             if input.is_key_down(Keycode::R) {
                 let level_data = data::Level::load("media/level.yaml")?;
-                world = World::load(&mut self.texture_manager, &level_data, &game_data)?;
+                world = world::Data::load(&mut self.texture_manager, &level_data, &game_data)?
+                    .activate(&game_data.duck, &mut self.texture_manager)?;
             }
 
             viewport.translate(t);
