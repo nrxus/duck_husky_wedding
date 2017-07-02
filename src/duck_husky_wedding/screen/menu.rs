@@ -28,8 +28,8 @@ impl<T> Data<T> {
         texturizer: &'t FT,
     ) -> Result<Self>
     where
-        T: Texture,
         FL: FontLoader<'f>,
+        FL::Font: Font,
         FT: FontTexturizer<'t, FL::Font, Texture = T>,
     {
         let font_details = FontDetails {

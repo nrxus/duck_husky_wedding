@@ -4,7 +4,7 @@ pub use self::level::{Level, Obstacle};
 
 use errors::*;
 use moho::animation::{self, animator, TileSheet};
-use moho::renderer::{TextureLoader, TextureManager};
+use moho::renderer::{self, TextureLoader, TextureManager};
 
 use glm;
 use serde_yaml;
@@ -31,7 +31,10 @@ impl Sprite {
     pub fn load<'t, TL: TextureLoader<'t>>(
         &self,
         texture_manager: &mut TextureManager<'t, TL>,
-    ) -> Result<animation::Data<TL::Texture>> {
+    ) -> Result<animation::Data<TL::Texture>>
+    where
+        TL::Texture: renderer::Texture,
+    {
         let texture = self.texture.load(texture_manager)?;
         let sheet = TileSheet::new(self.tiles.into(), texture);
         let duration = Duration::from_millis(self.duration / self.frames as u64);

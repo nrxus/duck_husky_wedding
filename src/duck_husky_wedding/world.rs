@@ -7,7 +7,7 @@ use duck_husky_wedding::try::Try;
 
 use glm;
 use moho::shape::{Rectangle, Shape};
-use moho::renderer::{options, Scene, Renderer, Texture, TextureLoader, TextureManager};
+use moho::renderer::{options, Scene, Renderer, TextureLoader, TextureManager};
 use moho::errors as moho_errors;
 
 use std::rc::Rc;
@@ -62,7 +62,6 @@ impl<T> World<T> {
     ) -> Result<Self>
     where
         TL: TextureLoader<'t, Texture = T>,
-        T: Texture,
     {
         let background = Background::load(texture_manager, &game.background)?;
         let obstacles: Vec<_> = level

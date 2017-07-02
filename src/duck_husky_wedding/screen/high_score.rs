@@ -29,13 +29,14 @@ pub struct Data<T> {
     back: button::Static<T>,
 }
 
-impl<T: Texture> Data<T> {
+impl<T> Data<T> {
     pub fn load<'f, 't, FT, FL>(
         font_manager: &mut FontManager<'f, FL>,
         texturizer: &'t FT,
     ) -> Result<Self>
     where
         FL: FontLoader<'f>,
+        FL::Font: Font,
         FT: FontTexturizer<'t, FL::Font, Texture = T>,
     {
         let font_details = FontDetails {

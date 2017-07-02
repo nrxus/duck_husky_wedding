@@ -2,8 +2,8 @@ use errors::*;
 
 use glm;
 use moho::errors as moho_errors;
-use moho::renderer::{ColorRGBA, Font, FontDetails, FontLoader, FontManager, FontTexturizer,
-                     Renderer, Texture, Asset, Options};
+use moho::renderer::{ColorRGBA, FontDetails, FontLoader, FontManager, FontTexturizer, Renderer,
+                     Texture, Asset, Options};
 
 use std::rc::Rc;
 use std::time::Duration;
@@ -25,8 +25,6 @@ impl<F, T> Timer<T, F> {
         texturizer: &'t FT,
     ) -> Result<Self>
     where
-        F: Font,
-        T: Texture,
         FT: FontTexturizer<'t, F, Texture = T>,
         FL: FontLoader<'f, Font = F>,
     {
@@ -54,7 +52,6 @@ impl<F, T> Timer<T, F> {
 
     pub fn before_draw<'t, FT>(&mut self, texturizer: &'t FT) -> Result<()>
     where
-        T: Texture,
         FT: FontTexturizer<'t, F, Texture = T>,
     {
         let secs = self.remaining.as_secs();

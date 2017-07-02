@@ -4,7 +4,7 @@ use data;
 
 use glm;
 use moho::errors as moho_errors;
-use moho::renderer::{options, Renderer, Scene, Texture, TextureLoader, TextureManager};
+use moho::renderer::{options, Renderer, Scene, TextureLoader, TextureManager};
 
 use std::rc::Rc;
 
@@ -22,7 +22,7 @@ impl<T> Clone for Background<T> {
     }
 }
 
-impl<T: Texture> Background<T> {
+impl<T> Background<T> {
     pub fn load<'t, TL>(
         texture_manager: &mut TextureManager<'t, TL>,
         data: &data::Image,

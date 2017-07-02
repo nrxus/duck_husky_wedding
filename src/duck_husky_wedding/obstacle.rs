@@ -3,7 +3,7 @@ use duck_husky_wedding::try::Try;
 use errors::*;
 
 use moho::shape::{Intersect, Rectangle};
-use moho::renderer::{options, Renderer, Scene, Texture, TextureLoader, TextureManager};
+use moho::renderer::{options, Renderer, Scene, TextureLoader, TextureManager};
 use moho::errors as moho_errors;
 
 use glm;
@@ -46,7 +46,6 @@ impl<T> Obstacle<T> {
     ) -> Result<Self>
     where
         TL: TextureLoader<'t, Texture = T>,
-        T: Texture,
     {
         let count: glm::UVec2 = obstacle.count.into();
         let texture = ground.center.load(texture_manager)?;

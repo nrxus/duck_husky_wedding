@@ -4,7 +4,7 @@ use errors::*;
 use glm;
 use moho::errors as moho_errors;
 use moho::shape::Rectangle;
-use moho::renderer::{options, ColorRGBA, Font, FontTexturizer, Renderer, Scene, Texture};
+use moho::renderer::{options, ColorRGBA, Font, FontTexturizer, Renderer, Scene};
 
 use std::rc::Rc;
 
@@ -36,7 +36,7 @@ impl<T> Button for Static<T> {
     }
 }
 
-impl<T: Texture> Static<T> {
+impl<T> Static<T> {
     pub fn from_text<'t, F, FT>(
         text: &str,
         texturizer: &'t FT,

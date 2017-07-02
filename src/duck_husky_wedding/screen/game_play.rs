@@ -32,7 +32,7 @@ pub struct Data<T> {
     game: data::Game,
 }
 
-impl<T: Texture> Data<T> {
+impl<T> Data<T> {
     pub fn load<'t, TL>(
         texture_manager: &mut TextureManager<'t, TL>,
         level: &data::Level,
@@ -54,6 +54,7 @@ impl<T: Texture> Data<T> {
     ) -> Result<GamePlay<T, FL::Font>>
     where
         TL: TextureLoader<'t, Texture = T>,
+        TL::Texture: Texture,
         FL: FontLoader<'f>,
         FT: FontTexturizer<'t, FL::Font, Texture = T>,
     {
@@ -87,7 +88,6 @@ impl<T, F> GamePlay<T, F> {
 
     pub fn before_draw<'t, FT>(&mut self, texturizer: &'t FT) -> Result<()>
     where
-        T: Texture,
         FT: FontTexturizer<'t, F, Texture = T>,
     {
         self.timer.before_draw(texturizer)

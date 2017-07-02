@@ -12,8 +12,8 @@ use errors::*;
 use data;
 
 use moho::input;
-use moho::renderer::{ColorRGBA, FontTexturizer, FontLoader, Canvas, TextureLoader, TextureManager,
-                     FontManager};
+use moho::renderer::{ColorRGBA, Font, FontTexturizer, FontLoader, Canvas, Texture, TextureLoader,
+                     TextureManager, FontManager};
 use moho::timer::Timer;
 
 use std::time::Duration;
@@ -33,7 +33,9 @@ where
 impl<'f, 't, TL, FL, R, E> DuckHuskyWedding<'f, 't, TL, FL, R, E>
 where
     TL: TextureLoader<'t>,
+    TL::Texture: Texture,
     FL: FontLoader<'f>,
+    FL::Font: Font,
 {
     pub fn new(
         renderer: R,

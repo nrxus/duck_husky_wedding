@@ -78,7 +78,7 @@ pub struct Manager<T, F> {
     active: Screen<T, F>,
 }
 
-impl<T: Texture, F> Manager<T, F> {
+impl<T, F> Manager<T, F> {
     pub fn load<'f, 't, R, TL, FL>(
         font_manager: &mut FontManager<'f, FL>,
         texture_manager: &mut TextureManager<'t, TL>,
@@ -87,6 +87,7 @@ impl<T: Texture, F> Manager<T, F> {
         game: data::Game,
     ) -> Result<Self>
     where
+        T: Texture,
         F: Font,
         TL: TextureLoader<'t, Texture = T>,
         FL: FontLoader<'f, Font = F>,
@@ -122,6 +123,7 @@ impl<T: Texture, F> Manager<T, F> {
         texture_manager: &mut TextureManager<'t, TL>,
         texturizer: &'t FT,
     ) where
+        T: Texture,
         F: Font,
         FL: FontLoader<'f, Font = F>,
         TL: TextureLoader<'t, Texture = T>,
