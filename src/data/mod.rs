@@ -64,9 +64,22 @@ pub struct Player {
     pub out_size: Dimension,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct Cat {
+    pub idle: Sprite,
+    pub walking: Sprite,
+    pub out_size: Dimension,
+}
+
 #[derive(Debug, Deserialize, Clone)]
 pub struct Image {
     pub texture: Texture,
+    pub out_size: Dimension,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Collectable {
+    pub animation: Sprite,
     pub out_size: Dimension,
 }
 
@@ -86,6 +99,9 @@ pub struct Game {
     pub duck: Player,
     pub husky: Player,
     pub ground: Ground,
+    pub gem: Collectable,
+    pub coin: Collectable,
+    pub cat: Cat,
     pub background: Image,
     pub goal: Image,
 }
