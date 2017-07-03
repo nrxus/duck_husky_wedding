@@ -6,6 +6,7 @@ use errors::*;
 use glm;
 use moho::input;
 use moho::renderer::{Canvas, Renderer, Texture, TextureLoader, TextureManager};
+use moho::timer::Timer;
 use sdl2::keyboard::Keycode;
 
 pub struct LevelViewer<'t, TL, R, E>
@@ -41,11 +42,14 @@ where
         let mut world = world::Data::load(&mut self.texture_manager, &level_data, &game_data)?
             .activate(&game_data.duck, &mut self.texture_manager)?;
         let mut viewport = ViewPort::new(glm::ivec2(1280, 720));
+        let mut timer = Timer::new();
         loop {
+            let game_time = timer.update();
             let input = self.input_manager.update();
             if input.game_quit() {
                 break;
             };
+            world.update(game_time.since_update);
 
             let mut t = glm::ivec2(0, 0);
             if input.is_key_down(Keycode::Left) {
