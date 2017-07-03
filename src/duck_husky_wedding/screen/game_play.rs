@@ -39,6 +39,7 @@ impl<T> Data<T> {
         game: data::Game,
     ) -> Result<Self>
     where
+        T: Texture,
         TL: TextureLoader<'t, Texture = T>,
     {
         let world = world::Data::load(texture_manager, level, &game)?;
@@ -77,6 +78,7 @@ impl<T> Data<T> {
 
 impl<T, F> GamePlay<T, F> {
     pub fn update(&mut self, delta: Duration, input: &input::State) -> Option<super::Kind> {
+        self.world.update(delta);
         self.player.process(input);
         self.timer.update(delta);
         let force = self.world.force(&self.player);

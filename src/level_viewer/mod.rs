@@ -5,7 +5,7 @@ use errors::*;
 
 use glm;
 use moho::input;
-use moho::renderer::{Canvas, Renderer, TextureLoader, TextureManager};
+use moho::renderer::{Canvas, Renderer, Texture, TextureLoader, TextureManager};
 use sdl2::keyboard::Keycode;
 
 pub struct LevelViewer<'t, TL, R, E>
@@ -32,6 +32,7 @@ where
 
     pub fn run(&mut self) -> Result<()>
     where
+        TL::Texture: Texture,
         R: Canvas<'t, Texture = TL::Texture>,
         E: input::EventPump,
     {

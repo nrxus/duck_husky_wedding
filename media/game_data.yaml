@@ -57,7 +57,7 @@ gem:
   animation:
     texture: "gem.png"
     frames: 10
-    duration: 100
+    duration: 800
     tiles:
       x: 10
       y: 1

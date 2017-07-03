@@ -82,7 +82,7 @@ impl<T> Player<T> {
 
         if left ^ right {
             self.backwards = left;
-            self.velocity.x = if left { -5. } else { 5. };
+            self.velocity.x = if left { -6. } else { 6. };
         } else {
             self.velocity.x = 0.;
         }
