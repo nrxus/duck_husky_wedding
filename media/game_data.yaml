@@ -42,3 +42,43 @@ goal:
   out_size:
     x: 149
     y: 479
+coin:
+  animation:
+    texture: "coin.png"
+    frames: 4
+    duration: 400
+    tiles:
+      x: 4
+      y: 1
+  out_size:
+    x: 40
+    y: 40
+gem:
+  animation:
+    texture: "gem.png"
+    frames: 10
+    duration: 100
+    tiles:
+      x: 10
+      y: 1
+  out_size:
+    x: 40
+    y: 40
+cat:
+  walking:
+    texture: "walking_cat.png"
+    frames: 10
+    duration: 600
+    tiles:
+      x: 10
+      y: 1
+  idle:
+    texture: "standing_cat.png"
+    frames: 5
+    duration: 600
+    tiles:
+      x: 5
+      y: 1
+  out_size:
+    x: 100
+    y: 75
