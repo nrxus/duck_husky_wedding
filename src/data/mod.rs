@@ -81,6 +81,7 @@ pub struct Image {
 pub struct Collectable {
     pub animation: Sprite,
     pub out_size: Dimension,
+    pub score: u32,
 }
 
 #[derive(Debug, Deserialize)]

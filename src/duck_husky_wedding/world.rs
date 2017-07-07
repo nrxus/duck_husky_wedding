@@ -53,6 +53,23 @@ pub struct CollectableData<T> {
     body: Rectangle,
 }
 
+impl<T: Texture> CollectableData<T> {
+    fn load<'t, TL>(
+        texture_manager: &mut TextureManager<'t, TL>,
+        bl: glm::DVec2,
+        data: &data::Collectable,
+    ) -> Result<Self>
+    where
+        TL: TextureLoader<'t, Texture = T>,
+    {
+        let animation = data.animation.load(texture_manager)?;
+        let dims: glm::DVec2 = data.out_size.into();
+        let top_left = glm::dvec2(bl.x, 720. - bl.y - dims.y);
+        let body = Rectangle { top_left, dims };
+        Ok(CollectableData { animation, body })
+    }
+}
+
 pub struct Data<T> {
     background: Background<T>,
     obstacles: Vec<Obstacle<T>>,
@@ -79,6 +96,7 @@ impl<T> Data<T> {
         T: Texture,
         TL: TextureLoader<'t, Texture = T>,
     {
+        let tile_size: glm::DVec2 = game.ground.out_size.into();
         let background = Background::load(texture_manager, &game.background)?;
         let obstacles: Vec<_> = level
             .obstacles
@@ -87,35 +105,33 @@ impl<T> Data<T> {
             .collect::<Result<_>>()?;
         let goal = {
             let texture = game.goal.texture.load(texture_manager)?;
-            let tile_size: glm::DVec2 = game.ground.out_size.into();
             let bl: glm::DVec2 = level.goal.into();
             let bl = bl * tile_size;
             let dims: glm::DVec2 = game.goal.out_size.into();
             let top_left = glm::dvec2(bl.x, 720. - bl.y - dims.y);
-            let body = Rectangle {
-                top_left,
-                dims,
-            };
+            let body = Rectangle { top_left, dims };
             Goal { texture, body }
         };
         let npc_pos = glm::uvec2(goal.body.top_left.x as u32, 720 - game.ground.out_size.y);
-        let coin = CollectableData {
-            animation: game.coin.animation.load(texture_manager)?,
-            body: Rectangle {
-                top_left: glm::dvec2(43., 43.),
-                dims: game.coin.out_size.into(),
-            },
-        };
+        let mut collectables = level
+            .coins
+            .iter()
+            .map(|c| {
+                let dims: glm::DVec2 = (*c).into();
+                CollectableData::load(texture_manager, dims * tile_size, &game.coin)
+            })
+            .collect::<Result<Vec<_>>>()?;
 
-        let gem = CollectableData {
-            animation: game.gem.animation.load(texture_manager)?,
-            body: Rectangle {
-                top_left: glm::dvec2(143., 43.),
-                dims: game.coin.out_size.into(),
-            },
-        };
+        let mut gems = level
+            .gems
+            .iter()
+            .map(|g| {
+                let dims: glm::DVec2 = (*g).into();
+                CollectableData::load(texture_manager, dims * tile_size, &game.gem)
+            })
+            .collect::<Result<Vec<_>>>()?;
 
-        let collectables = vec![coin, gem];
+        collectables.append(&mut gems);
 
         Ok(Data {
             background,

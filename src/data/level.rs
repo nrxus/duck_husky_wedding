@@ -15,6 +15,8 @@ pub struct Obstacle {
 pub struct Level {
     pub obstacles: Vec<Obstacle>,
     pub goal: Dimension,
+    pub gems: Vec<Dimension>,
+    pub coins: Vec<Dimension>,
 }
 
 impl Level {
