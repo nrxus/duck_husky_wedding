@@ -44,24 +44,26 @@ impl<T> Data<T> {
         let font = font_manager.load(&font_details)?;
         let title_color = ColorRGBA(255, 255, 0, 255);
         let title = Rc::new(texturizer.texturize(&*font, "Select Player", &title_color)?);
-
-        let husky = &data.husky;
-        let idle = husky.idle_texture.load(texture_manager)?;
-        let animation = husky.animation.load(texture_manager)?;
-        let body = Rectangle {
-            top_left: glm::dvec2(300., 300.),
-            dims: glm::dvec2(husky.out_size.x as f64 * 1.5, husky.out_size.y as f64 * 1.5),
+        let husky = {
+            let data = &data.husky;
+            let idle = data.idle_texture.load(texture_manager)?;
+            let animation = data.animation.load(texture_manager)?;
+            let dims: glm::DVec2 = data.out_size.into();
+            let dims = dims * 1.5;
+            let top_left = glm::dvec2(300., 250. - dims.y);
+            let body = Rectangle { top_left, dims };
+            button::Animated::new(idle, animation, body)
         };
-        let husky = button::Animated::new(idle, animation, body);
-
-        let duck = &data.duck;
-        let idle = duck.idle_texture.load(texture_manager)?;
-        let animation = duck.animation.load(texture_manager)?;
-        let body = Rectangle {
-            top_left: glm::dvec2(750., 350.),
-            dims: glm::dvec2(duck.out_size.x as f64 * 1.5, duck.out_size.y as f64 * 1.5),
+         let duck = {
+            let data = &data.duck;
+            let idle = data.idle_texture.load(texture_manager)?;
+            let animation = data.animation.load(texture_manager)?;
+            let dims: glm::DVec2 = data.out_size.into();
+            let dims = dims * 1.5;
+            let top_left = glm::dvec2(750., 250. - dims.y);
+            let body = Rectangle { top_left, dims };
+            button::Animated::new(idle, animation, body)
         };
-        let duck = button::Animated::new(idle, animation, body);
 
         Ok(Data { title, husky, duck })
     }
