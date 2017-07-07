@@ -1,13 +1,13 @@
 use data;
 use errors::*;
 use duck_husky_wedding::background::Background;
+use duck_husky_wedding::collectable::{self, Collectable};
 use duck_husky_wedding::npc::Npc;
 use duck_husky_wedding::player::Player;
 use duck_husky_wedding::obstacle::Obstacle;
 use duck_husky_wedding::try::Try;
 
 use glm;
-use moho::animation::{self, Animation};
 use moho::shape::{Rectangle, Shape};
 use moho::renderer::{options, Scene, Renderer, Texture, TextureLoader, TextureManager};
 use moho::errors as moho_errors;
@@ -41,41 +41,12 @@ impl<'t, R: Renderer<'t>> Scene<R> for Goal<R::Texture> {
     }
 }
 
-#[derive(Debug)]
-pub struct Collectable<T> {
-    animation: Animation<T>,
-    body: Rectangle,
-}
-
-#[derive(Debug)]
-pub struct CollectableData<T> {
-    animation: animation::Data<T>,
-    body: Rectangle,
-}
-
-impl<T: Texture> CollectableData<T> {
-    fn load<'t, TL>(
-        texture_manager: &mut TextureManager<'t, TL>,
-        bl: glm::DVec2,
-        data: &data::Collectable,
-    ) -> Result<Self>
-    where
-        TL: TextureLoader<'t, Texture = T>,
-    {
-        let animation = data.animation.load(texture_manager)?;
-        let dims: glm::DVec2 = data.out_size.into();
-        let top_left = glm::dvec2(bl.x, 720. - bl.y - dims.y);
-        let body = Rectangle { top_left, dims };
-        Ok(CollectableData { animation, body })
-    }
-}
-
 pub struct Data<T> {
     background: Background<T>,
     obstacles: Vec<Obstacle<T>>,
     goal: Goal<T>,
     npc_pos: glm::UVec2,
-    collectables: Vec<CollectableData<T>>,
+    collectables: Vec<collectable::Data<T>>,
 }
 
 pub struct World<T> {
@@ -118,7 +89,7 @@ impl<T> Data<T> {
             .iter()
             .map(|c| {
                 let dims: glm::DVec2 = (*c).into();
-                CollectableData::load(texture_manager, dims * tile_size, &game.coin)
+                collectable::Data::load(texture_manager, dims * tile_size, &game.coin)
             })
             .collect::<Result<Vec<_>>>()?;
 
@@ -127,7 +98,7 @@ impl<T> Data<T> {
             .iter()
             .map(|g| {
                 let dims: glm::DVec2 = (*g).into();
-                CollectableData::load(texture_manager, dims * tile_size, &game.gem)
+                collectable::Data::load(texture_manager, dims * tile_size, &game.gem)
             })
             .collect::<Result<Vec<_>>>()?;
 
@@ -153,15 +124,7 @@ impl<T> Data<T> {
         let mut tl = self.npc_pos;
         tl.y -= npc.out_size.y;
         let npc = Npc::load(npc, tl, texture_manager)?;
-        let collectables = self.collectables
-            .iter()
-            .map(|c| {
-                Collectable {
-                    animation: c.animation.clone().start(),
-                    body: c.body.clone(),
-                }
-            })
-            .collect();
+        let collectables = self.collectables.iter().map(Collectable::new).collect();
         Ok(World {
             npc,
             background: self.background.clone(),
@@ -175,7 +138,7 @@ impl<T> Data<T> {
 impl<T> World<T> {
     pub fn update(&mut self, duration: Duration) {
         for mut c in &mut self.collectables {
-            c.animation.animate(duration);
+            c.animate(duration);
         }
     }
 
@@ -192,19 +155,6 @@ impl<T> World<T> {
         }
 
         force
-    }
-}
-
-impl<'t, R: Renderer<'t>> Scene<R> for Collectable<R::Texture> {
-    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        let dst = glm::ivec4(
-            self.body.top_left.x as i32,
-            self.body.top_left.y as i32,
-            self.body.dims.x as i32,
-            self.body.dims.y as i32,
-        );
-
-        renderer.copy_asset(&self.animation.tile(), options::at(&dst))
     }
 }
 
