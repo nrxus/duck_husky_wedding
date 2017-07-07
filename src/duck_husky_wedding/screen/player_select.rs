@@ -1,5 +1,6 @@
 use data;
 use duck_husky_wedding::button::{self, Button};
+use duck_husky_wedding::collectable::{self, Collectable};
 use errors::*;
 
 use glm;
@@ -16,6 +17,8 @@ pub struct PlayerSelect<T> {
     title: Rc<T>,
     collect_text: Rc<T>,
     avoid_text: Rc<T>,
+    gem: Collectable<T>,
+    coin: Collectable<T>,
     husky: button::Animated<T>,
     duck: button::Animated<T>,
 }
@@ -24,6 +27,8 @@ pub struct Data<T> {
     title: Rc<T>,
     collect_text: Rc<T>,
     avoid_text: Rc<T>,
+    gem: collectable::Data<T>,
+    coin: collectable::Data<T>,
     husky: button::Animated<T>,
     duck: button::Animated<T>,
 }
@@ -49,14 +54,14 @@ impl<T> Data<T> {
         let title_color = ColorRGBA(255, 255, 0, 255);
         let title = Rc::new(texturizer.texturize(&*font, "Select Player", &title_color)?);
         let button_distance = 50.;
-        
+
         let husky = {
             let data = &data.husky;
             let idle = data.idle_texture.load(texture_manager)?;
             let animation = data.animation.load(texture_manager)?;
             let dims: glm::DVec2 = data.out_size.into();
             let dims = dims * 1.5;
-            let top_left = glm::dvec2(640. - dims.x - button_distance, 250. - dims.y);
+            let top_left = glm::dvec2(640. - dims.x - button_distance / 2., 250. - dims.y);
             let body = Rectangle { top_left, dims };
             button::Animated::new(idle, animation, body)
         };
@@ -66,12 +71,23 @@ impl<T> Data<T> {
             let animation = data.animation.load(texture_manager)?;
             let dims: glm::DVec2 = data.out_size.into();
             let dims = dims * 1.5;
-            let top_left = glm::dvec2(640. + button_distance, 250. - dims.y);
+            let top_left = glm::dvec2(640. + button_distance / 2., 250. - dims.y);
             let body = Rectangle { top_left, dims };
             button::Animated::new(idle, animation, body)
         };
         let collect_text = Rc::new(texturizer.texturize(&*font, "Collect", &title_color)?);
         let avoid_text = Rc::new(texturizer.texturize(&*font, "Avoid", &title_color)?);
+        let collect_distance = 50;
+        let coin = collectable::Data::load(
+            glm::ivec2(320 - collect_distance / 2 - data.coin.out_size.x as i32, 220),
+            &data.coin,
+            texture_manager,
+        )?;
+        let gem = collectable::Data::load(
+            glm::ivec2(320 + collect_distance / 2, 220),
+            &data.gem,
+            texture_manager,
+        )?;
 
         Ok(Data {
             title,
@@ -79,6 +95,8 @@ impl<T> Data<T> {
             duck,
             collect_text,
             avoid_text,
+            coin,
+            gem,
         })
     }
 
@@ -89,6 +107,8 @@ impl<T> Data<T> {
             husky: self.husky.clone(),
             collect_text: self.collect_text.clone(),
             avoid_text: self.avoid_text.clone(),
+            gem: Collectable::new(&self.gem),
+            coin: Collectable::new(&self.coin),
         }
     }
 }
@@ -100,6 +120,8 @@ impl<T> PlayerSelect<T> {
         } else if self.duck.update(input) {
             Some(super::Kind::GamePlay(super::PlayerKind::Duck))
         } else {
+            self.gem.animate(delta);
+            self.coin.animate(delta);
             self.husky.animate(delta);
             self.duck.animate(delta);
             None
@@ -112,23 +134,25 @@ where
     R::Texture: Texture,
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        let title_rectangle = {
-            let dims = glm::to_ivec2(self.title.dims());
-            glm::ivec4(640 - dims.x / 2, 0, dims.x, dims.y)
-        };
-        let collect_rectangle = {
-            let dims = glm::to_ivec2(self.collect_text.dims());
-            glm::ivec4(320 - dims.x / 2, 350, dims.x, dims.y)
-        };
-        let avoid_rectangle = {
-            let dims = glm::to_ivec2(self.avoid_text.dims());
-            glm::ivec4(960 - dims.x / 2, 350, dims.x, dims.y)
-        };
 
         renderer.show(&self.husky)?;
         renderer.show(&self.duck)?;
-        renderer.copy(&self.title, options::at(&title_rectangle))?;
-        renderer.copy(&self.collect_text, options::at(&collect_rectangle))?;
-        renderer.copy(&self.avoid_text, options::at(&avoid_rectangle))
+        {
+            let dims = glm::to_ivec2(self.title.dims());
+            let dst = glm::ivec4(640 - dims.x / 2, 0, dims.x, dims.y);
+            renderer.copy(&self.title, options::at(&dst))
+        }?;
+        {
+            let dims = glm::to_ivec2(self.avoid_text.dims());
+            let dst = glm::ivec4(960 - dims.x / 2, 350, dims.x, dims.y);
+            renderer.copy(&self.avoid_text, options::at(&dst))
+        }?;
+        {
+            let dims = glm::to_ivec2(self.collect_text.dims());
+            let dst = glm::ivec4(320 - dims.x / 2, 350, dims.x, dims.y);
+            renderer.copy(&self.collect_text, options::at(&dst))
+        }?;
+        renderer.show(&self.coin)?;
+        renderer.show(&self.gem)
     }
 }
