@@ -8,6 +8,7 @@ pub mod world;
 mod obstacle;
 mod try;
 mod hud;
+mod goal;
 mod collectable;
 
 use errors::*;

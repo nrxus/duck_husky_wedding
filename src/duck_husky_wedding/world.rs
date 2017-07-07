@@ -2,44 +2,18 @@ use data;
 use errors::*;
 use duck_husky_wedding::background::Background;
 use duck_husky_wedding::collectable::{self, Collectable};
+use duck_husky_wedding::goal::Goal;
 use duck_husky_wedding::npc::Npc;
 use duck_husky_wedding::player::Player;
 use duck_husky_wedding::obstacle::Obstacle;
 use duck_husky_wedding::try::Try;
 
 use glm;
-use moho::shape::{Rectangle, Shape};
-use moho::renderer::{options, Scene, Renderer, Texture, TextureLoader, TextureManager};
+use moho::shape::Shape;
+use moho::renderer::{Scene, Renderer, Texture, TextureLoader, TextureManager};
 use moho::errors as moho_errors;
 
-use std::rc::Rc;
 use std::time::Duration;
-
-pub struct Goal<T> {
-    texture: Rc<T>,
-    body: Rectangle,
-}
-
-impl<T> Clone for Goal<T> {
-    fn clone(&self) -> Self {
-        Goal {
-            texture: self.texture.clone(),
-            body: self.body.clone(),
-        }
-    }
-}
-
-impl<'t, R: Renderer<'t>> Scene<R> for Goal<R::Texture> {
-    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        let dst = glm::ivec4(
-            self.body.top_left.x as i32,
-            self.body.top_left.y as i32,
-            self.body.dims.x as i32,
-            self.body.dims.y as i32,
-        );
-        renderer.copy(&*self.texture, options::at(&dst))
-    }
-}
 
 pub struct Data<T> {
     background: Background<T>,
@@ -75,21 +49,16 @@ impl<T> Data<T> {
             .map(|o| Obstacle::load(texture_manager, &game.ground, o))
             .collect::<Result<_>>()?;
         let goal = {
-            let texture = game.goal.texture.load(texture_manager)?;
             let bl: glm::DVec2 = level.goal.into();
-            let bl = bl * tile_size;
-            let dims: glm::DVec2 = game.goal.out_size.into();
-            let top_left = glm::dvec2(bl.x, 720. - bl.y - dims.y);
-            let body = Rectangle { top_left, dims };
-            Goal { texture, body }
-        };
+            Goal::load(bl * tile_size, &game.goal, texture_manager)
+        }?;
         let npc_pos = glm::uvec2(goal.body.top_left.x as u32, 720 - game.ground.out_size.y);
         let mut collectables = level
             .coins
             .iter()
             .map(|c| {
-                let dims: glm::DVec2 = (*c).into();
-                collectable::Data::load(texture_manager, dims * tile_size, &game.coin)
+                let bl: glm::DVec2 = (*c).into();
+                collectable::Data::load(texture_manager, bl * tile_size, &game.coin)
             })
             .collect::<Result<Vec<_>>>()?;
 
@@ -97,8 +66,8 @@ impl<T> Data<T> {
             .gems
             .iter()
             .map(|g| {
-                let dims: glm::DVec2 = (*g).into();
-                collectable::Data::load(texture_manager, dims * tile_size, &game.gem)
+                let bl: glm::DVec2 = (*g).into();
+                collectable::Data::load(texture_manager, bl * tile_size, &game.gem)
             })
             .collect::<Result<Vec<_>>>()?;
 
