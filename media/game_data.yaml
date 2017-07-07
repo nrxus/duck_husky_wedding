@@ -8,8 +8,8 @@ duck:
       y: 1
   idle_texture: "standing_duck.png"
   out_size:
-    x: 100
-    y: 75
+    x: 108
+    y: 81
 husky:
   animation:
     texture: "husky.png"
@@ -20,8 +20,8 @@ husky:
       y: 1
   idle_texture: "standing_husky.png"
   out_size:
-    x: 140
-    y: 100
+    x: 126
+    y: 90
 ground:
   center: "ground_c.png"
   left: "ground_ml.png"

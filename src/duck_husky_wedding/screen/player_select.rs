@@ -50,7 +50,7 @@ impl<T> Data<T> {
         let animation = husky.animation.load(texture_manager)?;
         let body = Rectangle {
             top_left: glm::dvec2(300., 300.),
-            dims: glm::dvec2(husky.out_size.x as f64 * 2., husky.out_size.y as f64 * 2.),
+            dims: glm::dvec2(husky.out_size.x as f64 * 1.5, husky.out_size.y as f64 * 1.5),
         };
         let husky = button::Animated::new(idle, animation, body);
 
@@ -59,7 +59,7 @@ impl<T> Data<T> {
         let animation = duck.animation.load(texture_manager)?;
         let body = Rectangle {
             top_left: glm::dvec2(750., 350.),
-            dims: glm::dvec2(duck.out_size.x as f64 * 2., duck.out_size.y as f64 * 2.),
+            dims: glm::dvec2(duck.out_size.x as f64 * 1.5, duck.out_size.y as f64 * 1.5),
         };
         let duck = button::Animated::new(idle, animation, body);
 
