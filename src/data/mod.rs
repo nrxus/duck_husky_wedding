@@ -120,6 +120,13 @@ impl<'a> From<Dimension> for glm::UVec2 {
     }
 }
 
+impl<'a> From<Dimension> for glm::IVec2 {
+    fn from(dim: Dimension) -> glm::IVec2 {
+        let Dimension { x, y } = dim;
+        glm::ivec2(x as i32, y as i32)
+    }
+}
+
 impl<'a> From<Dimension> for glm::DVec2 {
     fn from(dim: Dimension) -> glm::DVec2 {
         let Dimension { x, y } = dim;

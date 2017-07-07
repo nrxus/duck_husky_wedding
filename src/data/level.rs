@@ -8,7 +8,7 @@ use std::fs::File;
 #[derive(Debug, Deserialize)]
 pub struct Obstacle {
     pub count: Dimension,
-    pub top_left: Dimension,
+    pub bottom_left: Dimension,
 }
 
 #[derive(Debug, Deserialize)]

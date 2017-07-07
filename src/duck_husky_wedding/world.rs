@@ -88,10 +88,13 @@ impl<T> Data<T> {
         let goal = {
             let texture = game.goal.texture.load(texture_manager)?;
             let tile_size: glm::DVec2 = game.ground.out_size.into();
-            let goal_tl: glm::DVec2 = level.goal.into();
+            let bl: glm::DVec2 = level.goal.into();
+            let bl = bl * tile_size;
+            let dims: glm::DVec2 = game.goal.out_size.into();
+            let top_left = glm::dvec2(bl.x, 720. - bl.y - dims.y);
             let body = Rectangle {
-                top_left: goal_tl * tile_size,
-                dims: game.goal.out_size.into(),
+                top_left,
+                dims,
             };
             Goal { texture, body }
         };

@@ -2,27 +2,27 @@ obstacles:
   - count:
       x: 50
       y: 1
-    top_left:
+    bottom_left:
       x: 0
-      y: 19
+      y: 0
   - count:
       x: 1
       y: 20
-    top_left:
+    bottom_left:
       x: 0
       y: 0
   - count:
       x: 15
       y: 2
-    top_left:
+    bottom_left:
       x: 10
-      y: 15
+      y: 4
   - count:
       x: 10
       y: 1
-    top_left:
+    bottom_left:
       x: 14
-      y: 11
+      y: 8
 goal:
   x: 45
-  y: 6
+  y: 1

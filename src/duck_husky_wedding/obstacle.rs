@@ -10,18 +10,6 @@ use glm;
 
 use std::rc::Rc;
 
-#[derive(Clone)]
-struct Vec2D<T> {
-    count: glm::UVec2,
-    vector: Vec<T>,
-}
-
-impl<T> Vec2D<T> {
-    fn get(&self, index: (u32, u32)) -> &T {
-        &self.vector[(index.0 % self.count.x + index.1 * self.count.x) as usize]
-    }
-}
-
 struct Textures<T> {
     center: Rc<T>,
     left: Rc<T>,
@@ -45,7 +33,7 @@ impl<T> Clone for Textures<T> {
 }
 
 pub struct Obstacle<T> {
-    tiles: Vec2D<Rc<T>>,
+    count: glm::UVec2,
     dims: glm::UVec2,
     tl: glm::IVec2,
     textures: Textures<T>,
@@ -54,7 +42,7 @@ pub struct Obstacle<T> {
 impl<T> Clone for Obstacle<T> {
     fn clone(&self) -> Self {
         Obstacle {
-            tiles: self.tiles.clone(),
+            count: self.count.clone(),
             textures: self.textures.clone(),
             dims: self.dims,
             tl: self.tl,
@@ -71,13 +59,12 @@ impl<T> Obstacle<T> {
     where
         TL: TextureLoader<'t, Texture = T>,
     {
-        let count: glm::UVec2 = obstacle.count.into();
-        let texture = ground.center.load(texture_manager)?;
-        let vector = vec![texture; (count.x * count.y) as usize];
-        let tiles = Vec2D { count, vector };
-        let dims = ground.out_size.into();
-        let tl: glm::UVec2 = obstacle.top_left.into();
-        let tl = glm::to_ivec2(tl * dims);
+        let count = obstacle.count.into();
+        let dims: glm::UVec2 = ground.out_size.into();
+        let mut bl: glm::IVec2 = obstacle.bottom_left.into();
+        bl.y += obstacle.count.y as i32;
+        bl = bl * glm::to_ivec2(dims);
+        let tl = glm::ivec2(bl.x, 720 - bl.y);
         let textures = Textures {
             center: ground.center.load(texture_manager)?,
             left: ground.left.load(texture_manager)?,
@@ -87,7 +74,7 @@ impl<T> Obstacle<T> {
             top_right: ground.top_right.load(texture_manager)?,
         };
         Ok(Obstacle {
-            tiles,
+            count,
             dims,
             tl,
             textures,
@@ -97,7 +84,7 @@ impl<T> Obstacle<T> {
     pub fn mtv(&self, object: &Rectangle) -> Option<glm::DVec2> {
         let obstacle = Rectangle {
             top_left: glm::to_dvec2(self.tl),
-            dims: glm::to_dvec2(self.dims * self.tiles.count),
+            dims: glm::to_dvec2(self.dims * self.count),
         };
         object.mtv(&obstacle)
     }
@@ -105,8 +92,8 @@ impl<T> Obstacle<T> {
 
 impl<'t, R: Renderer<'t>> Scene<R> for Obstacle<R::Texture> {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        (0..self.tiles.count.x)
-            .flat_map(|i| (0..self.tiles.count.y).map(move |j| (i, j)))
+        (0..self.count.x)
+            .flat_map(|i| (0..self.count.y).map(move |j| (i, j)))
             .map(|(i, j)| {
                 let texture = if j == 0 {
                     &self.textures.top_center
