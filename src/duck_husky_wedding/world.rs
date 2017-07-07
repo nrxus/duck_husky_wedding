@@ -41,7 +41,7 @@ impl<T> Data<T> {
         T: Texture,
         TL: TextureLoader<'t, Texture = T>,
     {
-        let tile_size: glm::DVec2 = game.ground.out_size.into();
+        let tile_size: glm::IVec2 = game.ground.out_size.into();
         let background = Background::load(texture_manager, &game.background)?;
         let obstacles: Vec<_> = level
             .obstacles
@@ -49,16 +49,16 @@ impl<T> Data<T> {
             .map(|o| Obstacle::load(texture_manager, &game.ground, o))
             .collect::<Result<_>>()?;
         let goal = {
-            let bl: glm::DVec2 = level.goal.into();
+            let bl: glm::IVec2 = level.goal.into();
             Goal::load(bl * tile_size, &game.goal, texture_manager)
         }?;
-        let npc_pos = glm::uvec2(goal.body.top_left.x as u32, 720 - game.ground.out_size.y);
+        let npc_pos = glm::uvec2(goal.dst.x as u32, 720 - game.ground.out_size.y);
         let mut collectables = level
             .coins
             .iter()
             .map(|c| {
-                let bl: glm::DVec2 = (*c).into();
-                collectable::Data::load(texture_manager, bl * tile_size, &game.coin)
+                let bl: glm::IVec2 = (*c).into();
+                collectable::Data::load(bl * tile_size, &game.coin, texture_manager)
             })
             .collect::<Result<Vec<_>>>()?;
 
@@ -66,8 +66,8 @@ impl<T> Data<T> {
             .gems
             .iter()
             .map(|g| {
-                let bl: glm::DVec2 = (*g).into();
-                collectable::Data::load(texture_manager, bl * tile_size, &game.gem)
+                let bl: glm::IVec2 = (*g).into();
+                collectable::Data::load(bl * tile_size, &game.gem, texture_manager)
             })
             .collect::<Result<Vec<_>>>()?;
 

@@ -25,16 +25,16 @@ pub struct Data<T> {
 
 impl<T: Texture> Data<T> {
     pub fn load<'t, TL>(
-        texture_manager: &mut TextureManager<'t, TL>,
-        bl: glm::DVec2,
+        bl: glm::IVec2,
         data: &data::Collectable,
+        texture_manager: &mut TextureManager<'t, TL>,
     ) -> Result<Self>
     where
         TL: TextureLoader<'t, Texture = T>,
     {
         let animation = data.animation.load(texture_manager)?;
         let dims: glm::DVec2 = data.out_size.into();
-        let top_left = glm::dvec2(bl.x, 720. - bl.y - dims.y);
+        let top_left = glm::dvec2(bl.x as f64, 720. - bl.y as f64 - dims.y);
         let body = Rectangle { top_left, dims };
         Ok(Data { animation, body })
     }

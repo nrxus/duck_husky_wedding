@@ -85,7 +85,7 @@ impl<T, F> GamePlay<T, F> {
         self.player.update(force, delta);
         let center = self.player.body.center();
         self.viewport.center(glm::to_ivec2(center));
-        if (self.player.body.top_left.x + self.player.body.dims.x) as i32 > self.world.npc.x() {
+        if (self.player.body.top_left.x + self.player.body.dims.x) as i32 >= self.world.npc.x() {
             Some(super::Kind::Menu)
         } else {
             None
