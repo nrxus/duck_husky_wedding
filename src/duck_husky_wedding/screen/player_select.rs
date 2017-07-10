@@ -4,6 +4,7 @@ use duck_husky_wedding::collectable::{self, Collectable};
 use errors::*;
 
 use glm;
+use moho::animation::{self, Animation};
 use moho::errors as moho_errors;
 use moho::input;
 use moho::renderer::{options, ColorRGBA, FontDetails, FontManager, FontLoader, FontTexturizer,
@@ -13,6 +14,23 @@ use moho::shape::Rectangle;
 use std::rc::Rc;
 use std::time::Duration;
 
+struct CatData<T> {
+    animation: animation::Data<T>,
+    dst: glm::IVec4,
+}
+
+struct Cat<T> {
+    animation: Animation<T>,
+    dst: glm::IVec4,
+}
+
+impl<'t, R: Renderer<'t>> Scene<R> for Cat<R::Texture> {
+    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+        renderer.copy_asset(&self.animation.tile(), options::at(&self.dst))
+    }
+}
+
+
 pub struct PlayerSelect<T> {
     title: Rc<T>,
     collect_text: Rc<T>,
@@ -21,6 +39,7 @@ pub struct PlayerSelect<T> {
     coin: Collectable<T>,
     husky: button::Animated<T>,
     duck: button::Animated<T>,
+    cat: Cat<T>,
 }
 
 pub struct Data<T> {
@@ -31,6 +50,7 @@ pub struct Data<T> {
     coin: collectable::Data<T>,
     husky: button::Animated<T>,
     duck: button::Animated<T>,
+    cat: CatData<T>,
 }
 
 impl<T> Data<T> {
@@ -79,7 +99,10 @@ impl<T> Data<T> {
         let avoid_text = Rc::new(texturizer.texturize(&*font, "Avoid", &title_color)?);
         let collect_distance = 50;
         let coin = collectable::Data::load(
-            glm::ivec2(320 - collect_distance / 2 - data.coin.out_size.x as i32, 170),
+            glm::ivec2(
+                320 - collect_distance / 2 - data.coin.out_size.x as i32,
+                170,
+            ),
             &data.coin,
             texture_manager,
         )?;
@@ -88,6 +111,14 @@ impl<T> Data<T> {
             &data.gem,
             texture_manager,
         )?;
+        let cat = {
+            let data = &data.cat;
+            let animation = data.idle.load(texture_manager)?;
+            let dims: glm::DVec2 = data.out_size.into();
+            let dims = glm::to_ivec2(dims * 1.5);
+            let dst = glm::ivec4(960 - dims.x / 2, 500, dims.x, dims.y);
+            CatData { animation, dst }
+        };
 
         Ok(Data {
             title,
@@ -97,6 +128,7 @@ impl<T> Data<T> {
             avoid_text,
             coin,
             gem,
+            cat,
         })
     }
 
@@ -109,6 +141,10 @@ impl<T> Data<T> {
             avoid_text: self.avoid_text.clone(),
             gem: Collectable::new(&self.gem),
             coin: Collectable::new(&self.coin),
+            cat: Cat {
+                dst: self.cat.dst,
+                animation: self.cat.animation.clone().start(),
+            },
         }
     }
 }
@@ -124,6 +160,7 @@ impl<T> PlayerSelect<T> {
             self.coin.animate(delta);
             self.husky.animate(delta);
             self.duck.animate(delta);
+            self.cat.animation.animate(delta);
             None
         }
     }
@@ -135,18 +172,24 @@ where
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
 
-        renderer.show(&self.husky)?;
-        renderer.show(&self.duck)?;
+        //title+buttons
         {
             let dims = glm::to_ivec2(self.title.dims());
             let dst = glm::ivec4(640 - dims.x / 2, 50, dims.x, dims.y);
             renderer.copy(&self.title, options::at(&dst))
         }?;
+        renderer.show(&self.husky)?;
+        renderer.show(&self.duck)?;
+
+        //avoid
         {
             let dims = glm::to_ivec2(self.avoid_text.dims());
             let dst = glm::ivec4(960 - dims.x / 2, 400, dims.x, dims.y);
             renderer.copy(&self.avoid_text, options::at(&dst))
         }?;
+        renderer.show(&self.cat)?;
+
+        //collect
         {
             let dims = glm::to_ivec2(self.collect_text.dims());
             let dst = glm::ivec4(320 - dims.x / 2, 400, dims.x, dims.y);
