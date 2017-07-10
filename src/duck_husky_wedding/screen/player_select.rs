@@ -61,7 +61,7 @@ impl<T> Data<T> {
             let animation = data.animation.load(texture_manager)?;
             let dims: glm::DVec2 = data.out_size.into();
             let dims = dims * 1.5;
-            let top_left = glm::dvec2(640. - dims.x - button_distance / 2., 250. - dims.y);
+            let top_left = glm::dvec2(640. - dims.x - button_distance / 2., 300. - dims.y);
             let body = Rectangle { top_left, dims };
             button::Animated::new(idle, animation, body)
         };
@@ -71,7 +71,7 @@ impl<T> Data<T> {
             let animation = data.animation.load(texture_manager)?;
             let dims: glm::DVec2 = data.out_size.into();
             let dims = dims * 1.5;
-            let top_left = glm::dvec2(640. + button_distance / 2., 250. - dims.y);
+            let top_left = glm::dvec2(640. + button_distance / 2., 300. - dims.y);
             let body = Rectangle { top_left, dims };
             button::Animated::new(idle, animation, body)
         };
@@ -79,12 +79,12 @@ impl<T> Data<T> {
         let avoid_text = Rc::new(texturizer.texturize(&*font, "Avoid", &title_color)?);
         let collect_distance = 50;
         let coin = collectable::Data::load(
-            glm::ivec2(320 - collect_distance / 2 - data.coin.out_size.x as i32, 220),
+            glm::ivec2(320 - collect_distance / 2 - data.coin.out_size.x as i32, 170),
             &data.coin,
             texture_manager,
         )?;
         let gem = collectable::Data::load(
-            glm::ivec2(320 + collect_distance / 2, 220),
+            glm::ivec2(320 + collect_distance / 2, 170),
             &data.gem,
             texture_manager,
         )?;
@@ -139,17 +139,17 @@ where
         renderer.show(&self.duck)?;
         {
             let dims = glm::to_ivec2(self.title.dims());
-            let dst = glm::ivec4(640 - dims.x / 2, 0, dims.x, dims.y);
+            let dst = glm::ivec4(640 - dims.x / 2, 50, dims.x, dims.y);
             renderer.copy(&self.title, options::at(&dst))
         }?;
         {
             let dims = glm::to_ivec2(self.avoid_text.dims());
-            let dst = glm::ivec4(960 - dims.x / 2, 350, dims.x, dims.y);
+            let dst = glm::ivec4(960 - dims.x / 2, 400, dims.x, dims.y);
             renderer.copy(&self.avoid_text, options::at(&dst))
         }?;
         {
             let dims = glm::to_ivec2(self.collect_text.dims());
-            let dst = glm::ivec4(320 - dims.x / 2, 350, dims.x, dims.y);
+            let dst = glm::ivec4(320 - dims.x / 2, 400, dims.x, dims.y);
             renderer.copy(&self.collect_text, options::at(&dst))
         }?;
         renderer.show(&self.coin)?;
