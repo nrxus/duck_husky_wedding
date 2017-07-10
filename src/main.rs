@@ -14,6 +14,13 @@ mod data;
 use duck_husky_wedding::DuckHuskyWedding;
 use level_viewer::LevelViewer;
 
+use moho::input;
+use sdl2::render::WindowCanvas as SdlCanvas;
+use sdl2::render::TextureCreator;
+use sdl2::video::WindowContext;
+use sdl2::EventPump as SdlEventPump;
+use sdl2::image::{INIT_PNG, INIT_JPG};
+
 pub mod errors {
     error_chain!{
         links {
@@ -29,8 +36,30 @@ pub mod errors {
 fn main() {
     const WINDOW_WIDTH: u32 = 1280;
     const WINDOW_HEIGHT: u32 = 720;
-    let (renderer, creator, input_manager) =
-        moho::init("Husky Loves Ducky", WINDOW_WIDTH, WINDOW_HEIGHT).unwrap();
+    let name = "Husky Loves Ducky";
+
+    let sdl_ctx = sdl2::init().unwrap();
+    let video_ctx = sdl_ctx.video().unwrap();
+    let _image_ctx = sdl2::image::init(INIT_PNG | INIT_JPG).unwrap();
+
+    let window = video_ctx
+        .window(name, WINDOW_WIDTH, WINDOW_HEIGHT)
+        .position_centered()
+        .opengl()
+        .build()
+        .unwrap();
+
+    let mut renderer = window
+        .into_canvas()
+        .accelerated()
+        .present_vsync()
+        .build()
+        .unwrap();
+    let creator = renderer.texture_creator();
+
+    renderer.clear();
+    renderer.present();
+    let input_manager = input::Manager::new(sdl_ctx.event_pump().unwrap());
 
     let mut level_viewer = false;
     for argument in std::env::args() {
