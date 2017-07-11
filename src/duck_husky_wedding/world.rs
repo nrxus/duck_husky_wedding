@@ -1,6 +1,7 @@
 use data;
 use errors::*;
 use duck_husky_wedding::background::Background;
+use duck_husky_wedding::cat::{self, Cat};
 use duck_husky_wedding::collectable::{self, Collectable};
 use duck_husky_wedding::goal::Goal;
 use duck_husky_wedding::npc::Npc;
@@ -21,6 +22,7 @@ pub struct Data<T> {
     goal: Goal<T>,
     npc_pos: glm::UVec2,
     collectables: Vec<collectable::Data<T>>,
+    enemies: Vec<cat::Data<T>>,
 }
 
 pub struct World<T> {
@@ -29,6 +31,7 @@ pub struct World<T> {
     goal: Goal<T>,
     collectables: Vec<Collectable<T>>,
     pub npc: Npc<T>,
+    enemies: Vec<Cat<T>>,
 }
 
 impl<T> Data<T> {
@@ -72,6 +75,8 @@ impl<T> Data<T> {
             .collect::<Result<Vec<_>>>()?;
 
         collectables.append(&mut gems);
+        let cat = cat::Data::load(&game.cat, glm::uvec2(70, 70), texture_manager)?;
+        let enemies = vec![cat];
 
         Ok(Data {
             background,
@@ -79,6 +84,7 @@ impl<T> Data<T> {
             goal,
             npc_pos,
             collectables,
+            enemies,
         })
     }
 
@@ -94,12 +100,14 @@ impl<T> Data<T> {
         tl.y -= npc.out_size.y;
         let npc = Npc::load(npc, tl, texture_manager)?;
         let collectables = self.collectables.iter().map(Collectable::new).collect();
+        let enemies = self.enemies.iter().map(Cat::new).collect();
         Ok(World {
             npc,
             background: self.background.clone(),
             obstacles: self.obstacles.clone(),
             goal: self.goal.clone(),
             collectables,
+            enemies,
         })
     }
 }
@@ -108,6 +116,9 @@ impl<T> World<T> {
     pub fn update(&mut self, duration: Duration) {
         for mut c in &mut self.collectables {
             c.animate(duration);
+        }
+        for mut e in &mut self.enemies {
+            e.update(duration);
         }
     }
 
@@ -133,6 +144,7 @@ impl<'t, R: Renderer<'t>> Scene<R> for World<R::Texture> {
         renderer.show(&self.goal)?;
         self.obstacles.iter().map(|o| renderer.show(o)).try()?;
         self.collectables.iter().map(|c| renderer.show(c)).try()?;
+        self.enemies.iter().map(|c| renderer.show(c)).try()?;
         renderer.show(&self.npc)
     }
 }

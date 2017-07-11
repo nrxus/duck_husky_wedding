@@ -15,10 +15,6 @@ use duck_husky_wedding::DuckHuskyWedding;
 use level_viewer::LevelViewer;
 
 use moho::input;
-use sdl2::render::WindowCanvas as SdlCanvas;
-use sdl2::render::TextureCreator;
-use sdl2::video::WindowContext;
-use sdl2::EventPump as SdlEventPump;
 use sdl2::image::{INIT_PNG, INIT_JPG};
 
 pub mod errors {

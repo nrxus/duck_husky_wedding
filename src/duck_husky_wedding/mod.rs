@@ -10,6 +10,7 @@ mod try;
 mod hud;
 mod goal;
 mod collectable;
+mod cat;
 
 use errors::*;
 use data;
