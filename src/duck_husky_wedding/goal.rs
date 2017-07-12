@@ -24,12 +24,7 @@ impl<T: Texture> Goal<T> {
         let texture = data.texture.load(texture_manager)?;
         let dims: glm::IVec2 = data.out_size.into();
         let top_left = glm::ivec2(bl.x, 720 - bl.y - dims.y);
-        let dst = glm::ivec4(
-            top_left.x,
-            top_left.y,
-            dims.x,
-            dims.y,
-        );
+        let dst = glm::ivec4(top_left.x, top_left.y, dims.x, dims.y);
         Ok(Goal { texture, dst })
     }
 }
