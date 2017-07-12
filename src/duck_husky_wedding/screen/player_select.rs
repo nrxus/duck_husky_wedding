@@ -101,13 +101,13 @@ impl<T> Data<T> {
         let coin = collectable::Data::load(
             glm::ivec2(
                 320 - collect_distance / 2 - data.coin.out_size.x as i32,
-                170,
+                550,
             ),
             &data.coin,
             texture_manager,
         )?;
         let gem = collectable::Data::load(
-            glm::ivec2(320 + collect_distance / 2, 170),
+            glm::ivec2(320 + collect_distance / 2, 550),
             &data.gem,
             texture_manager,
         )?;

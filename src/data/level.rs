@@ -17,6 +17,7 @@ pub struct Level {
     pub goal: Dimension,
     pub gems: Vec<Dimension>,
     pub coins: Vec<Dimension>,
+    pub cats: Vec<Dimension>,
 }
 
 impl Level {

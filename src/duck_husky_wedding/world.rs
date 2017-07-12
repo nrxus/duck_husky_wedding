@@ -60,8 +60,10 @@ impl<T> Data<T> {
             .coins
             .iter()
             .map(|c| {
-                let bl: glm::IVec2 = (*c).into();
-                collectable::Data::load(bl * tile_size, &game.coin, texture_manager)
+                let mut bl: glm::IVec2 = (*c).into();
+                bl = bl * tile_size;
+                bl.y = 720 - bl.y;
+                collectable::Data::load(bl, &game.coin, texture_manager)
             })
             .collect::<Result<Vec<_>>>()?;
 
@@ -69,14 +71,24 @@ impl<T> Data<T> {
             .gems
             .iter()
             .map(|g| {
-                let bl: glm::IVec2 = (*g).into();
-                collectable::Data::load(bl * tile_size, &game.gem, texture_manager)
+                let mut bl: glm::IVec2 = (*g).into();
+                bl = bl * tile_size;
+                bl.y = 720 - bl.y;
+                collectable::Data::load(bl, &game.gem, texture_manager)
             })
             .collect::<Result<Vec<_>>>()?;
 
         collectables.append(&mut gems);
-        let cat = cat::Data::load(&game.cat, glm::uvec2(70, 70), texture_manager)?;
-        let enemies = vec![cat];
+        let enemies = level
+            .cats
+            .iter()
+            .map(|c| {
+                let mut bl: glm::IVec2 = (*c).into();
+                bl = bl * tile_size;
+                bl.y = 720 - bl.y;
+                cat::Data::load(bl, &game.cat, texture_manager)
+            })
+            .collect::<Result<Vec<_>>>()?;
 
         Ok(Data {
             background,

@@ -9,31 +9,24 @@ use moho::renderer::{options, Renderer, Scene, Texture, TextureLoader, TextureMa
 
 use std::time::Duration;
 
-enum Action<T> {
-    Moving(Animation<T>),
-    Standing(Animation<T>),
-}
-
 pub struct Data<T> {
     body: Rectangle,
-    moving: animation::Data<T>,
-    standing: animation::Data<T>,
+    animation: animation::Data<T>,
 }
 
 impl<T> Clone for Data<T> {
     fn clone(&self) -> Self {
         Data {
             body: self.body.clone(),
-            moving: self.moving.clone(),
-            standing: self.standing.clone(),
+            animation: self.animation.clone(),
         }
     }
 }
 
 impl<T> Data<T> {
     pub fn load<'t, TL>(
+        bl: glm::IVec2,
         data: &data::Cat,
-        tl: glm::UVec2,
         texture_manager: &mut TextureManager<'t, TL>,
     ) -> Result<Self>
     where
@@ -41,44 +34,30 @@ impl<T> Data<T> {
         TL: TextureLoader<'t, Texture = T>,
     {
         let body = {
-            let top_left = glm::to_dvec2(tl);
-            let dims = data.out_size.into();
+            let dims: glm::DVec2 = data.out_size.into();
+            let top_left = glm::dvec2(bl.x as f64, bl.y as f64 - dims.y);
             Rectangle { top_left, dims }
         };
-        let standing = data.idle.load(texture_manager)?;
-        let moving = data.walking.load(texture_manager)?;
-        Ok(Data {
-            body,
-            standing,
-            moving,
-        })
+        let animation = data.idle.load(texture_manager)?;
+        Ok(Data { body, animation })
     }
 }
 
 pub struct Cat<T> {
     pub body: Rectangle,
-    action: Action<T>,
-    moving: animation::Data<T>,
+    animation: Animation<T>,
 }
 
 impl<T> Cat<T> {
     pub fn new(data: &Data<T>) -> Self {
         Cat {
             body: data.body.clone(),
-            moving: data.moving.clone(),
-            action: Action::Standing(data.standing.clone().start()),
+            animation: data.animation.clone().start(),
         }
     }
 
-    pub fn start_walk(&mut self) {
-        self.action = Action::Moving(self.moving.clone().start());
-    }
-
     pub fn update(&mut self, duration: Duration) {
-        match self.action {
-            Action::Moving(ref mut animation) => animation.animate(duration),
-            Action::Standing(ref mut animation) => animation.animate(duration),
-        };
+        self.animation.animate(duration);
     }
 }
 
@@ -90,10 +69,6 @@ impl<'t, R: Renderer<'t>> Scene<R> for Cat<R::Texture> {
             self.body.dims.x as i32,
             self.body.dims.y as i32,
         );
-        let tile = match self.action {
-            Action::Moving(ref animation) => animation.tile(),
-            Action::Standing(ref animation) => animation.tile(),
-        };
-        renderer.copy_asset(&tile, options::at(&dst_rect))
+        renderer.copy_asset(&self.animation.tile(), options::at(&dst_rect))
     }
 }

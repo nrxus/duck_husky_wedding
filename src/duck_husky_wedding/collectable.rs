@@ -32,10 +32,13 @@ impl<T: Texture> Data<T> {
     where
         TL: TextureLoader<'t, Texture = T>,
     {
+        let body = {
+            let dims: glm::DVec2 = data.out_size.into();
+            let top_left = glm::dvec2(bl.x as f64, bl.y as f64 - dims.y);
+            Rectangle { top_left, dims }
+        };
+
         let animation = data.animation.load(texture_manager)?;
-        let dims: glm::DVec2 = data.out_size.into();
-        let top_left = glm::dvec2(bl.x as f64, 720. - bl.y as f64 - dims.y);
-        let body = Rectangle { top_left, dims };
         Ok(Data { animation, body })
     }
 }
