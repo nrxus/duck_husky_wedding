@@ -41,13 +41,11 @@ impl<F, T> Timer<T, F> {
             TextCache { secs, texture }
         };
         let remaining = Duration::from_secs(secs);
-        Ok(
-            (Timer {
-                 text,
-                 font,
-                 remaining,
-             }),
-        )
+        Ok(Timer {
+            text,
+            font,
+            remaining,
+        })
     }
 
     pub fn before_draw<'t, FT>(&mut self, texturizer: &'t FT) -> Result<()>

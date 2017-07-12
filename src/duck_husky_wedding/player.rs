@@ -45,7 +45,7 @@ impl<T> Player<T> {
         };
         let animation = data.animation.load(texture_manager)?;
         let texture = data.idle_texture.load(texture_manager)?;
-        Ok((Player::new(animation, texture, body)))
+        Ok(Player::new(animation, texture, body))
     }
 
     pub fn new(animation: animation::Data<T>, texture: Rc<T>, body: Rectangle) -> Self {
@@ -74,10 +74,8 @@ impl<T> Player<T> {
                 }
                 _ => self.velocity.y -= 6.,
             }
-        } else {
-            if let Action::Jumping(_, ref mut held) = self.action {
-                held.add_assign(15);
-            }
+        } else if let Action::Jumping(_, ref mut held) = self.action {
+            held.add_assign(15);
         }
 
         if left ^ right {
@@ -149,8 +147,7 @@ impl<'t, R: Renderer<'t>> Scene<R> for Player<R::Texture> {
         }
         match self.action {
             Action::Moving(ref a) => renderer.copy_asset(&a.tile(), options),
-            Action::Standing(ref t) => renderer.copy(&*t, options),
-            Action::Jumping(ref t, _) => renderer.copy(&*t, options),
+            Action::Standing(ref t) | Action::Jumping(ref t, _) => renderer.copy(&*t, options),
         }
     }
 }

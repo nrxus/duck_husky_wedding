@@ -42,7 +42,7 @@ pub struct Obstacle<T> {
 impl<T> Clone for Obstacle<T> {
     fn clone(&self) -> Self {
         Obstacle {
-            count: self.count.clone(),
+            count: self.count,
             textures: self.textures.clone(),
             dims: self.dims,
             tl: self.tl,
