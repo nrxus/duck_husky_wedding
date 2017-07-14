@@ -37,5 +37,11 @@ coins:
   - x: 14
     y: 9
 cats:
-  - x: 11
-    y: 5
+  - kind: Idle
+    bottom_left:
+      x: 25
+      y: 1
+  - kind: {Moving:3}
+    bottom_left:
+      x: 11
+      y: 5

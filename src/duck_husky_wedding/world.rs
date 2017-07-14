@@ -83,10 +83,18 @@ impl<T> Data<T> {
             .cats
             .iter()
             .map(|c| {
-                let mut bl: glm::IVec2 = (*c).into();
+                let mut bl: glm::IVec2 = c.bottom_left.into();
                 bl = bl * tile_size;
                 bl.y = 720 - bl.y;
-                cat::Data::load(bl, &game.cat, texture_manager)
+                let kind = match c.kind {
+                    data::CatKind::Idle => cat::Kind::Idle,
+                    data::CatKind::Moving(t) => cat::Kind::Moving {
+                        total: t * tile_size.x as u32,
+                        left: false,
+                        current: 0,
+                    },
+                };
+                cat::Data::load(bl, kind, &game.cat, texture_manager)
             })
             .collect::<Result<Vec<_>>>()?;
 
