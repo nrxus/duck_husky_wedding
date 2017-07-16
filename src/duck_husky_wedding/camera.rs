@@ -48,8 +48,18 @@ impl<'c, 't, R: Renderer<'t>> Renderer<'t> for Camera<'c, R> {
     type Texture = R::Texture;
 
     fn fill_rects(&mut self, rects: &[rect::Rect]) -> moho_errors::Result<()> {
-        //TODO: move rectangles
-        self.renderer.fill_rects(rects)
+        let rects: Vec<_> = rects
+            .iter()
+            .map(|r| {
+                rect::Rect::new(
+                    r.x - self.viewport.translation.x,
+                    r.y - self.viewport.translation.y,
+                    r.width(),
+                    r.height(),
+                )
+            })
+            .collect();
+        self.renderer.fill_rects(&rects)
     }
 
     fn copy(&mut self, texture: &Self::Texture, options: Options) -> moho_errors::Result<()> {
