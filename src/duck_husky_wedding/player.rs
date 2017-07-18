@@ -1,3 +1,4 @@
+use duck_husky_wedding::body::Body;
 use data;
 use errors::*;
 
@@ -6,7 +7,7 @@ use moho::animation::{self, Animation};
 use moho::errors as moho_errors;
 use moho::input;
 use moho::renderer::{options, Renderer, Scene, Texture, TextureFlip, TextureLoader, TextureManager};
-use moho::shape::{Rectangle, Shape};
+use moho::shape::Rectangle;
 use sdl2::keyboard::Keycode;
 
 use std::ops::AddAssign;
@@ -20,8 +21,8 @@ enum Action<T> {
 }
 
 pub struct Player<T> {
-    pub body: Rectangle,
     pub velocity: glm::DVec2,
+    pub dst_rect: glm::DVec4,
     action: Action<T>,
     animation: animation::Data<T>,
     texture: Rc<T>,
@@ -38,24 +39,34 @@ impl<T> Player<T> {
         T: Texture,
         TL: TextureLoader<'t, Texture = T>,
     {
-        let body = {
-            let top_left = glm::to_dvec2(tl);
-            let dims = data.out_size.into();
-            Rectangle { top_left, dims }
+        let dst_rect = {
+            let dims = data.out_size;
+            glm::dvec4(tl.x as f64, tl.y as f64, dims.x as f64, dims.y as f64)
         };
         let animation = data.animation.load(texture_manager)?;
         let texture = data.idle_texture.load(texture_manager)?;
-        Ok(Player::new(animation, texture, body))
+        Ok(Player::new(animation, texture, dst_rect))
     }
 
-    pub fn new(animation: animation::Data<T>, texture: Rc<T>, body: Rectangle) -> Self {
+    pub fn new(animation: animation::Data<T>, texture: Rc<T>, dst_rect: glm::DVec4) -> Self {
         Player {
             action: Action::Standing(texture.clone()),
             velocity: glm::dvec2(0., 0.),
-            animation: animation,
-            texture: texture,
-            body: body,
             backwards: false,
+            animation,
+            texture,
+            dst_rect,
+        }
+    }
+
+    pub fn body(&self) -> Body {
+        let top_left = glm::dvec2(self.dst_rect.x as f64, self.dst_rect.y as f64);
+        let dims = glm::dvec2(self.dst_rect.z as f64, self.dst_rect.w as f64);
+        let rectangles = vec![Rectangle { top_left, dims }];
+        let circles = vec![];
+        Body {
+            rectangles,
+            circles,
         }
     }
 
@@ -129,19 +140,15 @@ impl<T> Player<T> {
         }
 
         self.velocity = self.velocity + force;
-        self.body = self.body.nudge(self.velocity);
+        self.dst_rect.x += self.velocity.x;
+        self.dst_rect.y += self.velocity.y;
     }
 }
 
 impl<'t, R: Renderer<'t>> Scene<R> for Player<R::Texture> {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        let dst_rect = glm::ivec4(
-            self.body.top_left.x as i32,
-            self.body.top_left.y as i32,
-            self.body.dims.x as i32,
-            self.body.dims.y as i32,
-        );
-        let mut options = options::at(&dst_rect);
+        let dst = glm::to_ivec4(self.dst_rect);
+        let mut options = options::at(&dst);
         if self.backwards {
             options = options.flip(TextureFlip::Horizontal);
         }

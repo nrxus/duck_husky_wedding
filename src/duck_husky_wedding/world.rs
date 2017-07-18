@@ -10,7 +10,6 @@ use duck_husky_wedding::obstacle::Obstacle;
 use duck_husky_wedding::try::Try;
 
 use glm;
-use moho::shape::Shape;
 use moho::renderer::{Scene, Renderer, Texture, TextureLoader, TextureManager};
 use moho::errors as moho_errors;
 
@@ -145,7 +144,7 @@ impl<T> World<T> {
     pub fn force(&self, player: &Player<T>) -> glm::DVec2 {
         let gravity = glm::dvec2(0., 1.);
         let mut force = gravity;
-        let mut body = player.body.nudge(gravity + player.velocity);
+        let mut body = player.body().nudge(gravity + player.velocity);
 
         for o in &self.obstacles {
             if let Some(f) = o.mtv(&body) {

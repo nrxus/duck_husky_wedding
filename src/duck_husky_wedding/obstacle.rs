@@ -1,8 +1,9 @@
 use data;
+use duck_husky_wedding::body::Body;
 use duck_husky_wedding::try::Try;
 use errors::*;
 
-use moho::shape::{Intersect, Rectangle};
+use moho::shape::Rectangle;
 use moho::renderer::{options, Renderer, Scene, TextureLoader, TextureManager};
 use moho::errors as moho_errors;
 
@@ -81,7 +82,7 @@ impl<T> Obstacle<T> {
         })
     }
 
-    pub fn mtv(&self, object: &Rectangle) -> Option<glm::DVec2> {
+    pub fn mtv(&self, object: &Body) -> Option<glm::DVec2> {
         let obstacle = Rectangle {
             top_left: glm::to_dvec2(self.tl),
             dims: glm::to_dvec2(self.dims * self.count),

@@ -11,7 +11,6 @@ use moho::errors as moho_errors;
 use moho::renderer::{options, Renderer, Scene};
 use moho::renderer::{FontManager, FontLoader, FontTexturizer, Texture, TextureLoader,
                      TextureManager};
-use moho::shape::Shape;
 
 use std::time::Duration;
 
@@ -83,9 +82,12 @@ impl<T, F> GamePlay<T, F> {
         self.timer.update(delta);
         let force = self.world.force(&self.player);
         self.player.update(force, delta);
-        let center = self.player.body.center();
-        self.viewport.center(glm::to_ivec2(center));
-        if (self.player.body.top_left.x + self.player.body.dims.x) as i32 >= self.world.npc.x() {
+        let center = {
+            let dst = self.player.dst_rect;
+            glm::ivec2((dst.x + dst.z / 2.) as i32, (dst.y + dst.w / 2.) as i32)
+        };
+        self.viewport.center(center);
+        if (self.player.dst_rect.x + self.player.dst_rect.z) as i32 >= self.world.npc.x() {
             Some(super::Kind::Menu)
         } else {
             None

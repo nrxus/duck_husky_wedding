@@ -11,6 +11,7 @@ mod hud;
 mod goal;
 mod collectable;
 mod cat;
+mod body;
 
 use errors::*;
 use data;
