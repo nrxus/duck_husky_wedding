@@ -147,6 +147,7 @@ impl<T> Player<T> {
 
 impl<'t, R: Renderer<'t>> Scene<R> for Player<R::Texture> {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+        renderer.show(&self.body())?;
         let dst = glm::to_ivec4(self.dst_rect);
         let mut options = options::at(&dst);
         if self.backwards {
