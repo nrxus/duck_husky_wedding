@@ -7,7 +7,6 @@ use moho::animation::{self, Animation};
 use moho::errors as moho_errors;
 use moho::input;
 use moho::renderer::{options, Renderer, Scene, Texture, TextureFlip, TextureLoader, TextureManager};
-use moho::shape::Rectangle;
 use sdl2::keyboard::Keycode;
 
 use std::ops::AddAssign;
@@ -23,6 +22,7 @@ enum Action<T> {
 pub struct Player<T> {
     pub velocity: glm::DVec2,
     pub dst_rect: glm::DVec4,
+    body: Vec<data::Shape>,
     action: Action<T>,
     animation: animation::Data<T>,
     texture: Rc<T>,
@@ -45,10 +45,15 @@ impl<T> Player<T> {
         };
         let animation = data.animation.load(texture_manager)?;
         let texture = data.idle_texture.load(texture_manager)?;
-        Ok(Player::new(animation, texture, dst_rect))
+        Ok(Player::new(animation, texture, dst_rect, data.body.clone()))
     }
 
-    pub fn new(animation: animation::Data<T>, texture: Rc<T>, dst_rect: glm::DVec4) -> Self {
+    pub fn new(
+        animation: animation::Data<T>,
+        texture: Rc<T>,
+        dst_rect: glm::DVec4,
+        body: Vec<data::Shape>,
+    ) -> Self {
         Player {
             action: Action::Standing(texture.clone()),
             velocity: glm::dvec2(0., 0.),
@@ -56,18 +61,12 @@ impl<T> Player<T> {
             animation,
             texture,
             dst_rect,
+            body,
         }
     }
 
     pub fn body(&self) -> Body {
-        let top_left = glm::dvec2(self.dst_rect.x as f64, self.dst_rect.y as f64);
-        let dims = glm::dvec2(self.dst_rect.z as f64, self.dst_rect.w as f64);
-        let rectangles = vec![Rectangle { top_left, dims }];
-        let circles = vec![];
-        Body {
-            rectangles,
-            circles,
-        }
+        Body::new(&self.dst_rect, &self.body)
     }
 
     pub fn process(&mut self, input: &input::State) {

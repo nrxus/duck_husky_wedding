@@ -10,6 +10,12 @@ duck:
   out_size:
     x: 108
     y: 81
+  body:
+    - Rectangle:
+        - x: 0
+          y: 0
+        - x: 100
+          y: 100
 husky:
   animation:
     texture: "husky.png"
@@ -22,6 +28,12 @@ husky:
   out_size:
     x: 126
     y: 90
+  body:
+    - Rectangle:
+        - x: 0
+          y: 0
+        - x: 100
+          y: 100
 ground:
   center: "ground_c.png"
   left: "ground_ml.png"

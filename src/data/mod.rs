@@ -57,11 +57,18 @@ impl Texture {
     }
 }
 
+#[derive(Debug, Deserialize, Clone)]
+pub enum Shape {
+    Rectangle(Dimension, Dimension),
+    Circle(Dimension, f64),
+}
+
 #[derive(Debug, Deserialize)]
 pub struct Player {
     pub animation: Sprite,
     pub idle_texture: Texture,
     pub out_size: Dimension,
+    pub body: Vec<Shape>,
 }
 
 #[derive(Debug, Deserialize)]

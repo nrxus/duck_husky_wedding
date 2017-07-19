@@ -1,3 +1,4 @@
+use data;
 use duck_husky_wedding::try::Try;
 
 use glm;
@@ -12,6 +13,38 @@ pub struct Body {
 }
 
 impl Body {
+    pub fn new(rect: &glm::DVec4, body: &[data::Shape]) -> Self {
+        let mut rectangles = vec![];
+        let mut circles = vec![];
+
+        for s in body {
+            match *s {
+                data::Shape::Rectangle(tl, d) => {
+                    rectangles.push(Rectangle {
+                        top_left: glm::dvec2(
+                            rect.x + rect.z * tl.x as f64 / 100.,
+                            rect.y + rect.w * tl.y as f64 / 100.,
+                        ),
+                        dims: glm::dvec2(rect.z * d.x as f64 / 100., rect.w * d.y as f64 / 100.),
+                    })
+                }
+                data::Shape::Circle(c, r) => {
+                    circles.push(Circle {
+                        center: glm::dvec2(
+                            rect.x + rect.z * c.x as f64 / 100.,
+                            rect.y + rect.w * c.y as f64 / 100.,
+                        ),
+                        radius: rect.z.min(rect.w) * r as f64 / 100.,
+                    })
+                }
+            }
+        }
+        Body {
+            rectangles,
+            circles,
+        }
+    }
+
     pub fn nudge(self, delta: glm::DVec2) -> Body {
         let rectangles = self.rectangles
             .into_iter()
