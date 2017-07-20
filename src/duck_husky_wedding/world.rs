@@ -153,6 +153,20 @@ impl<T> World<T> {
             }
         }
 
+        for o in &self.obstacles {
+            if let Some(f) = o.mtv(&body) {
+                force = force + f;
+                body = body.nudge(f);
+            }
+        }
+
+        for o in &self.obstacles {
+            if let Some(f) = o.mtv(&body) {
+                force = force + f;
+                body = body.nudge(f);
+            }
+        }
+
         force
     }
 }
