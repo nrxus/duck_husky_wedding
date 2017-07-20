@@ -11,35 +11,36 @@ duck:
     x: 108
     y: 81
   body:
-    #Head
-    - Circle:
-        - x: 55
-          y: 75
-        - 25
-    #Front Body
-    - Circle:
-        - x: 69
-          y: 58
-        - 29
     #Legs
+    - Rectangle:
+        - x: 42
+          y: 80
+        - x: 30
+          y: 20
+    #Head
     - Circle:
         - x: 75
           y: 20
         - 19
+    #Front Body
+    - Circle:
+        - x: 70
+          y: 57
+        - 27
     #Middle Body
     - Circle:
-        - x: 40
-          y: 63
+        - x: 43
+          y: 61
         - 23
     #Middle Tail
     - Circle:
-        - x: 25
-          y: 65
+        - x: 29
+          y: 64
         - 10
     #End Tail
     - Circle:
-        - x: 19
-          y: 65
+        - x: 23
+          y: 64
         - 8
 husky:
   animation:
