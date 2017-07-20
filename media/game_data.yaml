@@ -55,11 +55,42 @@ husky:
     x: 126
     y: 90
   body:
+    #Body
     - Rectangle:
-        - x: 0
-          y: 0
-        - x: 100
-          y: 100
+        - x: 8
+          y: 30
+        - x: 71
+          y: 40
+    #Back Leg
+    - Circle:
+        - x: 20
+          y: 80
+        - 20
+    #Front Leg
+    - Circle:
+        - x: 65
+          y: 80
+        - 20
+    #Head
+    - Circle:
+        - x: 78
+          y: 24
+        - 11
+    #Head
+    - Circle:
+        - x: 84
+          y: 24
+        - 8
+    #Head
+    - Circle:
+        - x: 88
+          y: 25
+        - 6
+    #Head
+    - Circle:
+        - x: 90
+          y: 25
+        - 6
 ground:
   center: "ground_c.png"
   left: "ground_ml.png"
