@@ -11,11 +11,23 @@ duck:
     x: 108
     y: 81
   body:
-    - Rectangle:
-        - x: 0
-          y: 0
-        - x: 100
-          y: 100
+    # - Rectangle:
+    #     - x: 10
+    #       y: 0
+    #     - x: 80
+    #       y: 82
+    - Circle:
+        - x: 55
+          y: 80
+        - 20
+    - Circle:
+        - x: 66
+          y: 55
+        - 28
+    - Circle:
+        - x: 75
+          y: 20
+        - 19
 husky:
   animation:
     texture: "husky.png"
@@ -42,8 +54,8 @@ ground:
   top_left: "ground_tl.png"
   top_right: "ground_tr.png"
   out_size:
-    x: 36
-    y: 36
+    x: 34
+    y: 34
 background:
   texture: "background.png"
   out_size:

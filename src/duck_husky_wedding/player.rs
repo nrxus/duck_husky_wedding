@@ -66,7 +66,7 @@ impl<T> Player<T> {
     }
 
     pub fn body(&self) -> Body {
-        Body::new(&self.dst_rect, &self.body)
+        Body::new(&self.dst_rect, &self.body, self.backwards)
     }
 
     pub fn process(&mut self, input: &input::State) {

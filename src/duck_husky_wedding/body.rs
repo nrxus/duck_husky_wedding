@@ -13,7 +13,7 @@ pub struct Body {
 }
 
 impl Body {
-    pub fn new(rect: &glm::DVec4, body: &[data::Shape]) -> Self {
+    pub fn new(rect: &glm::DVec4, body: &[data::Shape], flip: bool) -> Self {
         let mut rectangles = vec![];
         let mut circles = vec![];
 
