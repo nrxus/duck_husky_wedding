@@ -19,21 +19,25 @@ impl Body {
 
         for s in body {
             match *s {
-                data::Shape::Rectangle(tl, d) => {
+                data::Shape::Rectangle(mut tl, d) => {
+                    if flip {
+                        tl.x = 100 - tl.x;
+                    }
+                    let left = rect.x + rect.z * tl.x as f64 / 100.;
+                    let top = rect.y + rect.w * tl.y as f64 / 100.;
                     rectangles.push(Rectangle {
-                        top_left: glm::dvec2(
-                            rect.x + rect.z * tl.x as f64 / 100.,
-                            rect.y + rect.w * tl.y as f64 / 100.,
-                        ),
+                        top_left: glm::dvec2(left, top),
                         dims: glm::dvec2(rect.z * d.x as f64 / 100., rect.w * d.y as f64 / 100.),
                     })
                 }
-                data::Shape::Circle(c, r) => {
+                data::Shape::Circle(mut c, r) => {
+                    if flip {
+                        c.x = 100 - c.x;
+                    }
+                    let x = rect.x + rect.z * c.x as f64 / 100.;
+                    let y = rect.y + rect.w * c.y as f64 / 100.;
                     circles.push(Circle {
-                        center: glm::dvec2(
-                            rect.x + rect.z * c.x as f64 / 100.,
-                            rect.y + rect.w * c.y as f64 / 100.,
-                        ),
+                        center: glm::dvec2(x, y),
                         radius: rect.z.min(rect.w) * r as f64 / 100.,
                     })
                 }
