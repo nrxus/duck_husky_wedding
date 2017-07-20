@@ -11,23 +11,36 @@ duck:
     x: 108
     y: 81
   body:
-    # - Rectangle:
-    #     - x: 10
-    #       y: 0
-    #     - x: 80
-    #       y: 82
+    #Head
     - Circle:
         - x: 55
-          y: 80
-        - 20
+          y: 75
+        - 25
+    #Front Body
     - Circle:
-        - x: 66
-          y: 55
-        - 28
+        - x: 69
+          y: 58
+        - 29
+    #Legs
     - Circle:
         - x: 75
           y: 20
         - 19
+    #Middle Body
+    - Circle:
+        - x: 40
+          y: 63
+        - 23
+    #Middle Tail
+    - Circle:
+        - x: 25
+          y: 65
+        - 10
+    #End Tail
+    - Circle:
+        - x: 19
+          y: 65
+        - 8
 husky:
   animation:
     texture: "husky.png"

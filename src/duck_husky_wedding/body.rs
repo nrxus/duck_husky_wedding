@@ -21,7 +21,7 @@ impl Body {
             match *s {
                 data::Shape::Rectangle(mut tl, d) => {
                     if flip {
-                        tl.x = 100 - tl.x;
+                        tl.x = 100 - tl.x - d.x;
                     }
                     let left = rect.x + rect.z * tl.x as f64 / 100.;
                     let top = rect.y + rect.w * tl.y as f64 / 100.;
