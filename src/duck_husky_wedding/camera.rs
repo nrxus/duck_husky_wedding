@@ -47,6 +47,21 @@ impl ViewPort {
 impl<'c, 't, R: Renderer<'t>> Renderer<'t> for Camera<'c, R> {
     type Texture = R::Texture;
 
+    fn draw_rects(&mut self, rects: &[rect::Rect]) -> moho_errors::Result<()> {
+        let rects: Vec<_> = rects
+            .iter()
+            .map(|r| {
+                rect::Rect::new(
+                    r.x - self.viewport.translation.x,
+                    r.y - self.viewport.translation.y,
+                    r.width(),
+                    r.height(),
+                )
+            })
+            .collect();
+        self.renderer.draw_rects(&rects)
+    }
+
     fn fill_rects(&mut self, rects: &[rect::Rect]) -> moho_errors::Result<()> {
         let rects: Vec<_> = rects
             .iter()
