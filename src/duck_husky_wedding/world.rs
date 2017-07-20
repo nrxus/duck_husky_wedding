@@ -144,7 +144,7 @@ impl<T> World<T> {
     pub fn force(&self, player: &Player<T>) -> glm::DVec2 {
         let gravity = glm::dvec2(0., 1.);
         let mut force = gravity;
-        let mut body = player.body().nudge(gravity + player.velocity);
+        let mut body = player.body().nudge(gravity + player.delta_pos);
 
         for o in &self.obstacles {
             if let Some(f) = o.mtv(&body) {

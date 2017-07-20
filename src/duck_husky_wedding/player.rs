@@ -20,7 +20,7 @@ enum Action<T> {
 }
 
 pub struct Player<T> {
-    pub velocity: glm::DVec2,
+    pub delta_pos: glm::DVec2,
     pub dst_rect: glm::DVec4,
     body: Vec<data::Shape>,
     action: Action<T>,
@@ -56,7 +56,7 @@ impl<T> Player<T> {
     ) -> Self {
         Player {
             action: Action::Standing(texture.clone()),
-            velocity: glm::dvec2(0., 0.),
+            delta_pos: glm::dvec2(0., 0.),
             backwards: false,
             animation,
             texture,
@@ -79,10 +79,10 @@ impl<T> Player<T> {
                 Action::Jumping(_, ref mut held) => {
                     if *held < 15 {
                         held.add_assign(1);
-                        self.velocity.y -= 6. / (*held as f64);
+                        self.delta_pos.y -= 6. / (*held as f64);
                     }
                 }
-                _ => self.velocity.y -= 6.,
+                _ => self.delta_pos.y -= 6.,
             }
         } else if let Action::Jumping(_, ref mut held) = self.action {
             held.add_assign(15);
@@ -90,9 +90,9 @@ impl<T> Player<T> {
 
         if left ^ right {
             self.backwards = left;
-            self.velocity.x = if left { -6. } else { 6. };
+            self.delta_pos.x = if left { -6. } else { 6. };
         } else {
-            self.velocity.x = 0.;
+            self.delta_pos.x = 0.;
         }
     }
 
@@ -103,9 +103,9 @@ impl<T> Player<T> {
 
         let next_action = match self.action {
             Action::Moving(ref mut a) => {
-                if self.velocity.y.abs() > 0.0000001 || force.y.abs() > 0.0000001 {
+                if self.delta_pos.y.abs() > 0.0000001 || force.y.abs() > 0.0000001 {
                     Some(Action::Jumping(self.texture.clone(), 0))
-                } else if self.velocity.x == 0. {
+                } else if self.delta_pos.x == 0. {
                     Some(Action::Standing(self.texture.clone()))
                 } else {
                     a.animate(delta);
@@ -113,9 +113,9 @@ impl<T> Player<T> {
                 }
             }
             Action::Standing(_) => {
-                if self.velocity.y.abs() > 0.0000001 || force.y.abs() > 0.0000001 {
+                if self.delta_pos.y.abs() > 0.0000001 || force.y.abs() > 0.0000001 {
                     Some(Action::Jumping(self.texture.clone(), 0))
-                } else if self.velocity.x == 0. {
+                } else if self.delta_pos.x == 0. {
                     None
                 } else {
                     let animation = self.animation.clone().start();
@@ -123,9 +123,9 @@ impl<T> Player<T> {
                 }
             }
             Action::Jumping(_, _) => {
-                if self.velocity.y.abs() > 0.0000001 || force.y.abs() > 0.0000001 {
+                if self.delta_pos.y.abs() > 0.0000001 || force.y.abs() > 0.0000001 {
                     None
-                } else if self.velocity.x == 0. {
+                } else if self.delta_pos.x == 0. {
                     Some(Action::Standing(self.texture.clone()))
                 } else {
                     let animation = self.animation.clone().start();
@@ -138,9 +138,9 @@ impl<T> Player<T> {
             self.action = a;
         }
 
-        self.velocity = self.velocity + force;
-        self.dst_rect.x += self.velocity.x;
-        self.dst_rect.y += self.velocity.y;
+        self.delta_pos = self.delta_pos + force;
+        self.dst_rect.x += self.delta_pos.x;
+        self.dst_rect.y += self.delta_pos.y;
     }
 }
 
