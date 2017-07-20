@@ -97,9 +97,21 @@ impl<'t, R: Renderer<'t>> Scene<R> for Obstacle<R::Texture> {
             .flat_map(|i| (0..self.count.y).map(move |j| (i, j)))
             .map(|(i, j)| {
                 let texture = if j == 0 {
-                    &self.textures.top_center
+                    if i == self.count.x - 1 {
+                        &self.textures.top_right
+                    } else if i == 0 {
+                        &self.textures.top_left
+                    } else {
+                        &self.textures.top_center
+                    }
                 } else {
-                    &self.textures.center
+                    if i == self.count.x - 1 {
+                        &self.textures.right
+                    } else if i == 0 {
+                        &self.textures.left
+                    } else {
+                        &self.textures.center
+                    }
                 };
                 (
                     texture,

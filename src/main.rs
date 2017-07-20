@@ -36,12 +36,14 @@ fn main() {
 
     let sdl_ctx = sdl2::init().unwrap();
     let video_ctx = sdl_ctx.video().unwrap();
+    let bounds = video_ctx.display_bounds(0).unwrap();
     let _image_ctx = sdl2::image::init(INIT_PNG | INIT_JPG).unwrap();
 
     let window = video_ctx
-        .window(name, WINDOW_WIDTH, WINDOW_HEIGHT)
+        .window(name, bounds.width(), bounds.height())
         .position_centered()
         .opengl()
+        .fullscreen()
         .build()
         .unwrap();
 
@@ -53,6 +55,9 @@ fn main() {
         .unwrap();
     let creator = renderer.texture_creator();
 
+    renderer
+        .set_logical_size(WINDOW_WIDTH, WINDOW_HEIGHT)
+        .unwrap();
     renderer.clear();
     renderer.present();
     let input_manager = input::Manager::new(sdl_ctx.event_pump().unwrap());

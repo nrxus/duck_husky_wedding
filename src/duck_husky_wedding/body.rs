@@ -89,7 +89,7 @@ impl<'t, R: Renderer<'t>> Scene<R> for Body {
             .map(|d| {
                 rect::Rect::new(d.x as i32, d.y as i32, d.z as u32, d.w as u32)
             })
-            .map(|r| renderer.fill_rects(&[r]))
+            .map(|r| renderer.draw_rects(&[r]))
             .try()
     }
 }

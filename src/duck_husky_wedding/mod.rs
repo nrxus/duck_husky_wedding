@@ -104,6 +104,7 @@ where
                 delta -= update_duration;
                 loops += 1;
             }
+            //println!("fps: {:?}", game_time.fps());
             let interpolation = delta.subsec_nanos() as f64 / update_duration.subsec_nanos() as f64;
             self.renderer.set_draw_color(color);
             self.renderer.clear();
