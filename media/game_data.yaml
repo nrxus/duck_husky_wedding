@@ -64,8 +64,8 @@ background:
 goal:
   texture: "goal.png"
   out_size:
-    x: 149
-    y: 479
+    x: 300
+    y: 400
 coin:
   animation:
     texture: "coin.png"

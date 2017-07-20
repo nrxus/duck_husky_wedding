@@ -24,7 +24,7 @@ obstacles:
       x: 14
       y: 8
 goal:
-  x: 45
+  x: 40
   y: 1
 gems:
   - x: 1
