@@ -1,4 +1,5 @@
 use duck_husky_wedding::body::Body;
+use duck_husky_wedding::cat::Cat;
 use data;
 use errors::*;
 
@@ -27,6 +28,47 @@ pub struct Player<T> {
     animation: animation::Data<T>,
     texture: Rc<T>,
     backwards: bool,
+    invincible: Invincible,
+}
+
+enum Invincible {
+    None,
+    Show(Duration),
+    Hide(Duration),
+}
+
+impl Invincible {
+    fn active(&self) -> bool {
+        if let Invincible::None = *self {
+            false
+        } else {
+            true
+        }
+    }
+
+    fn activate(&mut self) {
+        if let Invincible::None = *self {
+            *self = Invincible::Hide(Duration::from_secs(1));
+        }
+    }
+
+    fn update(&mut self, delta: Duration) {
+        match *self {
+            Invincible::None => {}
+            Invincible::Show(d) => {
+                match d.checked_sub(delta) {
+                    None => *self = Invincible::None,
+                    Some(d) => *self = Invincible::Hide(d),
+                }
+            }
+            Invincible::Hide(d) => {
+                match d.checked_sub(delta) {
+                    None => *self = Invincible::None,
+                    Some(d) => *self = Invincible::Show(d),
+                }
+            }
+        }
+    }
 }
 
 impl<T> Player<T> {
@@ -58,6 +100,7 @@ impl<T> Player<T> {
             action: Action::Standing(texture.clone()),
             delta_pos: glm::dvec2(0., 0.),
             backwards: false,
+            invincible: Invincible::None,
             animation,
             texture,
             dst_rect,
@@ -65,8 +108,22 @@ impl<T> Player<T> {
         }
     }
 
+    pub fn is_invincible(&self) -> bool {
+        self.invincible.active()
+    }
+
     pub fn body(&self) -> Body {
         Body::new(&self.dst_rect, &self.body, self.backwards)
+    }
+
+    pub fn collide_cats<CT>(&mut self, cats: &[Cat<CT>]) {
+        if !self.is_invincible() {
+            let body = self.body();
+            if cats.iter().map(|c| c.body()).any(|b| b.collides(&body)) {
+                self.dst_rect.x -= 25.;
+                self.invincible.activate();
+            }
+        }
     }
 
     pub fn process(&mut self, input: &input::State) {
@@ -97,6 +154,7 @@ impl<T> Player<T> {
     }
 
     pub fn update(&mut self, mut force: glm::DVec2, delta: Duration) {
+        self.invincible.update(delta);
         if force.y.abs() < 0.0000001 {
             force.y = 0.
         }
@@ -146,15 +204,19 @@ impl<T> Player<T> {
 
 impl<'t, R: Renderer<'t>> Scene<R> for Player<R::Texture> {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        let dst = glm::to_ivec4(self.dst_rect);
-        let mut options = options::at(&dst);
-        if self.backwards {
-            options = options.flip(TextureFlip::Horizontal);
+        if let Invincible::Hide(_) = self.invincible {
+            Ok(())
+        } else {
+            let dst = glm::to_ivec4(self.dst_rect);
+            let mut options = options::at(&dst);
+            if self.backwards {
+                options = options.flip(TextureFlip::Horizontal);
+            }
+            match self.action {
+                Action::Moving(ref a) => renderer.copy_asset(&a.tile(), options),
+                Action::Standing(ref t) | Action::Jumping(ref t, _) => renderer.copy(&*t, options),
+            }?;
+            renderer.show(&self.body())
         }
-        match self.action {
-            Action::Moving(ref a) => renderer.copy_asset(&a.tile(), options),
-            Action::Standing(ref t) | Action::Jumping(ref t, _) => renderer.copy(&*t, options),
-        }?;
-        renderer.show(&self.body())
     }
 }

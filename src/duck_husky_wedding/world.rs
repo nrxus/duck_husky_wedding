@@ -30,7 +30,7 @@ pub struct World<T> {
     goal: Goal<T>,
     collectables: Vec<Collectable<T>>,
     pub npc: Npc<T>,
-    enemies: Vec<Cat<T>>,
+    pub enemies: Vec<Cat<T>>,
 }
 
 impl<T> Data<T> {

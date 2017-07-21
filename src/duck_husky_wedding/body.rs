@@ -70,6 +70,20 @@ impl Body {
         let r_mtvs = self.rectangles.iter().map(|r| r.mtv(fixed));
         c_mtvs.chain(r_mtvs).filter_map(|m| m).nth(0)
     }
+
+    pub fn collides(&self, other: &Body) -> bool {
+        other.rectangles.iter().any(|r| self.intersects(r)) ||
+            other.circles.iter().any(|c| self.intersects(c))
+    }
+
+    pub fn intersects<S>(&self, other: &S) -> bool
+    where
+        Rectangle: Intersect<S>,
+        Circle: Intersect<S>,
+    {
+        self.rectangles.iter().any(|r| r.intersects(other)) ||
+            self.circles.iter().any(|c| c.intersects(other))
+    }
 }
 
 impl<'t, R: Renderer<'t>> Scene<R> for Body {
