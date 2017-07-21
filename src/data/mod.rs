@@ -76,6 +76,7 @@ pub struct Cat {
     pub idle: Sprite,
     pub walking: Sprite,
     pub out_size: Dimension,
+    pub body: Vec<Shape>,
 }
 
 #[derive(Debug, Deserialize, Clone)]

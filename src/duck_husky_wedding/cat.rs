@@ -1,10 +1,10 @@
 use data;
 use errors::*;
+use duck_husky_wedding::body::Body;
 
 use glm;
 use moho::animation::{self, Animation};
 use moho::errors as moho_errors;
-use moho::shape::Rectangle;
 use moho::renderer::{options, Renderer, Scene, Texture, TextureFlip, TextureLoader, TextureManager};
 
 use std::time::Duration;
@@ -20,19 +20,10 @@ pub enum Kind {
 }
 
 pub struct Data<T> {
-    body: Rectangle,
+    dst: glm::DVec4,
+    body: Vec<data::Shape>,
     animation: animation::Data<T>,
     kind: Kind,
-}
-
-impl<T> Clone for Data<T> {
-    fn clone(&self) -> Self {
-        Data {
-            body: self.body.clone(),
-            animation: self.animation.clone(),
-            kind: self.kind,
-        }
-    }
 }
 
 impl<T> Data<T> {
@@ -46,17 +37,18 @@ impl<T> Data<T> {
         T: Texture,
         TL: TextureLoader<'t, Texture = T>,
     {
-        let body = {
+        let dst = {
             let dims: glm::DVec2 = data.out_size.into();
-            let top_left = glm::dvec2(bl.x as f64, bl.y as f64 - dims.y);
-            Rectangle { top_left, dims }
+            glm::dvec4(bl.x as f64, bl.y as f64 - dims.y, dims.x, dims.y)
         };
         let animation = match kind {
             Kind::Idle => &data.idle,
             Kind::Moving { .. } => &data.walking,
         };
         let animation = animation.load(texture_manager)?;
+        let body = data.body.clone();
         Ok(Data {
+            dst,
             body,
             animation,
             kind,
@@ -65,7 +57,8 @@ impl<T> Data<T> {
 }
 
 pub struct Cat<T> {
-    pub body: Rectangle,
+    pub dst: glm::DVec4,
+    body: Vec<data::Shape>,
     animation: Animation<T>,
     kind: Kind,
 }
@@ -74,6 +67,7 @@ impl<T> Cat<T> {
     pub fn new(data: &Data<T>) -> Self {
         Cat {
             body: data.body.clone(),
+            dst: data.dst,
             animation: data.animation.clone().start(),
             kind: data.kind,
         }
@@ -101,7 +95,7 @@ impl<T> Cat<T> {
             } else {
                 current + step
             };
-            self.body.top_left.x += updated as f64 - current as f64;
+            self.dst.x += updated as f64 - current as f64;
             current = updated;
 
             self.kind = Kind::Moving {
@@ -111,16 +105,19 @@ impl<T> Cat<T> {
             };
         }
     }
+
+    pub fn body(&self) -> Body {
+        let backwards = match self.kind {
+            Kind::Idle | Kind::Moving { left: true, .. } => true,
+            _ => false,
+        };
+        Body::new(&self.dst, &self.body, backwards)
+    }
 }
 
 impl<'t, R: Renderer<'t>> Scene<R> for Cat<R::Texture> {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        let dst_rect = glm::ivec4(
-            self.body.top_left.x as i32,
-            self.body.top_left.y as i32,
-            self.body.dims.x as i32,
-            self.body.dims.y as i32,
-        );
+        let dst_rect = glm::to_ivec4(self.dst);
         let mut options = options::at(&dst_rect);
 
         match self.kind {
@@ -130,6 +127,7 @@ impl<'t, R: Renderer<'t>> Scene<R> for Cat<R::Texture> {
             _ => {}
         }
 
-        renderer.copy_asset(&self.animation.tile(), options)
+        renderer.copy_asset(&self.animation.tile(), options)?;
+        renderer.show(&self.body())
     }
 }
