@@ -47,10 +47,19 @@ where
 }
 
 impl<T, F> Screen<T, F> {
-    pub fn update(&mut self, delta: Duration, input: &input::State) -> Option<Kind> {
+    pub fn update<'t, FT>(
+        &mut self,
+        delta: Duration,
+        input: &input::State,
+        texturizer: &'t FT,
+    ) -> Option<Kind>
+    where
+        T: Texture,
+        FT: FontTexturizer<'t, F, Texture = T>,
+    {
         match *self {
             Screen::Menu(ref mut s) => s.update(input),
-            Screen::GamePlay(ref mut s) => s.update(delta, input),
+            Screen::GamePlay(ref mut s) => s.update(delta, input, texturizer),
             Screen::HighScore(ref mut s) => s.update(input),
             Screen::PlayerSelect(ref mut s) => s.update(delta, input),
         }

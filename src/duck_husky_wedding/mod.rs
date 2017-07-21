@@ -92,7 +92,9 @@ where
                     break 'game_loop;
                 }
 
-                let next_screen = screen_manager.mut_screen().update(update_duration, state);
+                let next_screen = screen_manager
+                    .mut_screen()
+                    .update(update_duration, state, self.texture_loader);
                 if let Some(s) = next_screen {
                     screen_manager.select_screen(
                         s,

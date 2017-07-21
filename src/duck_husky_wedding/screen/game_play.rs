@@ -3,17 +3,50 @@ use duck_husky_wedding::world::{self, World};
 use duck_husky_wedding::camera::ViewPort;
 use duck_husky_wedding::hud::Timer;
 use duck_husky_wedding::score::Score;
+use duck_husky_wedding::try::Try;
 use data;
 use errors::*;
 
 use glm;
 use moho::input;
 use moho::errors as moho_errors;
-use moho::renderer::{options, Renderer, Scene};
-use moho::renderer::{FontManager, FontLoader, FontTexturizer, Texture, TextureLoader,
+use moho::renderer::{options, ColorRGBA, Renderer, Scene};
+use moho::renderer::{FontManager, FontDetails, FontLoader, FontTexturizer, Texture, TextureLoader,
                      TextureManager};
 
+use std::rc::Rc;
 use std::time::Duration;
+
+struct Splash<T> {
+    texture: T,
+    duration: Duration,
+    dst: glm::IVec4,
+}
+
+impl<'t, R: Renderer<'t>> Scene<R> for Splash<R::Texture> {
+    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+        if self.is_active() {
+            renderer.copy(&self.texture, options::at(&self.dst))
+        } else {
+            Ok(())
+        }
+    }
+}
+
+impl<T> Splash<T> {
+    fn is_active(&self) -> bool {
+        self.duration.as_secs() > 0 || self.duration.subsec_nanos() > 0
+    }
+
+    fn update(&mut self, delta: Duration) {
+        self.dst.y -= 2;
+
+        self.duration = match self.duration.checked_sub(delta) {
+            None => Duration::default(),
+            Some(d) => d,
+        }
+    }
+}
 
 pub enum PlayerKind {
     Duck,
@@ -26,6 +59,8 @@ pub struct GamePlay<T, F> {
     viewport: ViewPort,
     timer: Timer<T, F>,
     score: Score<T, F>,
+    splashes: Vec<Splash<T>>,
+    splash_font: Rc<F>,
 }
 
 pub struct Data<T> {
@@ -69,19 +104,41 @@ impl<T> Data<T> {
         let viewport = ViewPort::new(glm::ivec2(1280, 720));
         let timer = Timer::load(font_manager, texturizer)?;
         let score = Score::load(font_manager, texturizer)?;
+        let splashes = vec![];
+        let splash_font = {
+            let details = FontDetails {
+                path: "media/fonts/kenpixel_mini.ttf",
+                size: 24,
+            };
+            font_manager.load(&details)
+        }?;
         Ok(GamePlay {
             player,
             world,
             viewport,
             timer,
             score,
+            splashes,
+            splash_font,
         })
     }
 }
 
 impl<T, F> GamePlay<T, F> {
-    pub fn update(&mut self, delta: Duration, input: &input::State) -> Option<super::Kind> {
+    pub fn update<'t, FT>(
+        &mut self,
+        delta: Duration,
+        input: &input::State,
+        texturizer: &'t FT,
+    ) -> Option<super::Kind>
+    where
+        T: Texture,
+        FT: FontTexturizer<'t, F, Texture = T>,
+    {
         self.world.update(delta);
+        for s in &mut self.splashes {
+            s.update(delta);
+        }
         self.player.collide_cats(&self.world.enemies);
         self.player.process(input);
         self.timer.update(delta);
@@ -94,10 +151,32 @@ impl<T, F> GamePlay<T, F> {
         self.viewport.center(center);
         {
             let score = &mut self.score;
+            let splashes = &mut self.splashes;
             let player = self.player.body();
+            let font = &*self.splash_font;
             self.world.collectables.retain(
                 |c| if player.intersects(&c.body) {
-                    score.update(20);
+                    let up_score = 20;
+                    let texture = texturizer
+                        .texturize(
+                            font,
+                            &format!("+{}", up_score),
+                            &ColorRGBA(0, 200, 125, 255),
+                        )
+                        .unwrap();
+                    let dims = texture.dims();
+                    let splash = Splash {
+                        texture,
+                        duration: Duration::from_secs(1),
+                        dst: glm::ivec4(
+                            c.body.top_left.x as i32,
+                            c.body.top_left.y as i32,
+                            dims.x as i32,
+                            dims.y as i32,
+                        ),
+                    };
+                    splashes.push(splash);
+                    score.update(up_score);
                     false
                 } else {
                     true
@@ -126,9 +205,10 @@ where
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         {
-            let mut camera = self.viewport.camera(renderer);
-            camera.show(&self.world)?;
-            camera.show(&self.player)?;
+            let mut renderer = self.viewport.camera(renderer);
+            renderer.show(&self.world)?;
+            renderer.show(&self.player)?;
+            self.splashes.iter().map(|s| renderer.show(s)).try()?;
         }
 
         let sc = glm::to_ivec2(self.score.dims());
