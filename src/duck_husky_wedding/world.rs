@@ -28,7 +28,7 @@ pub struct World<T> {
     background: Background<T>,
     obstacles: Vec<Obstacle<T>>,
     goal: Goal<T>,
-    collectables: Vec<Collectable<T>>,
+    pub collectables: Vec<Collectable<T>>,
     pub npc: Npc<T>,
     pub enemies: Vec<Cat<T>>,
 }

@@ -2,6 +2,7 @@ use duck_husky_wedding::player::Player;
 use duck_husky_wedding::world::{self, World};
 use duck_husky_wedding::camera::ViewPort;
 use duck_husky_wedding::hud::Timer;
+use duck_husky_wedding::score::Score;
 use data;
 use errors::*;
 
@@ -24,6 +25,7 @@ pub struct GamePlay<T, F> {
     world: World<T>,
     viewport: ViewPort,
     timer: Timer<T, F>,
+    score: Score<T, F>,
 }
 
 pub struct Data<T> {
@@ -66,11 +68,13 @@ impl<T> Data<T> {
         let world = self.world.activate(npc, texture_manager)?;
         let viewport = ViewPort::new(glm::ivec2(1280, 720));
         let timer = Timer::load(font_manager, texturizer)?;
+        let score = Score::load(font_manager, texturizer)?;
         Ok(GamePlay {
             player,
             world,
             viewport,
             timer,
+            score,
         })
     }
 }
@@ -99,6 +103,7 @@ impl<T, F> GamePlay<T, F> {
     where
         FT: FontTexturizer<'t, F, Texture = T>,
     {
+        self.score.before_draw(texturizer)?;
         self.timer.before_draw(texturizer)
     }
 }
@@ -113,10 +118,17 @@ where
             camera.show(&self.world)?;
             camera.show(&self.player)?;
         }
+
+        let sc = glm::to_ivec2(self.score.dims());
+        renderer.copy_asset(
+            &self.score,
+            options::at(&glm::ivec4(320 - sc.x / 2, 0, sc.x, sc.y)),
+        )?;
+
         let td = glm::to_ivec2(self.timer.dims());
         renderer.copy_asset(
             &self.timer,
-            options::at(&glm::ivec4(640 - td.x / 2, 0, td.x, td.y)),
+            options::at(&glm::ivec4(960 - td.x / 2, 0, td.x, td.y)),
         )
     }
 }

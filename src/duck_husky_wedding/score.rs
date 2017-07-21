@@ -6,20 +6,19 @@ use moho::renderer::{ColorRGBA, FontDetails, FontLoader, FontManager, FontTextur
                      Texture, Asset, Options};
 
 use std::rc::Rc;
-use std::time::Duration;
 
 struct TextCache<T> {
-    secs: u64,
+    value: u64,
     texture: T,
 }
 
-pub struct Timer<T, F> {
+pub struct Score<T, F> {
     text: TextCache<T>,
     font: Rc<F>,
-    pub remaining: Duration,
+    pub value: u64,
 }
 
-impl<F, T> Timer<T, F> {
+impl<F, T> Score<T, F> {
     pub fn load<'t, 'f, FT, FL>(
         font_manager: &mut FontManager<'f, FL>,
         texturizer: &'t FT,
@@ -28,44 +27,42 @@ impl<F, T> Timer<T, F> {
         FT: FontTexturizer<'t, F, Texture = T>,
         FL: FontLoader<'f, Font = F>,
     {
-        let secs = 100;
+        let value = 0;
         let details = FontDetails {
             path: "media/fonts/kenpixel_mini.ttf",
             size: 32,
         };
         let font = font_manager.load(&details)?;
         let text = {
-            let text = format!("Time: {:03}", secs);
+            let text = format!("Score: {:03}", value);
             let color = ColorRGBA(255, 255, 0, 255);
             let texture = texturizer.texturize(&*font, &text, &color)?;
-            TextCache { secs, texture }
+            TextCache { value, texture }
         };
-        let remaining = Duration::from_secs(secs);
-        Ok(Timer {
-            text,
-            font,
-            remaining,
-        })
+        Ok(Score { text, font, value })
     }
 
     pub fn before_draw<'t, FT>(&mut self, texturizer: &'t FT) -> Result<()>
     where
         FT: FontTexturizer<'t, F, Texture = T>,
     {
-        let secs = self.remaining.as_secs();
-        if secs != self.text.secs {
-            self.text.secs = secs;
-            let text = format!("Time: {:03}", self.text.secs);
+        if self.value != self.text.value {
+            self.text.value = self.value;
+            let text = format!("Score: {:03}", self.text.value);
             let color = ColorRGBA(255, 255, 0, 255);
             self.text.texture = texturizer.texturize(&*self.font, &text, &color)?;
         }
         Ok(())
     }
 
-    pub fn update(&mut self, elapsed: Duration) {
-        self.remaining = match self.remaining.checked_sub(elapsed) {
-            Some(d) => d,
-            None => Duration::default(),
+    pub fn update(&mut self, delta: i32) {
+        if delta >= 0 {
+            self.value += delta as u64;
+        } else {
+            match self.value.checked_sub(delta.abs() as u64) {
+                None => self.value = 0,
+                Some(v) => self.value = v,
+            }
         }
     }
 
@@ -77,7 +74,7 @@ impl<F, T> Timer<T, F> {
     }
 }
 
-impl<'t, R: Renderer<'t>, F> Asset<R> for Timer<R::Texture, F> {
+impl<'t, R: Renderer<'t>, F> Asset<R> for Score<R::Texture, F> {
     fn draw(&self, options: Options, renderer: &mut R) -> moho_errors::Result<()> {
         renderer.copy(&self.text.texture, options)
     }
