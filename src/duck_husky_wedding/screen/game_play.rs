@@ -92,6 +92,18 @@ impl<T, F> GamePlay<T, F> {
             glm::ivec2((dst.x + dst.z / 2.) as i32, (dst.y + dst.w / 2.) as i32)
         };
         self.viewport.center(center);
+        {
+            let score = &mut self.score;
+            let player = self.player.body();
+            self.world.collectables.retain(
+                |c| if player.intersects(&c.body) {
+                    score.update(20);
+                    false
+                } else {
+                    true
+                },
+            );
+        }
         if (self.player.dst_rect.x + self.player.dst_rect.z) as i32 >= self.world.npc.x() {
             Some(super::Kind::Menu)
         } else {

@@ -14,7 +14,7 @@ use std::time::Duration;
 #[derive(Debug)]
 pub struct Collectable<T> {
     animation: Animation<T>,
-    body: Rectangle,
+    pub body: Rectangle,
 }
 
 #[derive(Debug)]
