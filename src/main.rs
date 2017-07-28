@@ -15,7 +15,7 @@ use duck_husky_wedding::DuckHuskyWedding;
 use level_viewer::LevelViewer;
 
 use moho::input;
-use sdl2::image::{INIT_PNG, INIT_JPG};
+use sdl2::image::{INIT_JPG, INIT_PNG};
 
 pub mod errors {
     error_chain!{

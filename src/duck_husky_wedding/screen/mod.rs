@@ -141,13 +141,11 @@ impl<T, F> Manager<T, F> {
         self.active = match screen {
             Kind::Menu => Screen::Menu(self.menu.activate()),
             Kind::PlayerSelect => Screen::PlayerSelect(self.player_select.activate()),
-            Kind::GamePlay(k) => {
-                Screen::GamePlay(
-                    self.game_play
-                        .activate(texture_manager, font_manager, texturizer, k)
-                        .unwrap(),
-                )
-            }
+            Kind::GamePlay(k) => Screen::GamePlay(
+                self.game_play
+                    .activate(texture_manager, font_manager, texturizer, k)
+                    .unwrap(),
+            ),
             Kind::HighScore => {
                 Screen::HighScore(self.high_score.activate(font_manager, texturizer).unwrap())
             }

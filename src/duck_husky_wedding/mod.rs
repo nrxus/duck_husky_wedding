@@ -18,8 +18,8 @@ use errors::*;
 use data;
 
 use moho::input;
-use moho::renderer::{ColorRGBA, Font, FontTexturizer, FontLoader, Canvas, Texture, TextureLoader,
-                     TextureManager, FontManager};
+use moho::renderer::{Canvas, ColorRGBA, Font, FontLoader, FontManager, FontTexturizer, Texture,
+                     TextureLoader, TextureManager};
 use moho::timer::Timer;
 
 use std::time::Duration;

@@ -3,7 +3,7 @@ use duck_husky_wedding::try::Try;
 
 use glm;
 use moho::errors as moho_errors;
-use moho::shape::{Circle, Shape, Rectangle, Intersect};
+use moho::shape::{Circle, Intersect, Rectangle, Shape};
 use moho::renderer::{Renderer, Scene};
 use sdl2::rect;
 

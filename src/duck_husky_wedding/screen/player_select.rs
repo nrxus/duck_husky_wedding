@@ -7,8 +7,8 @@ use glm;
 use moho::animation::{self, Animation};
 use moho::errors as moho_errors;
 use moho::input;
-use moho::renderer::{options, ColorRGBA, FontDetails, FontManager, FontLoader, FontTexturizer,
-                     Renderer, Scene, Texture, TextureManager, TextureLoader};
+use moho::renderer::{options, ColorRGBA, FontDetails, FontLoader, FontManager, FontTexturizer,
+                     Renderer, Scene, Texture, TextureLoader, TextureManager};
 use moho::shape::Rectangle;
 
 use std::rc::Rc;

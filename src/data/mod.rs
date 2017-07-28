@@ -1,6 +1,6 @@
 mod level;
 
-pub use self::level::{Level, Obstacle, CatKind};
+pub use self::level::{CatKind, Level, Obstacle};
 
 use errors::*;
 use moho::animation::{self, animator, TileSheet};

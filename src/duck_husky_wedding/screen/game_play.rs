@@ -11,7 +11,7 @@ use glm;
 use moho::input;
 use moho::errors as moho_errors;
 use moho::renderer::{options, ColorRGBA, Renderer, Scene};
-use moho::renderer::{FontManager, FontDetails, FontLoader, FontTexturizer, Texture, TextureLoader,
+use moho::renderer::{FontDetails, FontLoader, FontManager, FontTexturizer, Texture, TextureLoader,
                      TextureManager};
 
 use std::rc::Rc;

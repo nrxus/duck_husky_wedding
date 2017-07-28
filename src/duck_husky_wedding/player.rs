@@ -55,18 +55,14 @@ impl Invincible {
     fn update(&mut self, delta: Duration) {
         match *self {
             Invincible::None => {}
-            Invincible::Show(d) => {
-                match d.checked_sub(delta) {
-                    None => *self = Invincible::None,
-                    Some(d) => *self = Invincible::Hide(d),
-                }
-            }
-            Invincible::Hide(d) => {
-                match d.checked_sub(delta) {
-                    None => *self = Invincible::None,
-                    Some(d) => *self = Invincible::Show(d),
-                }
-            }
+            Invincible::Show(d) => match d.checked_sub(delta) {
+                None => *self = Invincible::None,
+                Some(d) => *self = Invincible::Hide(d),
+            },
+            Invincible::Hide(d) => match d.checked_sub(delta) {
+                None => *self = Invincible::None,
+                Some(d) => *self = Invincible::Show(d),
+            },
         }
     }
 }
@@ -133,12 +129,10 @@ impl<T> Player<T> {
 
         if up {
             match self.action {
-                Action::Jumping(_, ref mut held) => {
-                    if *held < 15 {
-                        held.add_assign(1);
-                        self.delta_pos.y -= 6. / (*held as f64);
-                    }
-                }
+                Action::Jumping(_, ref mut held) => if *held < 15 {
+                    held.add_assign(1);
+                    self.delta_pos.y -= 6. / (*held as f64);
+                },
                 _ => self.delta_pos.y -= 6.,
             }
         } else if let Action::Jumping(_, ref mut held) = self.action {

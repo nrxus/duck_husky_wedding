@@ -2,8 +2,8 @@ use errors::*;
 
 use glm;
 use moho::errors as moho_errors;
-use moho::renderer::{ColorRGBA, FontDetails, FontLoader, FontManager, FontTexturizer, Renderer,
-                     Texture, Asset, Options};
+use moho::renderer::{Asset, ColorRGBA, FontDetails, FontLoader, FontManager, FontTexturizer,
+                     Options, Renderer, Texture};
 
 use std::rc::Rc;
 use std::time::Duration;
