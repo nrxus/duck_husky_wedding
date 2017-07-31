@@ -112,13 +112,17 @@ impl<T> Player<T> {
         Body::new(&self.dst_rect, &self.body, self.backwards)
     }
 
-    pub fn collide_cats<CT>(&mut self, cats: &[Cat<CT>]) {
+    pub fn collide_cats<CT>(&mut self, cats: &[Cat<CT>]) -> bool {
         if !self.is_invincible() {
             let body = self.body();
             if cats.iter().map(|c| c.body()).any(|b| b.collides(&body)) {
-                self.dst_rect.x -= 25.;
                 self.invincible.activate();
+                true
+            } else {
+                false
             }
+        } else {
+            false
         }
     }
 

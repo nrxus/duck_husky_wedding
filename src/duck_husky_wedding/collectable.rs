@@ -15,6 +15,7 @@ use std::time::Duration;
 pub struct Collectable<T> {
     animation: Animation<T>,
     pub body: Rectangle,
+    pub score: u32,
 }
 
 #[derive(Debug)]
@@ -48,6 +49,7 @@ impl<T> Collectable<T> {
         Collectable {
             animation: data.animation.clone().start(),
             body: data.body.clone(),
+            score: 20,
         }
     }
 

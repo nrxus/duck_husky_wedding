@@ -10,6 +10,7 @@ extern crate sdl2;
 mod duck_husky_wedding;
 mod level_viewer;
 mod data;
+mod utils;
 
 use duck_husky_wedding::DuckHuskyWedding;
 use level_viewer::LevelViewer;

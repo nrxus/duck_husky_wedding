@@ -7,6 +7,8 @@ use duck_husky_wedding::try::Try;
 use data;
 use errors::*;
 
+use utils::VecUtils;
+
 use glm;
 use moho::input;
 use moho::errors as moho_errors;
@@ -139,7 +141,7 @@ impl<T, F> GamePlay<T, F> {
         for s in &mut self.splashes {
             s.update(delta);
         }
-        self.player.collide_cats(&self.world.enemies);
+        if self.player.collide_cats(&self.world.enemies) {}
         self.player.process(input);
         self.timer.update(delta);
         let force = self.world.force(&self.player);
@@ -150,38 +152,29 @@ impl<T, F> GamePlay<T, F> {
         };
         self.viewport.center(center);
         {
-            let score = &mut self.score;
-            let splashes = &mut self.splashes;
             let player = self.player.body();
-            let font = &*self.splash_font;
-            self.world.collectables.retain(
-                |c| if player.intersects(&c.body) {
-                    let up_score = 20;
-                    let texture = texturizer
-                        .texturize(
-                            font,
-                            &format!("+{}", up_score),
-                            &ColorRGBA(0, 200, 125, 255),
-                        )
-                        .unwrap();
-                    let dims = texture.dims();
-                    let splash = Splash {
-                        texture,
-                        duration: Duration::from_secs(1),
-                        dst: glm::ivec4(
-                            c.body.top_left.x as i32,
-                            c.body.top_left.y as i32,
-                            dims.x as i32,
-                            dims.y as i32,
-                        ),
-                    };
-                    splashes.push(splash);
-                    score.update(up_score);
-                    false
-                } else {
-                    true
-                },
-            );
+            let color = ColorRGBA(0, 200, 125, 255);
+            for c in self.world
+                .collectables
+                .retain_or_drain(|c| !player.intersects(&c.body))
+            {
+                let texture = texturizer
+                    .texturize(self.splash_font.as_ref(), &format!("+{}", c.score), &color)
+                    .unwrap();
+                let dims = texture.dims();
+                let splash = Splash {
+                    texture,
+                    duration: Duration::from_secs(1),
+                    dst: glm::ivec4(
+                        c.body.top_left.x as i32,
+                        c.body.top_left.y as i32,
+                        dims.x as i32,
+                        dims.y as i32,
+                    ),
+                };
+                self.splashes.push(splash);
+                self.score.update(c.score as i32);
+            }
         }
         if (self.player.dst_rect.x + self.player.dst_rect.z) as i32 >= self.world.npc.x() {
             Some(super::Kind::Menu)
