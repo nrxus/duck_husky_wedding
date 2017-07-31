@@ -104,26 +104,16 @@ impl<T> Player<T> {
         }
     }
 
+    pub fn start_invincibility(&mut self) {
+        self.invincible.activate();
+    }
+
     pub fn is_invincible(&self) -> bool {
         self.invincible.active()
     }
 
     pub fn body(&self) -> Body {
         Body::new(&self.dst_rect, &self.body, self.backwards)
-    }
-
-    pub fn collide_cats<CT>(&mut self, cats: &[Cat<CT>]) -> bool {
-        if !self.is_invincible() {
-            let body = self.body();
-            if cats.iter().map(|c| c.body()).any(|b| b.collides(&body)) {
-                self.invincible.activate();
-                true
-            } else {
-                false
-            }
-        } else {
-            false
-        }
     }
 
     pub fn process(&mut self, input: &input::State) {

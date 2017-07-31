@@ -141,7 +141,7 @@ impl<T, F> GamePlay<T, F> {
         for s in &mut self.splashes {
             s.update(delta);
         }
-        if self.player.collide_cats(&self.world.enemies) {}
+
         self.player.process(input);
         self.timer.update(delta);
         let force = self.world.force(&self.player);
@@ -175,7 +175,36 @@ impl<T, F> GamePlay<T, F> {
                 self.splashes.push(splash);
                 self.score.update(c.score as i32);
             }
+            if !self.player.is_invincible() {
+                if let Some(_) = self.world
+                    .enemies
+                    .iter()
+                    .map(|e| e.body())
+                    .find(|b| b.collides(&player))
+                {
+                    let dmg = -20;
+                    self.player.start_invincibility();
+                    let color = ColorRGBA(255, 0, 0, 255);
+                    let texture = texturizer
+                        .texturize(self.splash_font.as_ref(), &format!("{}", dmg), &color)
+                        .unwrap();
+                    let dims = texture.dims();
+                    let splash = Splash {
+                        texture,
+                        duration: Duration::from_secs(1),
+                        dst: glm::ivec4(
+                            self.player.dst_rect.x as i32,
+                            self.player.dst_rect.y as i32,
+                            dims.x as i32,
+                            dims.y as i32,
+                        ),
+                    };
+                    self.splashes.push(splash);
+                    self.score.update(dmg);
+                }
+            }
         }
+        self.splashes.retain(|s| s.is_active());
         if (self.player.dst_rect.x + self.player.dst_rect.z) as i32 >= self.world.npc.x() {
             Some(super::Kind::Menu)
         } else {
