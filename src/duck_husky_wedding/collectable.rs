@@ -22,6 +22,7 @@ pub struct Collectable<T> {
 pub struct Data<T> {
     animation: animation::Data<T>,
     body: Rectangle,
+    score: u32,
 }
 
 impl<T: Texture> Data<T> {
@@ -40,7 +41,7 @@ impl<T: Texture> Data<T> {
         };
 
         let animation = data.animation.load(texture_manager)?;
-        Ok(Data { animation, body })
+        Ok(Data { animation, body, score: data.score })
     }
 }
 
@@ -49,7 +50,7 @@ impl<T> Collectable<T> {
         Collectable {
             animation: data.animation.clone().start(),
             body: data.body.clone(),
-            score: 20,
+            score: data.score,
         }
     }
 
