@@ -145,20 +145,27 @@ impl<T, F> GamePlay<T, F> {
         T: Texture,
         FT: FontTexturizer<'t, F, Texture = T>,
     {
+        self.splashes.retain(|s| s.is_active());
+        for s in &mut self.splashes {
+            s.update(delta);
+        }
+
         match self.state {
             State::Running => {
                 self.update_running(delta, input, texturizer);
                 None
             }
-            State::Transition => if (self.player.dst_rect.y + self.player.dst_rect.w) as i32 >=
-                self.world.npc.bottom()
-            {
-                Some(super::Kind::Menu)
-            } else {
-                self.player.dst_rect.y += 4.;
+            State::Transition => {
+                if (self.player.dst_rect.y + self.player.dst_rect.w) as i32 >=
+                    self.world.npc.bottom()
+                {
+                    self.state = State::Finished;
+                } else {
+                    self.player.dst_rect.y += 4.;
+                }
                 None
-            },
-            State::Finished => None,
+            }
+            State::Finished => Some(super::Kind::Menu),
         }
     }
 
@@ -172,9 +179,6 @@ impl<T, F> GamePlay<T, F> {
         FT: FontTexturizer<'t, F, Texture = T>,
     {
         self.world.update(delta);
-        for s in &mut self.splashes {
-            s.update(delta);
-        }
 
         self.player.process(input);
         self.timer.update(delta);
@@ -234,7 +238,6 @@ impl<T, F> GamePlay<T, F> {
                 }
             }
         }
-        self.splashes.retain(|s| s.is_active());
         if (self.player.dst_rect.x + self.player.dst_rect.z) as i32 >= self.world.npc.x() {
             self.player.invincibility.deactivate();
             self.state = State::Transition;
