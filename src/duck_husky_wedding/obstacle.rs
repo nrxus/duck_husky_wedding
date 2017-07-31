@@ -1,6 +1,6 @@
 use data;
 use duck_husky_wedding::body::Body;
-use duck_husky_wedding::try::Try;
+use utils::Try;
 use errors::*;
 
 use moho::shape::Rectangle;

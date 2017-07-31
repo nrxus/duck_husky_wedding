@@ -3,7 +3,7 @@ use duck_husky_wedding::world::{self, World};
 use duck_husky_wedding::camera::ViewPort;
 use duck_husky_wedding::hud::Timer;
 use duck_husky_wedding::score::Score;
-use duck_husky_wedding::try::Try;
+use utils::Try;
 use data;
 use errors::*;
 

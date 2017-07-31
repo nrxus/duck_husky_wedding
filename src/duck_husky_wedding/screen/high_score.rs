@@ -1,5 +1,5 @@
 use duck_husky_wedding::button::{self, Button};
-use duck_husky_wedding::try::Try;
+use utils::Try;
 use errors::*;
 
 use glm;

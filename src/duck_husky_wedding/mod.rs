@@ -6,7 +6,6 @@ mod screen;
 mod npc;
 pub mod world;
 mod obstacle;
-mod try;
 mod hud;
 mod score;
 mod goal;

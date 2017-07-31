@@ -7,7 +7,7 @@ use duck_husky_wedding::goal::Goal;
 use duck_husky_wedding::npc::Npc;
 use duck_husky_wedding::player::Player;
 use duck_husky_wedding::obstacle::Obstacle;
-use duck_husky_wedding::try::Try;
+use utils::Try;
 
 use glm;
 use moho::renderer::{Renderer, Scene, Texture, TextureLoader, TextureManager};

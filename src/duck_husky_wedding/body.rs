@@ -1,5 +1,5 @@
 use data;
-use duck_husky_wedding::try::Try;
+use utils::Try;
 
 use glm;
 use moho::errors as moho_errors;
@@ -88,6 +88,7 @@ impl Body {
 
 impl<'t, R: Renderer<'t>> Scene<R> for Body {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+        // return Ok(());
         let circles = self.circles.iter().map(|c| {
             let hdims = glm::dvec2(c.radius, c.radius);
             glm::dvec4(
