@@ -55,6 +55,12 @@ pub enum PlayerKind {
     Husky,
 }
 
+enum State {
+    Running,
+    Transition,
+    Finished,
+}
+
 pub struct GamePlay<T, F> {
     player: Player<T>,
     world: World<T>,
@@ -63,6 +69,7 @@ pub struct GamePlay<T, F> {
     score: Score<T, F>,
     splashes: Vec<Splash<T>>,
     splash_font: Rc<F>,
+    state: State,
 }
 
 pub struct Data<T> {
@@ -122,6 +129,7 @@ impl<T> Data<T> {
             score,
             splashes,
             splash_font,
+            state: State::Running,
         })
     }
 }
@@ -134,6 +142,32 @@ impl<T, F> GamePlay<T, F> {
         texturizer: &'t FT,
     ) -> Option<super::Kind>
     where
+        T: Texture,
+        FT: FontTexturizer<'t, F, Texture = T>,
+    {
+        match self.state {
+            State::Running => {
+                self.update_running(delta, input, texturizer);
+                None
+            }
+            State::Transition => if (self.player.dst_rect.y + self.player.dst_rect.w) as i32 >=
+                self.world.npc.bottom()
+            {
+                Some(super::Kind::Menu)
+            } else {
+                self.player.dst_rect.y += 4.;
+                None
+            },
+            State::Finished => None,
+        }
+    }
+
+    pub fn update_running<'t, FT>(
+        &mut self,
+        delta: Duration,
+        input: &input::State,
+        texturizer: &'t FT,
+    ) where
         T: Texture,
         FT: FontTexturizer<'t, F, Texture = T>,
     {
@@ -175,7 +209,7 @@ impl<T, F> GamePlay<T, F> {
                 self.splashes.push(splash);
                 self.score.update(c.score as i32);
             }
-            if !self.player.is_invincible() {
+            if !self.player.invincibility.is_active() {
                 if let Some(_) = self.world
                     .enemies
                     .iter()
@@ -183,7 +217,7 @@ impl<T, F> GamePlay<T, F> {
                     .find(|b| b.collides(&player))
                 {
                     let dmg = -20;
-                    self.player.start_invincibility();
+                    self.player.invincibility.activate();
                     let color = ColorRGBA(255, 0, 0, 255);
                     let texture = texturizer
                         .texturize(self.splash_font.as_ref(), &format!("{}", dmg), &color)
@@ -202,9 +236,8 @@ impl<T, F> GamePlay<T, F> {
         }
         self.splashes.retain(|s| s.is_active());
         if (self.player.dst_rect.x + self.player.dst_rect.z) as i32 >= self.world.npc.x() {
-            Some(super::Kind::Menu)
-        } else {
-            None
+            self.player.invincibility.deactivate();
+            self.state = State::Transition;
         }
     }
 

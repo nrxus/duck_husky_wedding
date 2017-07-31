@@ -22,45 +22,49 @@ enum Action<T> {
 pub struct Player<T> {
     pub delta_pos: glm::DVec2,
     pub dst_rect: glm::DVec4,
+    pub invincibility: Invincibility,
     body: Vec<data::Shape>,
     action: Action<T>,
     animation: animation::Data<T>,
     texture: Rc<T>,
     backwards: bool,
-    invincible: Invincible,
 }
 
-enum Invincible {
+pub enum Invincibility {
     None,
     Show(Duration),
     Hide(Duration),
 }
 
-impl Invincible {
-    fn active(&self) -> bool {
-        if let Invincible::None = *self {
+impl Invincibility {
+    pub fn is_active(&self) -> bool {
+        if let Invincibility::None = *self {
             false
         } else {
             true
         }
     }
 
-    fn activate(&mut self) {
-        if let Invincible::None = *self {
-            *self = Invincible::Hide(Duration::from_secs(1));
+    pub fn activate(&mut self) {
+        if let Invincibility::None = *self {
+            *self = Invincibility::Hide(Duration::from_secs(1));
         }
+    }
+
+    pub fn deactivate(&mut self) {
+        *self = Invincibility::None
     }
 
     fn update(&mut self, delta: Duration) {
         match *self {
-            Invincible::None => {}
-            Invincible::Show(d) => match d.checked_sub(delta) {
-                None => *self = Invincible::None,
-                Some(d) => *self = Invincible::Hide(d),
+            Invincibility::None => {}
+            Invincibility::Show(d) => match d.checked_sub(delta) {
+                None => *self = Invincibility::None,
+                Some(d) => *self = Invincibility::Hide(d),
             },
-            Invincible::Hide(d) => match d.checked_sub(delta) {
-                None => *self = Invincible::None,
-                Some(d) => *self = Invincible::Show(d),
+            Invincibility::Hide(d) => match d.checked_sub(delta) {
+                None => *self = Invincibility::None,
+                Some(d) => *self = Invincibility::Show(d),
             },
         }
     }
@@ -95,20 +99,12 @@ impl<T> Player<T> {
             action: Action::Standing(texture.clone()),
             delta_pos: glm::dvec2(0., 0.),
             backwards: false,
-            invincible: Invincible::None,
+            invincibility: Invincibility::None,
             animation,
             texture,
             dst_rect,
             body,
         }
-    }
-
-    pub fn start_invincibility(&mut self) {
-        self.invincible.activate();
-    }
-
-    pub fn is_invincible(&self) -> bool {
-        self.invincible.active()
     }
 
     pub fn body(&self) -> Body {
@@ -141,7 +137,7 @@ impl<T> Player<T> {
     }
 
     pub fn update(&mut self, mut force: glm::DVec2, delta: Duration) {
-        self.invincible.update(delta);
+        self.invincibility.update(delta);
         if force.y.abs() < 0.0000001 {
             force.y = 0.
         }
@@ -191,7 +187,7 @@ impl<T> Player<T> {
 
 impl<'t, R: Renderer<'t>> Scene<R> for Player<R::Texture> {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        if let Invincible::Hide(_) = self.invincible {
+        if let Invincibility::Hide(_) = self.invincibility {
             Ok(())
         } else {
             let dst = glm::to_ivec4(self.dst_rect);

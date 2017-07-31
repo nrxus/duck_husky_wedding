@@ -39,6 +39,10 @@ impl<T> Npc<T> {
     pub fn x(&self) -> i32 {
         self.dst.x
     }
+
+    pub fn bottom(&self) -> i32 {
+        self.dst.y + self.dst.w
+    }
 }
 
 impl<'t, R: Renderer<'t>> Scene<R> for Npc<R::Texture> {
