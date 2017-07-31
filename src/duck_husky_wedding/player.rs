@@ -1,5 +1,4 @@
 use duck_husky_wedding::body::Body;
-use duck_husky_wedding::cat::Cat;
 use data;
 use errors::*;
 

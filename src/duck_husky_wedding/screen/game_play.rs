@@ -3,7 +3,7 @@ use duck_husky_wedding::world::{self, World};
 use duck_husky_wedding::camera::ViewPort;
 use duck_husky_wedding::hud::Timer;
 use duck_husky_wedding::score::Score;
-use utils::Try;
+use utils::{Center, Try};
 use data;
 use errors::*;
 
@@ -188,16 +188,12 @@ impl<T, F> GamePlay<T, F> {
                     let texture = texturizer
                         .texturize(self.splash_font.as_ref(), &format!("{}", dmg), &color)
                         .unwrap();
-                    let dims = texture.dims();
+                    let dims = glm::to_ivec2(texture.dims());
+                    let tl = glm::to_ivec2(self.player.dst_rect.center()) - dims / 2;
                     let splash = Splash {
                         texture,
                         duration: Duration::from_secs(1),
-                        dst: glm::ivec4(
-                            self.player.dst_rect.x as i32,
-                            self.player.dst_rect.y as i32,
-                            dims.x as i32,
-                            dims.y as i32,
-                        ),
+                        dst: glm::ivec4(tl.x, tl.y, dims.x, dims.y),
                     };
                     self.splashes.push(splash);
                     self.score.update(dmg);
