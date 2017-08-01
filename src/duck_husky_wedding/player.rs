@@ -32,8 +32,8 @@ pub struct Player<T> {
 
 pub enum Invincibility {
     None,
-    Show(Duration),
-    Hide(Duration),
+    Show(Duration, u32),
+    Hide(Duration, u32),
 }
 
 impl Invincibility {
@@ -47,7 +47,7 @@ impl Invincibility {
 
     pub fn activate(&mut self) {
         if let Invincibility::None = *self {
-            *self = Invincibility::Hide(Duration::from_secs(1));
+            *self = Invincibility::Hide(Duration::from_secs(1), 0);
         }
     }
 
@@ -58,13 +58,15 @@ impl Invincibility {
     fn update(&mut self, delta: Duration) {
         match *self {
             Invincibility::None => {}
-            Invincibility::Show(d) => match d.checked_sub(delta) {
+            Invincibility::Show(d, i) => match d.checked_sub(delta) {
                 None => *self = Invincibility::None,
-                Some(d) => *self = Invincibility::Hide(d),
+                Some(d) if i < 1 => *self = Invincibility::Show(d, i + 1),
+                Some(d) => *self = Invincibility::Hide(d, 0),
             },
-            Invincibility::Hide(d) => match d.checked_sub(delta) {
+            Invincibility::Hide(d, i) => match d.checked_sub(delta) {
                 None => *self = Invincibility::None,
-                Some(d) => *self = Invincibility::Show(d),
+                Some(d) if i < 1 => *self = Invincibility::Hide(d, i + 1),
+                Some(d) => *self = Invincibility::Show(d, 0),
             },
         }
     }
@@ -187,7 +189,7 @@ impl<T> Player<T> {
 
 impl<'t, R: Renderer<'t>> Scene<R> for Player<R::Texture> {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        if let Invincibility::Hide(_) = self.invincibility {
+        if let Invincibility::Hide(..) = self.invincibility {
             Ok(())
         } else {
             let dst = glm::to_ivec4(self.dst_rect);
