@@ -2,8 +2,7 @@ use errors::*;
 
 use glm;
 use moho::errors as moho_errors;
-use moho::renderer::{Asset, ColorRGBA, FontDetails, FontLoader, FontManager, FontTexturizer,
-                     Options, Renderer, Texture};
+use moho::renderer::{Asset, ColorRGBA, FontTexturizer, Options, Renderer, Texture};
 
 use std::rc::Rc;
 
@@ -19,20 +18,11 @@ pub struct Score<T, F> {
 }
 
 impl<F, T> Score<T, F> {
-    pub fn load<'t, 'f, FT, FL>(
-        font_manager: &mut FontManager<'f, FL>,
-        texturizer: &'t FT,
-    ) -> Result<Self>
+    pub fn load<'t, FT>(font: Rc<F>, texturizer: &'t FT) -> Result<Self>
     where
         FT: FontTexturizer<'t, F, Texture = T>,
-        FL: FontLoader<'f, Font = F>,
     {
         let value = 0;
-        let details = FontDetails {
-            path: "media/fonts/kenpixel_mini.ttf",
-            size: 32,
-        };
-        let font = font_manager.load(&details)?;
         let text = {
             let text = format!("Score: {:03}", value);
             let color = ColorRGBA(255, 255, 0, 255);

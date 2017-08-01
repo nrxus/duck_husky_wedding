@@ -111,8 +111,12 @@ impl<T> Data<T> {
         let player = Player::load(player, glm::uvec2(100, 300), texture_manager)?;
         let world = self.world.activate(npc, texture_manager)?;
         let viewport = ViewPort::new(glm::ivec2(1280, 720));
-        let timer = Timer::load(font_manager, texturizer)?;
-        let score = Score::load(font_manager, texturizer)?;
+        let font = font_manager.load(&FontDetails {
+            path: "media/fonts/kenpixel_mini.ttf",
+            size: 32,
+        })?;
+        let timer = Timer::load(font.clone(), texturizer)?;
+        let score = Score::load(font, texturizer)?;
         let splashes = vec![];
         let splash_font = {
             let details = FontDetails {
