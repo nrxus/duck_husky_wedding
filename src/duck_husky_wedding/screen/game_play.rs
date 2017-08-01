@@ -12,9 +12,8 @@ use utils::VecUtils;
 use glm;
 use moho::input;
 use moho::errors as moho_errors;
-use moho::renderer::{options, ColorRGBA, Renderer, Scene};
-use moho::renderer::{FontDetails, FontLoader, FontManager, FontTexturizer, Texture, TextureLoader,
-                     TextureManager};
+use moho::renderer::{options, Canvas, ColorRGBA, Font, FontDetails, FontLoader, FontManager,
+                     FontTexturizer, Renderer, Scene, Texture, TextureLoader, TextureManager};
 
 use std::rc::Rc;
 use std::time::Duration;
@@ -55,10 +54,10 @@ pub enum PlayerKind {
     Husky,
 }
 
-enum State {
+enum State<T> {
     Running,
     Transition,
-    Finished,
+    Finished(super::finish::Finish<T>),
 }
 
 pub struct GamePlay<T, F> {
@@ -69,7 +68,8 @@ pub struct GamePlay<T, F> {
     score: Score<T, F>,
     splashes: Vec<Splash<T>>,
     splash_font: Rc<F>,
-    state: State,
+    finish: super::finish::Data<F>,
+    state: State<T>,
 }
 
 pub struct Data<T> {
@@ -121,6 +121,21 @@ impl<T> Data<T> {
             };
             font_manager.load(&details)
         }?;
+        let finish = {
+            let x_margin = 100;
+            let y_margin = 180;
+            super::finish::Data {
+                title_font: font_manager.load(&FontDetails {
+                    path: "media/fonts/kenpixel_mini.ttf",
+                    size: 48,
+                })?,
+                detail_font: font_manager.load(&FontDetails {
+                    path: "media/fonts/joystix.monospace.ttf",
+                    size: 36,
+                })?,
+                view: glm::ivec4(x_margin, y_margin, 1280 - x_margin * 2, 720 - y_margin * 2),
+            }
+        };
         Ok(GamePlay {
             player,
             world,
@@ -129,6 +144,7 @@ impl<T> Data<T> {
             score,
             splashes,
             splash_font,
+            finish,
             state: State::Running,
         })
     }
@@ -143,6 +159,7 @@ impl<T, F> GamePlay<T, F> {
     ) -> Option<super::Kind>
     where
         T: Texture,
+        F: Font,
         FT: FontTexturizer<'t, F, Texture = T>,
     {
         self.splashes.retain(|s| s.is_active());
@@ -159,13 +176,20 @@ impl<T, F> GamePlay<T, F> {
                 if (self.player.dst_rect.y + self.player.dst_rect.w) as i32 >=
                     self.world.npc.bottom()
                 {
-                    self.state = State::Finished;
+                    self.state = State::Finished(
+                        super::finish::Finish::load(
+                            &self.finish,
+                            texturizer,
+                            self.score.value,
+                            self.timer.remaining,
+                        ).unwrap(),
+                    );
                 } else {
                     self.player.dst_rect.y += 4.;
                 }
                 None
             }
-            State::Finished => Some(super::Kind::Menu),
+            State::Finished(ref mut f) => f.update(input),
         }
     }
 
@@ -253,7 +277,7 @@ impl<T, F> GamePlay<T, F> {
     }
 }
 
-impl<'t, R: Renderer<'t>, F> Scene<R> for GamePlay<R::Texture, F>
+impl<'t, R: Canvas<'t>, F> Scene<R> for GamePlay<R::Texture, F>
 where
     R::Texture: Texture,
 {
@@ -275,6 +299,12 @@ where
         renderer.copy_asset(
             &self.timer,
             options::at(&glm::ivec4(960 - td.x / 2, 0, td.x, td.y)),
-        )
+        )?;
+
+        if let State::Finished(ref f) = self.state {
+            renderer.show(f)
+        } else {
+            Ok(())
+        }
     }
 }

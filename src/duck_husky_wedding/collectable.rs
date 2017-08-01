@@ -41,7 +41,11 @@ impl<T: Texture> Data<T> {
         };
 
         let animation = data.animation.load(texture_manager)?;
-        Ok(Data { animation, body, score: data.score })
+        Ok(Data {
+            animation,
+            body,
+            score: data.score,
+        })
     }
 }
 

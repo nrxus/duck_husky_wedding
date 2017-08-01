@@ -37,6 +37,25 @@ impl<T> Button for Static<T> {
 }
 
 impl<T> Static<T> {
+    pub fn center_text<'t, F, FT>(
+        text: &str,
+        texturizer: &'t FT,
+        font: &F,
+        center: glm::IVec2,
+    ) -> Result<Self>
+    where
+        F: Font,
+        FT: FontTexturizer<'t, F, Texture = T>,
+    {
+        let dims = glm::to_dvec2(font.measure(text)?);
+        let body = Rectangle {
+            top_left: glm::dvec2(center.x as f64 - dims.x / 2., center.y as f64 - dims.y / 2.),
+            dims: dims,
+        };
+
+        Self::text_at(text, texturizer, font, body)
+    }
+
     pub fn from_text<'t, F, FT>(
         text: &str,
         texturizer: &'t FT,
@@ -69,7 +88,7 @@ impl<T> Static<T> {
         let idle = Rc::new(texturizer
             .texturize(font, text, &ColorRGBA(255, 255, 255, 255))?);
         let hover = Rc::new(texturizer
-            .texturize(font, text, &ColorRGBA(255, 255, 0, 0))?);
+            .texturize(font, text, &ColorRGBA(255, 255, 0, 255))?);
         Ok(Static {
             idle,
             hover,

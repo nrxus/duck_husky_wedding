@@ -1,4 +1,5 @@
 mod menu;
+mod finish;
 mod game_play;
 mod high_score;
 mod player_select;
@@ -11,8 +12,8 @@ use self::player_select::PlayerSelect;
 
 use moho::errors as moho_errors;
 use moho::input;
-use moho::renderer::{Font, FontLoader, FontManager, FontTexturizer};
-use moho::renderer::{Renderer, Scene, Texture, TextureLoader, TextureManager};
+use moho::renderer::{Canvas, Font, FontLoader, FontManager, FontTexturizer, Scene, Texture,
+                     TextureLoader, TextureManager};
 
 use errors::*;
 
@@ -32,7 +33,7 @@ pub enum Screen<T, F> {
     PlayerSelect(PlayerSelect<T>),
 }
 
-impl<'t, R: Renderer<'t>, F> Scene<R> for Screen<R::Texture, F>
+impl<'t, R: Canvas<'t>, F> Scene<R> for Screen<R::Texture, F>
 where
     R::Texture: Texture,
 {
@@ -54,6 +55,7 @@ impl<T, F> Screen<T, F> {
         texturizer: &'t FT,
     ) -> Option<Kind>
     where
+        F: Font,
         T: Texture,
         FT: FontTexturizer<'t, F, Texture = T>,
     {
