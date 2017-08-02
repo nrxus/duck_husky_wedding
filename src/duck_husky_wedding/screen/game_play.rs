@@ -185,7 +185,7 @@ impl<T, F> GamePlay<T, F> {
                             &self.finish,
                             texturizer,
                             self.score.value,
-                            self.timer.remaining,
+                            self.timer.value,
                         ).unwrap(),
                     );
                 } else {

@@ -11,6 +11,18 @@ struct TextCache<T> {
     texture: T,
 }
 
+impl<T> TextCache<T> {
+    fn load<'t, F, FT>(value: u64, font: &F, texturizer: &'t FT) -> Result<Self>
+    where
+        FT: FontTexturizer<'t, F, Texture = T>,
+    {
+        let text = format!("Score: {:03}", value);
+        let color = ColorRGBA(255, 255, 0, 255);
+        let texture = texturizer.texturize(&*font, &text, &color)?;
+        Ok(TextCache { value, texture })
+    }
+}
+
 pub struct Score<T, F> {
     text: TextCache<T>,
     font: Rc<F>,
@@ -23,12 +35,7 @@ impl<F, T> Score<T, F> {
         FT: FontTexturizer<'t, F, Texture = T>,
     {
         let value = 0;
-        let text = {
-            let text = format!("Score: {:03}", value);
-            let color = ColorRGBA(255, 255, 0, 255);
-            let texture = texturizer.texturize(&*font, &text, &color)?;
-            TextCache { value, texture }
-        };
+        let text = TextCache::load(value, &*font, texturizer)?;
         Ok(Score { text, font, value })
     }
 
@@ -37,10 +44,7 @@ impl<F, T> Score<T, F> {
         FT: FontTexturizer<'t, F, Texture = T>,
     {
         if self.value != self.text.value {
-            self.text.value = self.value;
-            let text = format!("Score: {:03}", self.text.value);
-            let color = ColorRGBA(255, 255, 0, 255);
-            self.text.texture = texturizer.texturize(&*self.font, &text, &color)?;
+            self.text = TextCache::load(self.value, &*self.font, texturizer)?;
         }
         Ok(())
     }

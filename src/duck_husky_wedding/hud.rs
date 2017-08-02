@@ -6,16 +6,50 @@ use moho::renderer::{Asset, ColorRGBA, FontTexturizer, Options, Renderer, Textur
 
 use std::rc::Rc;
 use std::time::Duration;
+use std::fmt::Display;
 
-struct TextCache<T> {
-    secs: u64,
+struct CacheValue<T>(T);
+trait AsCached {
+    type Value: PartialEq + Display;
+
+    fn as_cached(&self) -> Self::Value;
+}
+
+impl<T: AsCached> PartialEq for CacheValue<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.0.as_cached() == other.0.as_cached()
+    }
+}
+
+impl AsCached for Duration {
+    type Value = u64;
+
+    fn as_cached(&self) -> u64 {
+        self.as_secs()
+    }
+}
+
+struct TextCache<T, V> {
+    value: CacheValue<V>,
     texture: T,
 }
 
+impl<T, V: AsCached> TextCache<T, V> {
+    fn load<'t, F, FT>(value: CacheValue<V>, font: &F, texturizer: &'t FT) -> Result<Self>
+    where
+        FT: FontTexturizer<'t, F, Texture = T>,
+    {
+        let text = format!("Time: {:03}", value.0.as_cached());
+        let color = ColorRGBA(255, 255, 0, 255);
+        let texture = texturizer.texturize(&*font, &text, &color)?;
+        Ok(TextCache { value, texture })
+    }
+}
+
 pub struct Timer<T, F> {
-    text: TextCache<T>,
+    text: TextCache<T, Duration>,
     font: Rc<F>,
-    pub remaining: Duration,
+    pub value: Duration,
 }
 
 impl<F, T> Timer<T, F> {
@@ -23,37 +57,24 @@ impl<F, T> Timer<T, F> {
     where
         FT: FontTexturizer<'t, F, Texture = T>,
     {
-        let secs = 100;
-        let text = {
-            let text = format!("Time: {:03}", secs);
-            let color = ColorRGBA(255, 255, 0, 255);
-            let texture = texturizer.texturize(&*font, &text, &color)?;
-            TextCache { secs, texture }
-        };
-        let remaining = Duration::from_secs(secs);
-        Ok(Timer {
-            text,
-            font,
-            remaining,
-        })
+        let value = Duration::from_secs(100);
+        let text = TextCache::load(CacheValue(value), &*font, texturizer)?;
+        Ok(Timer { text, font, value })
     }
 
     pub fn before_draw<'t, FT>(&mut self, texturizer: &'t FT) -> Result<()>
     where
         FT: FontTexturizer<'t, F, Texture = T>,
     {
-        let secs = self.remaining.as_secs();
-        if secs != self.text.secs {
-            self.text.secs = secs;
-            let text = format!("Time: {:03}", self.text.secs);
-            let color = ColorRGBA(255, 255, 0, 255);
-            self.text.texture = texturizer.texturize(&*self.font, &text, &color)?;
+        let updated = CacheValue(self.value);
+        if self.text.value != updated {
+            self.text = TextCache::load(updated, &*self.font, texturizer)?;
         }
         Ok(())
     }
 
     pub fn update(&mut self, elapsed: Duration) {
-        self.remaining = match self.remaining.checked_sub(elapsed) {
+        self.value = match self.value.checked_sub(elapsed) {
             Some(d) => d,
             None => Duration::default(),
         }
