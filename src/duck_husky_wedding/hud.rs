@@ -38,7 +38,7 @@ impl AsCached for u32 {
 }
 
 pub struct TextCache<T, V> {
-    value: CacheValue<V>,
+    pub value: CacheValue<V>,
     pub texture: T,
 }
 

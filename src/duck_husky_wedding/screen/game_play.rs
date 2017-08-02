@@ -285,6 +285,9 @@ impl<T, F> GamePlay<T, F> {
     where
         FT: FontTexturizer<'t, F, Texture = T>,
     {
+        if let State::Finished(ref mut f) = self.state {
+            f.before_draw(texturizer)?;
+        }
         self.score.before_draw(texturizer)?;
         self.timer.before_draw(texturizer)
     }

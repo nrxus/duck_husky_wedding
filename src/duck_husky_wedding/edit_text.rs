@@ -86,12 +86,12 @@ impl<T, F> EditText<T, F> {
         let textures = {
             let font = &*font;
             [
-                Self::load_char(font, texturizer)?,
-                Self::load_char(font, texturizer)?,
-                Self::load_char(font, texturizer)?,
-                Self::load_char(font, texturizer)?,
-                Self::load_char(font, texturizer)?,
-                Self::load_char(font, texturizer)?,
+                Self::load_char(CacheValue(None), font, texturizer)?,
+                Self::load_char(CacheValue(None), font, texturizer)?,
+                Self::load_char(CacheValue(None), font, texturizer)?,
+                Self::load_char(CacheValue(None), font, texturizer)?,
+                Self::load_char(CacheValue(None), font, texturizer)?,
+                Self::load_char(CacheValue(None), font, texturizer)?,
             ]
         };
         let values = [None; 6];
@@ -115,14 +115,43 @@ impl<T, F> EditText<T, F> {
         if input.did_press_key(Keycode::Right) {
             self.move_right();
         }
+        if input.did_press_key(Keycode::Up) {
+            self.values[self.active] = match self.values[self.active] {
+                None => Some('a'),
+                Some('z') => None,
+                Some(c) => Some((c as u8 + 1) as char),
+            };
+        }
+        if input.did_press_key(Keycode::Down) {
+            self.values[self.active] = match self.values[self.active] {
+                None => Some('z'),
+                Some('a') => None,
+                Some(c) => Some((c as u8 - 1) as char),
+            };
+        }
         self.flicker.update(elapsed);
     }
 
-    fn load_char<'t, FT>(font: &F, texturizer: &'t FT) -> Result<TextCache<T, Option<char>>>
+    pub fn before_draw<'t, FT>(&mut self, texturizer: &'t FT) -> Result<()>
     where
         FT: FontTexturizer<'t, F, Texture = T>,
     {
-        TextCache::load(CacheValue(None), &*font, texturizer, &|c| c.to_string())
+        let updated = CacheValue(self.values[self.active]);
+        if self.textures[self.active].value != updated {
+            self.textures[self.active] = Self::load_char(updated, &*self.font, texturizer)?;
+        }
+        Ok(())
+    }
+
+    fn load_char<'t, FT>(
+        value: CacheValue<Option<char>>,
+        font: &F,
+        texturizer: &'t FT,
+    ) -> Result<TextCache<T, Option<char>>>
+    where
+        FT: FontTexturizer<'t, F, Texture = T>,
+    {
+        TextCache::load(value, font, texturizer, &|c| c.to_string())
     }
 
     fn move_left(&mut self) {

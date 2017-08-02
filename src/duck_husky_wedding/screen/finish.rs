@@ -86,6 +86,13 @@ impl<T, F> Finish<T, F> {
         })
     }
 
+    pub fn before_draw<'t, FT>(&mut self, texturizer: &'t FT) -> Result<()>
+    where
+        FT: FontTexturizer<'t, F, Texture = T>,
+    {
+        self.name.before_draw(texturizer)
+    }
+
     pub fn update(&mut self, elapsed: Duration, state: &input::State) -> Option<super::Kind> {
         if self.button.update(state) {
             Some(super::Kind::HighScore)
