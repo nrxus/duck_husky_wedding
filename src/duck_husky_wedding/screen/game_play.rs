@@ -64,7 +64,7 @@ pub struct GamePlay<T, F> {
     player: Player<T>,
     world: World<T>,
     viewport: ViewPort,
-    timer: Timer<T, F>,
+    timer: Timer<T, F, Duration>,
     score: Score<T, F>,
     splashes: Vec<Splash<T>>,
     splash_font: Rc<F>,
@@ -115,7 +115,12 @@ impl<T> Data<T> {
             path: "media/fonts/kenpixel_mini.ttf",
             size: 32,
         })?;
-        let timer = Timer::load(font.clone(), texturizer)?;
+        let timer = Timer::load(
+            Duration::from_secs(100),
+            font.clone(),
+            texturizer,
+            Box::new(|v| format!("Time: {:03}", v)),
+        )?;
         let score = Score::load(font, texturizer)?;
         let splashes = vec![];
         let splash_font = {

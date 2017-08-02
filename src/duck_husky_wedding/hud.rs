@@ -9,7 +9,7 @@ use std::time::Duration;
 use std::fmt::Display;
 
 struct CacheValue<T>(T);
-trait AsCached {
+pub trait AsCached {
     type Value: PartialEq + Display;
 
     fn as_cached(&self) -> Self::Value;
@@ -35,31 +35,55 @@ struct TextCache<T, V> {
 }
 
 impl<T, V: AsCached> TextCache<T, V> {
-    fn load<'t, F, FT>(value: CacheValue<V>, font: &F, texturizer: &'t FT) -> Result<Self>
+    fn load<'t, F, FT>(
+        value: CacheValue<V>,
+        font: &F,
+        texturizer: &'t FT,
+        pattern: &Fn(V::Value) -> String,
+    ) -> Result<Self>
     where
         FT: FontTexturizer<'t, F, Texture = T>,
     {
-        let text = format!("Time: {:03}", value.0.as_cached());
+        let text = pattern(value.0.as_cached());
         let color = ColorRGBA(255, 255, 0, 255);
-        let texture = texturizer.texturize(&*font, &text, &color)?;
+        let texture = texturizer.texturize(font, &text, &color)?;
         Ok(TextCache { value, texture })
     }
 }
 
-pub struct Timer<T, F> {
-    text: TextCache<T, Duration>,
-    font: Rc<F>,
-    pub value: Duration,
+impl<T, F> Timer<T, F, Duration> {
+    pub fn update(&mut self, elapsed: Duration) {
+        self.value = match self.value.checked_sub(elapsed) {
+            Some(d) => d,
+            None => Duration::default(),
+        }
+    }
 }
 
-impl<F, T> Timer<T, F> {
-    pub fn load<'t, FT>(font: Rc<F>, texturizer: &'t FT) -> Result<Self>
+pub struct Timer<T, F, V: AsCached> {
+    text: TextCache<T, V>,
+    font: Rc<F>,
+    pattern: Box<Fn(V::Value) -> String>,
+    pub value: V,
+}
+
+impl<T, F, V: AsCached + Copy> Timer<T, F, V> {
+    pub fn load<'t, FT>(
+        value: V,
+        font: Rc<F>,
+        texturizer: &'t FT,
+        pattern: Box<Fn(V::Value) -> String>,
+    ) -> Result<Self>
     where
         FT: FontTexturizer<'t, F, Texture = T>,
     {
-        let value = Duration::from_secs(100);
-        let text = TextCache::load(CacheValue(value), &*font, texturizer)?;
-        Ok(Timer { text, font, value })
+        let text = TextCache::load(CacheValue(value), &*font, texturizer, pattern.as_ref())?;
+        Ok(Timer {
+            text,
+            font,
+            value,
+            pattern,
+        })
     }
 
     pub fn before_draw<'t, FT>(&mut self, texturizer: &'t FT) -> Result<()>
@@ -68,16 +92,9 @@ impl<F, T> Timer<T, F> {
     {
         let updated = CacheValue(self.value);
         if self.text.value != updated {
-            self.text = TextCache::load(updated, &*self.font, texturizer)?;
+            self.text = TextCache::load(updated, &*self.font, texturizer, self.pattern.as_ref())?;
         }
         Ok(())
-    }
-
-    pub fn update(&mut self, elapsed: Duration) {
-        self.value = match self.value.checked_sub(elapsed) {
-            Some(d) => d,
-            None => Duration::default(),
-        }
     }
 
     pub fn dims(&self) -> glm::UVec2
@@ -88,7 +105,7 @@ impl<F, T> Timer<T, F> {
     }
 }
 
-impl<'t, R: Renderer<'t>, F> Asset<R> for Timer<R::Texture, F> {
+impl<'t, R: Renderer<'t>, F, V: AsCached> Asset<R> for Timer<R::Texture, F, V> {
     fn draw(&self, options: Options, renderer: &mut R) -> moho_errors::Result<()> {
         renderer.copy(&self.text.texture, options)
     }
