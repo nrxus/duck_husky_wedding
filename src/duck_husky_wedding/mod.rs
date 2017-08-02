@@ -7,7 +7,6 @@ mod npc;
 pub mod world;
 mod obstacle;
 mod hud;
-mod score;
 mod goal;
 mod collectable;
 mod cat;

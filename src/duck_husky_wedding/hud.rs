@@ -29,6 +29,14 @@ impl AsCached for Duration {
     }
 }
 
+impl AsCached for u32 {
+    type Value = u32;
+
+    fn as_cached(&self) -> u32 {
+        *self
+    }
+}
+
 struct TextCache<T, V> {
     value: CacheValue<V>,
     texture: T,
@@ -56,6 +64,19 @@ impl<T, F> Timer<T, F, Duration> {
         self.value = match self.value.checked_sub(elapsed) {
             Some(d) => d,
             None => Duration::default(),
+        }
+    }
+}
+
+impl<T, F> Timer<T, F, u32> {
+    pub fn update(&mut self, delta: i32) {
+        if delta >= 0 {
+            self.value += delta as u32;
+        } else {
+            match self.value.checked_sub(delta.abs() as u32) {
+                None => self.value = 0,
+                Some(v) => self.value = v,
+            }
         }
     }
 }

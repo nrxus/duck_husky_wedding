@@ -30,7 +30,7 @@ impl<T> Finish<T> {
     pub fn load<'t, F, FT>(
         data: &Data<F>,
         texturizer: &'t FT,
-        score: u64,
+        score: u32,
         duration: Duration,
     ) -> Result<Self>
     where
@@ -50,7 +50,7 @@ impl<T> Finish<T> {
         let duration = duration.as_secs() as u64;
         let total = texturizer.texturize(
             &*data.detail_font,
-            &format!("     total: {:>05}", duration + score),
+            &format!("     total: {:>05}", duration as u32 + score),
             &ColorRGBA(255, 255, 0, 255),
         )?;
 
