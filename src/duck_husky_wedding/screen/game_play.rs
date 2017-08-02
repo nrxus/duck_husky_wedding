@@ -1,7 +1,7 @@
 use duck_husky_wedding::player::Player;
 use duck_husky_wedding::world::{self, World};
 use duck_husky_wedding::camera::ViewPort;
-use duck_husky_wedding::hud::Timer;
+use duck_husky_wedding::hud::TextBox;
 use utils::{Center, Try};
 use data;
 use errors::*;
@@ -63,8 +63,8 @@ pub struct GamePlay<T, F> {
     player: Player<T>,
     world: World<T>,
     viewport: ViewPort,
-    timer: Timer<T, F, Duration>,
-    score: Timer<T, F, u32>,
+    timer: TextBox<T, F, Duration>,
+    score: TextBox<T, F, u32>,
     splashes: Vec<Splash<T>>,
     splash_font: Rc<F>,
     finish: super::finish::Data<F>,
@@ -114,13 +114,13 @@ impl<T> Data<T> {
             path: "media/fonts/kenpixel_mini.ttf",
             size: 32,
         })?;
-        let timer = Timer::load(
+        let timer = TextBox::load(
             Duration::from_secs(100),
             font.clone(),
             texturizer,
             Box::new(|v| format!("Time: {:03}", v)),
         )?;
-        let score = Timer::load(
+        let score = TextBox::load(
             0,
             font.clone(),
             texturizer,

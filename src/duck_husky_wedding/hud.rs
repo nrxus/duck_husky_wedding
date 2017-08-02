@@ -59,7 +59,7 @@ impl<T, V: AsCached> TextCache<T, V> {
     }
 }
 
-impl<T, F> Timer<T, F, Duration> {
+impl<T, F> TextBox<T, F, Duration> {
     pub fn update(&mut self, elapsed: Duration) {
         self.value = match self.value.checked_sub(elapsed) {
             Some(d) => d,
@@ -68,7 +68,7 @@ impl<T, F> Timer<T, F, Duration> {
     }
 }
 
-impl<T, F> Timer<T, F, u32> {
+impl<T, F> TextBox<T, F, u32> {
     pub fn update(&mut self, delta: i32) {
         if delta >= 0 {
             self.value += delta as u32;
@@ -81,14 +81,14 @@ impl<T, F> Timer<T, F, u32> {
     }
 }
 
-pub struct Timer<T, F, V: AsCached> {
+pub struct TextBox<T, F, V: AsCached> {
     text: TextCache<T, V>,
     font: Rc<F>,
     pattern: Box<Fn(V::Value) -> String>,
     pub value: V,
 }
 
-impl<T, F, V: AsCached + Copy> Timer<T, F, V> {
+impl<T, F, V: AsCached + Copy> TextBox<T, F, V> {
     pub fn load<'t, FT>(
         value: V,
         font: Rc<F>,
@@ -99,7 +99,7 @@ impl<T, F, V: AsCached + Copy> Timer<T, F, V> {
         FT: FontTexturizer<'t, F, Texture = T>,
     {
         let text = TextCache::load(CacheValue(value), &*font, texturizer, pattern.as_ref())?;
-        Ok(Timer {
+        Ok(TextBox {
             text,
             font,
             value,
@@ -126,7 +126,7 @@ impl<T, F, V: AsCached + Copy> Timer<T, F, V> {
     }
 }
 
-impl<'t, R: Renderer<'t>, F, V: AsCached> Asset<R> for Timer<R::Texture, F, V> {
+impl<'t, R: Renderer<'t>, F, V: AsCached> Asset<R> for TextBox<R::Texture, F, V> {
     fn draw(&self, options: Options, renderer: &mut R) -> moho_errors::Result<()> {
         renderer.copy(&self.text.texture, options)
     }
