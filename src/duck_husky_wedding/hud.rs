@@ -8,7 +8,7 @@ use std::rc::Rc;
 use std::time::Duration;
 use std::fmt::Display;
 
-struct CacheValue<T>(T);
+pub struct CacheValue<T>(pub T);
 pub trait AsCached {
     type Value: PartialEq + Display;
 
@@ -37,13 +37,13 @@ impl AsCached for u32 {
     }
 }
 
-struct TextCache<T, V> {
+pub struct TextCache<T, V> {
     value: CacheValue<V>,
-    texture: T,
+    pub texture: T,
 }
 
 impl<T, V: AsCached> TextCache<T, V> {
-    fn load<'t, F, FT>(
+    pub fn load<'t, F, FT>(
         value: CacheValue<V>,
         font: &F,
         texturizer: &'t FT,

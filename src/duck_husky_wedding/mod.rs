@@ -11,6 +11,7 @@ mod goal;
 mod collectable;
 mod cat;
 mod body;
+mod edit_text;
 
 use errors::*;
 use data;

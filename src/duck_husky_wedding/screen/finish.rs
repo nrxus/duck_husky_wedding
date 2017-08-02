@@ -1,4 +1,5 @@
 use duck_husky_wedding::button::{self, Button};
+use duck_husky_wedding::edit_text::EditText;
 
 use errors::*;
 
@@ -17,17 +18,18 @@ pub struct Data<F> {
     pub view: glm::IVec4,
 }
 
-pub struct Finish<T> {
+pub struct Finish<T, F> {
     button: button::Static<T>,
     view: glm::IVec4,
     title: T,
     score: T,
     time: T,
     total: T,
+    name: EditText<T, F>,
 }
 
-impl<T> Finish<T> {
-    pub fn load<'t, F, FT>(
+impl<T, F> Finish<T, F> {
+    pub fn load<'t, FT>(
         data: &Data<F>,
         texturizer: &'t FT,
         score: u32,
@@ -50,23 +52,31 @@ impl<T> Finish<T> {
         let duration = duration.as_secs() as u64;
         let total = texturizer.texturize(
             &*data.detail_font,
-            &format!("     total: {:>05}", duration as u32 + score),
-            &ColorRGBA(255, 255, 0, 255),
+            &format!("     total: {:>06}", duration as u32 + score),
+            &ColorRGBA(255, 255, 255, 255),
         )?;
 
         let score = texturizer.texturize(
             &*data.detail_font,
-            &format!("     score: {:>05}", score),
-            &ColorRGBA(255, 255, 0, 255),
+            &format!("     score: {:>06}", score),
+            &ColorRGBA(255, 255, 255, 255),
         )?;
 
         let time = texturizer.texturize(
             &*data.detail_font,
-            &format!("time bonus: {:>05}", duration),
-            &ColorRGBA(255, 255, 0, 255),
+            &format!("time bonus: {:>06}", duration),
+            &ColorRGBA(255, 255, 255, 255),
+        )?;
+
+        let name = EditText::load(
+            "Enter Name: ",
+            glm::ivec2(369, 400),
+            data.detail_font.clone(),
+            texturizer,
         )?;
 
         Ok(Finish {
+            name,
             title,
             button,
             view,
@@ -76,16 +86,17 @@ impl<T> Finish<T> {
         })
     }
 
-    pub fn update(&mut self, state: &input::State) -> Option<super::Kind> {
+    pub fn update(&mut self, elapsed: Duration, state: &input::State) -> Option<super::Kind> {
         if self.button.update(state) {
             Some(super::Kind::HighScore)
         } else {
+            self.name.update(elapsed, state);
             None
         }
     }
 }
 
-impl<'t, R: Canvas<'t>> Scene<R> for Finish<R::Texture>
+impl<'t, R: Canvas<'t>, F> Scene<R> for Finish<R::Texture, F>
 where
     R::Texture: Texture,
 {
@@ -145,6 +156,8 @@ where
             let dst = glm::ivec4(left, top, dims.x, dims.y);
             renderer.copy(texture, options::at(&dst))
         }?;
+
+        renderer.show(&self.name)?;
 
         renderer.show(&self.button)
     }

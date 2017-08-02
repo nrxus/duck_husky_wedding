@@ -53,10 +53,10 @@ pub enum PlayerKind {
     Husky,
 }
 
-enum State<T> {
+enum State<T, F> {
     Running,
     Transition,
-    Finished(super::finish::Finish<T>),
+    Finished(super::finish::Finish<T, F>),
 }
 
 pub struct GamePlay<T, F> {
@@ -68,7 +68,7 @@ pub struct GamePlay<T, F> {
     splashes: Vec<Splash<T>>,
     splash_font: Rc<F>,
     finish: super::finish::Data<F>,
-    state: State<T>,
+    state: State<T, F>,
 }
 
 pub struct Data<T> {
@@ -202,7 +202,7 @@ impl<T, F> GamePlay<T, F> {
                 }
                 None
             }
-            State::Finished(ref mut f) => f.update(input),
+            State::Finished(ref mut f) => f.update(delta, input),
         }
     }
 
