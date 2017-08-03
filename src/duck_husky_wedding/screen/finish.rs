@@ -25,6 +25,7 @@ pub struct Finish<T, F> {
     score: T,
     time: T,
     total: T,
+    total_value: u32,
     name: EditText<T, F>,
 }
 
@@ -49,10 +50,11 @@ impl<T, F> Finish<T, F> {
         let title = texturizer
             .texturize(&*data.title_font, "FINISHED!", &ColorRGBA(255, 255, 0, 255))?;
 
-        let duration = duration.as_secs() as u64;
+        let duration = duration.as_secs();
+        let total_value = duration as u32 + score;
         let total = texturizer.texturize(
             &*data.detail_font,
-            &format!("     total: {:>06}", duration as u32 + score),
+            &format!("     total: {:>06}", total_value),
             &ColorRGBA(255, 255, 255, 255),
         )?;
 
@@ -83,6 +85,7 @@ impl<T, F> Finish<T, F> {
             score,
             time,
             total,
+            total_value,
         })
     }
 
@@ -95,7 +98,12 @@ impl<T, F> Finish<T, F> {
 
     pub fn update(&mut self, elapsed: Duration, state: &input::State) -> Option<super::Kind> {
         if self.button.update(state) {
-            Some(super::Kind::HighScore)
+            let name = self.name.extract();
+            if !name.is_empty() {
+                Some(super::Kind::HighScore)
+            } else {
+                None
+            }
         } else {
             self.name.update(elapsed, state);
             None

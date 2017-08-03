@@ -77,7 +77,7 @@ impl<T> Data<T> {
         let scores = scores
             .iter()
             .map(|s| {
-                let score = format!("{:04}{:5}{:>3}", s.score, "", s.name);
+                let score = format!("{:06}{:5}{:>6}", s.score, "", s.name);
                 texturizer
                     .texturize(&*font, &score, &color)
                     .map_err(Into::into)

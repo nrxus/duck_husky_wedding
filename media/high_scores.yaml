@@ -1,4 +1,6 @@
-- name: AMV
-  score: 2
 - name: YC
   score: 3
+- name: AMV
+  score: 2
+- name: ANDRES
+  score: 1

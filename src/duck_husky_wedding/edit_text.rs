@@ -143,6 +143,14 @@ impl<T, F> EditText<T, F> {
         Ok(())
     }
 
+    pub fn extract(&self) -> String {
+        self.values
+            .iter()
+            .skip_while(|v| v.is_none())
+            .map(|v| v.unwrap_or(' '))
+            .collect()
+    }
+
     fn load_char<'t, FT>(
         value: CacheValue<Option<char>>,
         font: &F,
