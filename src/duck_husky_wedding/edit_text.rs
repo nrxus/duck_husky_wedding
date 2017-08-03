@@ -146,9 +146,10 @@ impl<T, F> EditText<T, F> {
     pub fn extract(&self) -> String {
         self.values
             .iter()
-            .skip_while(|v| v.is_none())
             .map(|v| v.unwrap_or(' '))
-            .collect()
+            .collect::<String>()
+            .trim()
+            .into()
     }
 
     fn load_char<'t, FT>(

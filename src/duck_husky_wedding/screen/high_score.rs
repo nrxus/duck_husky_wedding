@@ -14,8 +14,8 @@ use std::rc::Rc;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ScoreEntry {
-    score: u32,
-    name: String,
+    pub score: u32,
+    pub name: String,
 }
 
 pub struct HighScore<T> {

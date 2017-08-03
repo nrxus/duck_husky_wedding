@@ -9,8 +9,10 @@ use moho::errors as moho_errors;
 use moho::renderer::{options, Canvas, ColorRGBA, Font, FontTexturizer, Scene, Texture};
 use moho::input;
 use sdl2::rect::Rect;
+use serde_yaml;
 
 use std::fs::OpenOptions;
+use std::fs::File;
 use std::rc::Rc;
 use std::time::Duration;
 
@@ -28,10 +30,18 @@ pub struct ScoreData<T, F> {
 
 impl<T, F> ScoreData<T, F> {
     fn extract(&self) -> Option<Vec<ScoreEntry>> {
-        if self.name.extract().is_empty() {
+        let name = self.name.extract();
+        if name.is_empty() {
             None
         } else {
-            Some(vec![])
+            let mut updated = self.previous.clone();
+            updated.push(ScoreEntry {
+                name,
+                score: self.current,
+            });
+            updated.sort_by(|a, b| a.score.cmp(&b.score).reverse());
+            updated.truncate(10);
+            Some(updated)
         }
     }
 }
@@ -94,11 +104,16 @@ impl<T, F> Finish<T, F> {
             texturizer,
         )?;
 
-        let score_entry = Some(ScoreData {
-            previous: vec![],
-            current: total_value,
-            name,
-        });
+        let score_entry = {
+            let path = "media/high_scores.yaml";
+            let f = File::open(path)?;
+            let previous: Vec<ScoreEntry> = serde_yaml::from_reader(&f)?;
+            Some(ScoreData {
+                previous: previous,
+                current: total_value,
+                name,
+            })
+        };
 
         Ok(Finish {
             title,
@@ -126,7 +141,14 @@ impl<T, F> Finish<T, F> {
         if self.button.update(state) {
             match self.score_entry {
                 None => Some(super::Kind::Menu),
-                Some(ref s) => s.extract().map(|_| super::Kind::HighScore),
+                Some(ref s) => s.extract().map(|s| {
+                    let file = OpenOptions::new()
+                        .write(true)
+                        .open("media/high_scores.yaml")
+                        .expect("high score file could not be opened!");
+                    serde_yaml::to_writer(file, &s).expect("could not write to high score file");
+                    super::Kind::HighScore
+                }),
             }
         } else {
             if let Some(ref mut s) = self.score_entry {
