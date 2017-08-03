@@ -12,8 +12,8 @@ use moho::renderer::{options, ColorRGBA, Font, FontDetails, FontLoader, FontMana
 use std::fs::File;
 use std::rc::Rc;
 
-#[derive(Debug, Deserialize, Clone)]
-struct ScoreEntry {
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct ScoreEntry {
     score: u32,
     name: String,
 }

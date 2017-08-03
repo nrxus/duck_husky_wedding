@@ -1,5 +1,6 @@
 use duck_husky_wedding::button::{self, Button};
 use duck_husky_wedding::edit_text::EditText;
+use super::high_score::ScoreEntry;
 
 use errors::*;
 
@@ -9,6 +10,7 @@ use moho::renderer::{options, Canvas, ColorRGBA, Font, FontTexturizer, Scene, Te
 use moho::input;
 use sdl2::rect::Rect;
 
+use std::fs::OpenOptions;
 use std::rc::Rc;
 use std::time::Duration;
 
@@ -18,6 +20,22 @@ pub struct Data<F> {
     pub view: glm::IVec4,
 }
 
+pub struct ScoreData<T, F> {
+    previous: Vec<ScoreEntry>,
+    current: u32,
+    name: EditText<T, F>,
+}
+
+impl<T, F> ScoreData<T, F> {
+    fn extract(&self) -> Option<Vec<ScoreEntry>> {
+        if self.name.extract().is_empty() {
+            None
+        } else {
+            Some(vec![])
+        }
+    }
+}
+
 pub struct Finish<T, F> {
     button: button::Static<T>,
     view: glm::IVec4,
@@ -25,8 +43,7 @@ pub struct Finish<T, F> {
     score: T,
     time: T,
     total: T,
-    total_value: u32,
-    name: EditText<T, F>,
+    score_entry: Option<ScoreData<T, F>>,
 }
 
 impl<T, F> Finish<T, F> {
@@ -77,15 +94,20 @@ impl<T, F> Finish<T, F> {
             texturizer,
         )?;
 
-        Ok(Finish {
+        let score_entry = Some(ScoreData {
+            previous: vec![],
+            current: total_value,
             name,
+        });
+
+        Ok(Finish {
             title,
             button,
             view,
             score,
             time,
             total,
-            total_value,
+            score_entry,
         })
     }
 
@@ -93,19 +115,23 @@ impl<T, F> Finish<T, F> {
     where
         FT: FontTexturizer<'t, F, Texture = T>,
     {
-        self.name.before_draw(texturizer)
+        if let Some(ref mut s) = self.score_entry {
+            s.name.before_draw(texturizer)
+        } else {
+            Ok(())
+        }
     }
 
     pub fn update(&mut self, elapsed: Duration, state: &input::State) -> Option<super::Kind> {
         if self.button.update(state) {
-            let name = self.name.extract();
-            if !name.is_empty() {
-                Some(super::Kind::HighScore)
-            } else {
-                None
+            match self.score_entry {
+                None => Some(super::Kind::Menu),
+                Some(ref s) => s.extract().map(|_| super::Kind::HighScore),
             }
         } else {
-            self.name.update(elapsed, state);
+            if let Some(ref mut s) = self.score_entry {
+                s.name.update(elapsed, state);
+            }
             None
         }
     }
@@ -172,7 +198,9 @@ where
             renderer.copy(texture, options::at(&dst))
         }?;
 
-        renderer.show(&self.name)?;
+        if let Some(ref s) = self.score_entry {
+            renderer.show(&s.name)?;
+        }
 
         renderer.show(&self.button)
     }
