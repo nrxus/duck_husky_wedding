@@ -108,11 +108,15 @@ impl<T, F> Finish<T, F> {
             let path = "media/high_scores.yaml";
             let f = File::open(path)?;
             let previous: Vec<ScoreEntry> = serde_yaml::from_reader(&f)?;
-            Some(ScoreData {
-                previous: previous,
-                current: total_value,
-                name,
-            })
+            let min_score = previous.iter().map(|s| s.score).min();
+            match min_score {
+                Some(s) if s > total_value => None,
+                _ => Some(ScoreData {
+                    previous: previous,
+                    current: total_value,
+                    name,
+                }),
+            }
         };
 
         Ok(Finish {
