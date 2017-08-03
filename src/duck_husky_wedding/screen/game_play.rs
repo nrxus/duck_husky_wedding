@@ -13,6 +13,7 @@ use moho::input;
 use moho::errors as moho_errors;
 use moho::renderer::{options, Canvas, ColorRGBA, Font, FontDetails, FontLoader, FontManager,
                      FontTexturizer, Renderer, Scene, Texture, TextureLoader, TextureManager};
+use sdl2::keyboard::Keycode;
 
 use std::rc::Rc;
 use std::time::Duration;
@@ -57,6 +58,7 @@ enum State<T, F> {
     Running,
     Transition,
     Finished(super::finish::Finish<T, F>),
+    TimeUp(T),
 }
 
 pub struct GamePlay<T, F> {
@@ -68,6 +70,7 @@ pub struct GamePlay<T, F> {
     splashes: Vec<Splash<T>>,
     splash_font: Rc<F>,
     finish: super::finish::Data<F>,
+    time_up_font: Rc<F>,
     state: State<T, F>,
 }
 
@@ -134,6 +137,13 @@ impl<T> Data<T> {
             };
             font_manager.load(&details)
         }?;
+        let time_up_font = {
+            let details = FontDetails {
+                path: "media/fonts/kenpixel_mini.ttf",
+                size: 64,
+            };
+            font_manager.load(&details)
+        }?;
         let finish = {
             let x_margin = 100;
             let y_margin = 180;
@@ -158,6 +168,7 @@ impl<T> Data<T> {
             splashes,
             splash_font,
             finish,
+            time_up_font,
             state: State::Running,
         })
     }
@@ -203,6 +214,11 @@ impl<T, F> GamePlay<T, F> {
                 None
             }
             State::Finished(ref mut f) => f.update(delta, input),
+            State::TimeUp(_) => if input.did_press_key(Keycode::Return) {
+                Some(super::Kind::Menu)
+            } else {
+                None
+            },
         }
     }
 
@@ -279,6 +295,18 @@ impl<T, F> GamePlay<T, F> {
             self.player.invincibility.deactivate();
             self.state = State::Transition;
         }
+        if self.timer.value.as_secs() == 0 && self.timer.value.subsec_nanos() == 0 {
+            self.player.invincibility.deactivate();
+            self.state = State::TimeUp(
+                texturizer
+                    .texturize(
+                        &*self.time_up_font,
+                        "TIME UP!",
+                        &ColorRGBA(255, 0, 0, 255),
+                    )
+                    .unwrap(),
+            );
+        }
     }
 
     pub fn before_draw<'t, FT>(&mut self, texturizer: &'t FT) -> Result<()>
@@ -317,10 +345,21 @@ where
             options::at(&glm::ivec4(960 - td.x / 2, 0, td.x, td.y)),
         )?;
 
-        if let State::Finished(ref f) = self.state {
-            renderer.show(f)
-        } else {
-            Ok(())
+        match self.state {
+            State::Finished(ref f) => renderer.show(f),
+            State::TimeUp(ref t) => {
+                let dims = glm::to_ivec2(t.dims());
+                renderer.copy(
+                    t,
+                    options::at(&glm::ivec4(
+                        640 - dims.x / 2,
+                        360 - dims.y / 2,
+                        dims.x,
+                        dims.y,
+                    )),
+                )
+            }
+            _ => Ok(()),
         }
     }
 }
