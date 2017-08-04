@@ -1,4 +1,3 @@
-use duck_husky_wedding::button::{self, Button};
 use duck_husky_wedding::edit_text::EditText;
 use super::high_score::ScoreEntry;
 
@@ -9,6 +8,7 @@ use moho::errors as moho_errors;
 use moho::renderer::{options, Canvas, ColorRGBA, Font, FontTexturizer, Scene, Texture};
 use moho::input;
 use sdl2::rect::Rect;
+use sdl2::keyboard::Keycode;
 use serde_yaml;
 
 use std::fs::OpenOptions;
@@ -47,7 +47,7 @@ impl<T, F> ScoreData<T, F> {
 }
 
 pub struct Finish<T, F> {
-    button: button::Static<T>,
+    instructions: T,
     view: glm::IVec4,
     title: T,
     score: T,
@@ -68,14 +68,14 @@ impl<T, F> Finish<T, F> {
         FT: FontTexturizer<'t, F, Texture = T>,
     {
         let view = data.view;
-        let button = button::Static::center_text(
-            "DONE",
-            texturizer,
-            &*data.title_font,
-            glm::ivec2(640, view.y + view.w - 45),
-        )?;
         let title = texturizer
             .texturize(&*data.title_font, "FINISHED!", &ColorRGBA(255, 255, 0, 255))?;
+
+        let instructions = texturizer.texturize(
+            &*data.title_font,
+            "<PRESS ENTER TO CONTINUE>",
+            &ColorRGBA(255, 255, 255, 255),
+        )?;
 
         let duration = duration.as_secs();
         let total_value = duration as u32 + score;
@@ -121,7 +121,7 @@ impl<T, F> Finish<T, F> {
 
         Ok(Finish {
             title,
-            button,
+            instructions,
             view,
             score,
             time,
@@ -142,7 +142,7 @@ impl<T, F> Finish<T, F> {
     }
 
     pub fn update(&mut self, elapsed: Duration, state: &input::State) -> Option<super::Kind> {
-        if self.button.update(state) {
+        if state.did_press_key(Keycode::Return) {
             match self.score_entry {
                 None => Some(super::Kind::Menu),
                 Some(ref s) => s.extract().map(|s| {
@@ -228,6 +228,17 @@ where
             renderer.show(&s.name)?;
         }
 
-        renderer.show(&self.button)
+        // instructions
+        {
+            let texture = &self.instructions;
+            let dims = glm::to_ivec2(texture.dims());
+            let dst = glm::ivec4(
+                640 - dims.x / 2,
+                self.view.y + self.view.w - dims.y - 5,
+                dims.x,
+                dims.y,
+            );
+            renderer.copy(texture, options::at(&dst))
+        }
     }
 }
