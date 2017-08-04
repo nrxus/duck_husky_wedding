@@ -6,7 +6,6 @@ use moho::errors as moho_errors;
 use moho::input;
 use moho::renderer::{options, ColorRGBA, Font, FontDetails, FontLoader, FontManager,
                      FontTexturizer, Renderer, Scene, Texture};
-use moho::shape::Rectangle;
 
 use std::rc::Rc;
 
@@ -37,24 +36,13 @@ impl<T> Data<T> {
             size: 64,
         };
         let font = font_manager.load(&font_details)?;
-        let dims = font.measure("New Game")?;
-        let top_left = glm::ivec2(640 - dims.x as i32 / 2, 200);
-        let body = Rectangle {
-            top_left: glm::to_dvec2(top_left),
-            dims: glm::to_dvec2(dims),
-        };
-        let new_game = button::Static::text_at("New Game", texturizer, &*font, body)?;
         let title_color = ColorRGBA(255, 255, 0, 255);
         let title = Rc::new(texturizer
             .texturize(&*font, "Husky Loves Ducky", &title_color)?);
-
-        let dims = font.measure("High Score")?;
-        let top_left = glm::ivec2(640 - dims.x as i32 / 2, 400);
-        let body = Rectangle {
-            top_left: glm::to_dvec2(top_left),
-            dims: glm::to_dvec2(dims),
-        };
-        let high_score = button::Static::text_at("High Score", texturizer, &*font, body)?;
+        let new_game =
+            button::Static::center_text("New Game", texturizer, &*font, glm::ivec2(640, 250))?;
+        let high_score =
+            button::Static::center_text("High Scores", texturizer, &*font, glm::ivec2(640, 450))?;
         Ok(Data {
             title,
             new_game,
