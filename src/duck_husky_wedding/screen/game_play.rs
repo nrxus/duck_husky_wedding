@@ -318,14 +318,14 @@ impl<T, F> GamePlay<T, F> {
                 title: texturizer
                     .texturize(
                         &*self.time_up_font,
-                        "TIME IS UP!",
+                        "TIME'S UP!",
                         &ColorRGBA(255, 0, 0, 255),
                     )
                     .unwrap(),
                 instructions: texturizer
                     .texturize(
                         &*self.time_up_font,
-                        "<PRESS ENTER TO GO BACK>",
+                        "<PRESS ENTER>",
                         &ColorRGBA(255, 255, 255, 255),
                     )
                     .unwrap(),
