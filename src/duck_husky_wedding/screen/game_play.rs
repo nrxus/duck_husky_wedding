@@ -13,6 +13,7 @@ use moho::input;
 use moho::errors as moho_errors;
 use moho::renderer::{options, Canvas, ColorRGBA, Font, FontDetails, FontLoader, FontManager,
                      FontTexturizer, Renderer, Scene, Texture, TextureLoader, TextureManager};
+use sdl2::rect::Rect;
 use sdl2::keyboard::Keycode;
 
 use std::rc::Rc;
@@ -64,7 +65,11 @@ enum State<T, F> {
     Running,
     Transition,
     Finished(super::finish::Finish<T, F>),
-    TimeUp { title: T, instructions: T },
+    TimeUp {
+        view: glm::IVec4,
+        title: T,
+        instructions: T,
+    },
 }
 
 pub struct GamePlay<T, F> {
@@ -154,8 +159,8 @@ impl<T> Data<T> {
             font_manager.load(&details)
         }?;
         let finish = {
-            let x_margin = 100;
-            let y_margin = 180;
+            let x_size = 1080;
+            let y_size = 360;
             super::finish::Data {
                 title_font: font_manager.load(&FontDetails {
                     path: "media/fonts/kenpixel_mini.ttf",
@@ -165,7 +170,7 @@ impl<T> Data<T> {
                     path: "media/fonts/joystix.monospace.ttf",
                     size: 36,
                 })?,
-                view: glm::ivec4(x_margin, y_margin, 1280 - x_margin * 2, 720 - y_margin * 2),
+                view: glm::ivec4(640 - x_size / 2, 360 - y_size / 2, x_size, y_size),
             }
         };
         let heart = Heart {
@@ -314,7 +319,10 @@ impl<T, F> GamePlay<T, F> {
         }
         if self.timer.value.as_secs() == 0 && self.timer.value.subsec_nanos() == 0 {
             self.player.invincibility.deactivate();
+            let x_size = 800;
+            let y_size = 200;
             self.state = State::TimeUp {
+                view: glm::ivec4(640 - x_size / 2, 360 - y_size / 2, x_size, y_size),
                 title: texturizer
                     .texturize(
                         &*self.time_up_font,
@@ -385,12 +393,31 @@ where
             State::TimeUp {
                 ref title,
                 ref instructions,
+                ref view,
             } => {
+                //border
+                renderer.set_draw_color(ColorRGBA(0, 0, 0, 255));
+                renderer
+                    .fill_rects(&[Rect::new(view.x, view.y, view.z as u32, view.w as u32)])?;
+                //background
+                renderer.set_draw_color(ColorRGBA(60, 0, 70, 255));
+                renderer.fill_rects(&[
+                    Rect::new(
+                        view.x + 6,
+                        view.y + 6,
+                        view.z as u32 - 12,
+                        view.w as u32 - 12,
+                    ),
+                ])?;
+
+                //title
                 let dims = glm::to_ivec2(title.dims());
                 renderer.copy(
                     title,
                     options::at(&glm::ivec4(640 - dims.x / 2, 360 - dims.y, dims.x, dims.y)),
                 )?;
+
+                //instructions
                 let dims = glm::to_ivec2(instructions.dims());
                 renderer.copy(
                     instructions,
