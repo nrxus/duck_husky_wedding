@@ -77,7 +77,7 @@ where
 
         const GAME_SPEED: u32 = 60;
         const MAX_SKIP: u32 = 10;
-        let update_duration = Duration::new(0, 1000000000 / GAME_SPEED);
+        let update_duration = Duration::new(0, 1_000_000_000 / GAME_SPEED);
         let mut timer = Timer::new();
         let mut delta = Duration::default();
         let color = ColorRGBA(60, 0, 70, 255);
@@ -107,7 +107,8 @@ where
                 loops += 1;
             }
             // println!("fps: {:?}", game_time.fps());
-            // let interpolation = delta.subsec_nanos() as f64 / update_duration.subsec_nanos() as f64;
+            // let interpolation = delta.subsec_nanos() as f64
+            // / update_duration.subsec_nanos() as f64;
             self.renderer.set_draw_color(color);
             self.renderer.clear();
             screen_manager

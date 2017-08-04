@@ -104,14 +104,12 @@ impl<'t, R: Renderer<'t>> Scene<R> for Obstacle<R::Texture> {
                     } else {
                         &self.textures.top_center
                     }
+                } else if i == self.count.x - 1 {
+                    &self.textures.right
+                } else if i == 0 {
+                    &self.textures.left
                 } else {
-                    if i == self.count.x - 1 {
-                        &self.textures.right
-                    } else if i == 0 {
-                        &self.textures.left
-                    } else {
-                        &self.textures.center
-                    }
+                    &self.textures.center
                 };
                 (
                     texture,

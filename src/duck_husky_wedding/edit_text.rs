@@ -16,9 +16,9 @@ impl AsCached for Option<char> {
     type Value = char;
 
     fn as_cached(&self) -> char {
-        match self {
-            &None => '_',
-            &Some(c) => c,
+        match *self {
+            None => '_',
+            Some(c) => c,
         }
     }
 }

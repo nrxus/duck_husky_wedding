@@ -266,29 +266,28 @@ impl<T, F> GamePlay<T, F> {
                 self.splashes.push(splash);
                 self.score.update(c.score as i32);
             }
-            if !self.player.invincibility.is_active() {
-                if let Some(_) = self.world
+            if !self.player.invincibility.is_active() &&
+                self.world
                     .enemies
                     .iter()
                     .map(|e| e.body())
-                    .find(|b| b.collides(&player))
-                {
-                    let dmg = -20;
-                    self.player.invincibility.activate();
-                    let color = ColorRGBA(255, 0, 0, 255);
-                    let texture = texturizer
-                        .texturize(self.splash_font.as_ref(), &format!("{}", dmg), &color)
-                        .unwrap();
-                    let dims = glm::to_ivec2(texture.dims());
-                    let tl = glm::to_ivec2(self.player.dst_rect.center()) - dims / 2;
-                    let splash = Splash {
-                        texture,
-                        duration: Duration::from_secs(1),
-                        dst: glm::ivec4(tl.x, tl.y, dims.x, dims.y),
-                    };
-                    self.splashes.push(splash);
-                    self.score.update(dmg);
-                }
+                    .any(|b| b.collides(&player))
+            {
+                let dmg = -20;
+                self.player.invincibility.activate();
+                let color = ColorRGBA(255, 0, 0, 255);
+                let texture = texturizer
+                    .texturize(self.splash_font.as_ref(), &format!("{}", dmg), &color)
+                    .unwrap();
+                let dims = glm::to_ivec2(texture.dims());
+                let tl = glm::to_ivec2(self.player.dst_rect.center()) - dims / 2;
+                let splash = Splash {
+                    texture,
+                    duration: Duration::from_secs(1),
+                    dst: glm::ivec4(tl.x, tl.y, dims.x, dims.y),
+                };
+                self.splashes.push(splash);
+                self.score.update(dmg);
             }
         }
         if (self.player.dst_rect.x + self.player.dst_rect.z) as i32 >= self.world.npc.x() {
@@ -299,11 +298,7 @@ impl<T, F> GamePlay<T, F> {
             self.player.invincibility.deactivate();
             self.state = State::TimeUp(
                 texturizer
-                    .texturize(
-                        &*self.time_up_font,
-                        "TIME UP!",
-                        &ColorRGBA(255, 0, 0, 255),
-                    )
+                    .texturize(&*self.time_up_font, "TIME UP!", &ColorRGBA(255, 0, 0, 255))
                     .unwrap(),
             );
         }
