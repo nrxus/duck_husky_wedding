@@ -16,6 +16,7 @@ use moho::renderer::{options, Canvas, ColorRGBA, Font, FontDetails, FontLoader, 
 use sdl2::rect::Rect;
 use sdl2::keyboard::Keycode;
 
+use std::cmp;
 use std::rc::Rc;
 use std::time::Duration;
 
@@ -366,9 +367,10 @@ where
 
             if self.heart.zoom > 0. {
                 let dims = glm::to_dvec2(self.heart.size) * self.heart.zoom;
+                let y = cmp::min(self.world.npc.y(), self.player.dst_rect.y as i32);
                 let dst = glm::ivec4(
                     self.world.npc.x() - (dims.x / 2.) as i32,
-                    (self.player.dst_rect.y - dims.y / 2.) as i32,
+                    y - (dims.y / 2.) as i32,
                     dims.x as i32,
                     dims.y as i32,
                 );

@@ -40,6 +40,10 @@ impl<T> Npc<T> {
         self.dst.x
     }
 
+    pub fn y(&self) -> i32 {
+        self.dst.y
+    }
+
     pub fn bottom(&self) -> i32 {
         self.dst.y + self.dst.w
     }
