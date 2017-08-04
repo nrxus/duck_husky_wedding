@@ -113,6 +113,7 @@ pub struct Game {
     pub cat: Cat,
     pub background: Image,
     pub goal: Image,
+    pub heart: Image,
 }
 
 impl Game {

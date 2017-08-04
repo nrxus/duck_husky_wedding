@@ -159,3 +159,8 @@ cat:
           y: 0
         - x: 100
           y: 100
+heart:
+  texture: "heart.png"
+  out_size:
+    x: 50
+    y: 47

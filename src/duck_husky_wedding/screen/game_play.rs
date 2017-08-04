@@ -49,6 +49,12 @@ impl<T> Splash<T> {
     }
 }
 
+pub struct Heart<T> {
+    zoom: f64,
+    size: glm::UVec2,
+    texture: Rc<T>,
+}
+
 pub enum PlayerKind {
     Duck,
     Husky,
@@ -70,6 +76,7 @@ pub struct GamePlay<T, F> {
     splashes: Vec<Splash<T>>,
     splash_font: Rc<F>,
     finish: super::finish::Data<F>,
+    heart: Heart<T>,
     time_up_font: Rc<F>,
     state: State<T, F>,
 }
@@ -77,6 +84,7 @@ pub struct GamePlay<T, F> {
 pub struct Data<T> {
     world: world::Data<T>,
     game: data::Game,
+    heart: Rc<T>,
 }
 
 impl<T> Data<T> {
@@ -90,7 +98,8 @@ impl<T> Data<T> {
         TL: TextureLoader<'t, Texture = T>,
     {
         let world = world::Data::load(texture_manager, level, &game)?;
-        Ok(Data { game, world })
+        let heart = game.heart.texture.load(texture_manager)?;
+        Ok(Data { game, world, heart })
     }
 
     pub fn activate<'t, 'f, TL, FL, FT>(
@@ -159,6 +168,12 @@ impl<T> Data<T> {
                 view: glm::ivec4(x_margin, y_margin, 1280 - x_margin * 2, 720 - y_margin * 2),
             }
         };
+        let heart = Heart {
+            texture: self.heart.clone(),
+            size: self.game.heart.out_size.into(),
+            zoom: 0.,
+        };
+
         Ok(GamePlay {
             player,
             world,
@@ -169,6 +184,7 @@ impl<T> Data<T> {
             splash_font,
             finish,
             time_up_font,
+            heart,
             state: State::Running,
         })
     }
@@ -197,9 +213,7 @@ impl<T, F> GamePlay<T, F> {
                 None
             }
             State::Transition => {
-                if (self.player.dst_rect.y + self.player.dst_rect.w) as i32 >=
-                    self.world.npc.bottom()
-                {
+                if self.heart.zoom >= 1. {
                     self.state = State::Finished(
                         super::finish::Finish::load(
                             &self.finish,
@@ -208,6 +222,10 @@ impl<T, F> GamePlay<T, F> {
                             self.timer.value,
                         ).unwrap(),
                     );
+                } else if (self.player.dst_rect.y + self.player.dst_rect.w) as i32 >=
+                    self.world.npc.bottom()
+                {
+                    self.heart.zoom += 0.05;
                 } else {
                     self.player.dst_rect.y += 4.;
                 }
@@ -337,6 +355,17 @@ where
             renderer.show(&self.world)?;
             renderer.show(&self.player)?;
             self.splashes.iter().map(|s| renderer.show(s)).try()?;
+
+            if self.heart.zoom > 0. {
+                let dims = glm::to_dvec2(self.heart.size) * self.heart.zoom;
+                let dst = glm::ivec4(
+                    self.world.npc.x() - (dims.x / 2.) as i32,
+                    (self.player.dst_rect.y - dims.y / 2.) as i32,
+                    dims.x as i32,
+                    dims.y as i32,
+                );
+                renderer.copy(&*self.heart.texture, options::at(&dst))?;
+            }
         }
 
         let sc = glm::to_ivec2(self.score.dims());
