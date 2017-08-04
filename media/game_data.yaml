@@ -18,7 +18,7 @@ duck:
         - 19
     #Front Body
     - Circle:
-        - x: 70
+        - x: 69
           y: 57
         - 27
     #Middle Body

@@ -135,9 +135,9 @@ impl<T> Player<T> {
             match self.action {
                 Action::Jumping(_, ref mut held) => if *held < 15 {
                     held.add_assign(1);
-                    self.delta_pos.y -= 6. / (*held as f64);
+                    self.delta_pos.y -= 6. / *held as f64;
                 },
-                _ => self.delta_pos.y -= 6.,
+                _ => self.delta_pos.y = -6.,
             }
         } else if let Action::Jumping(_, ref mut held) = self.action {
             held.add_assign(15);
@@ -149,13 +149,12 @@ impl<T> Player<T> {
         } else {
             self.delta_pos.x = 0.;
         }
+
+        self.delta_pos.y += 1.;
     }
 
-    pub fn update(&mut self, (mut force, on_floor): (glm::DVec2, bool), delta: Duration) {
+    pub fn update(&mut self, (force, on_floor): (glm::DVec2, bool), delta: Duration) {
         self.invincibility.update(delta);
-        if force.y.abs() < 0.0000001 {
-            force.y = 0.
-        }
 
         let next_action = match self.action {
             Action::Moving(ref mut a) => if !on_floor {
@@ -174,7 +173,12 @@ impl<T> Player<T> {
                 let animation = self.animation.clone().start();
                 Some(Action::Moving(animation))
             },
-            Action::Jumping(_, _) => if !on_floor {
+            Action::Jumping(_, ref mut held) => if !on_floor {
+                if self.delta_pos.y.abs() > 0. && force.y.abs() > 0. &&
+                    self.delta_pos.y.signum() != force.y.signum()
+                {
+                    held.add_assign(100);
+                }
                 None
             } else if self.delta_pos.x == 0. {
                 Some(Action::Standing(self.texture.clone()))
@@ -188,9 +192,14 @@ impl<T> Player<T> {
             self.action = a;
         }
 
-        self.delta_pos = self.delta_pos + force;
-        self.dst_rect.x += self.delta_pos.x;
-        self.dst_rect.y += self.delta_pos.y;
+        self.dst_rect.x += self.delta_pos.x + force.x;
+        self.dst_rect.y += self.delta_pos.y + force.y;
+
+        if self.delta_pos.y.abs() > 0. && force.y.abs() > 0. &&
+            self.delta_pos.y.signum() != force.y.signum()
+        {
+            self.delta_pos.y = 0.
+        }
     }
 }
 
