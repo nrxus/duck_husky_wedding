@@ -11,12 +11,6 @@ duck:
     x: 108
     y: 81
   body:
-    #Legs
-    - Rectangle:
-        - x: 42
-          y: 80
-        - x: 30
-          y: 20
     #Head
     - Circle:
         - x: 75
@@ -42,6 +36,13 @@ duck:
         - x: 23
           y: 64
         - 8
+  legs:
+    #Legs
+    - Rectangle:
+        - x: 42
+          y: 80
+        - x: 30
+          y: 20
 husky:
   animation:
     texture: "husky.png"
@@ -61,16 +62,6 @@ husky:
           y: 30
         - x: 71
           y: 40
-    #Back Leg
-    - Circle:
-        - x: 18
-          y: 85
-        - 15
-    #Front Leg
-    - Circle:
-        - x: 69
-          y: 85
-        - 15
     #Head
     - Circle:
         - x: 78
@@ -91,6 +82,17 @@ husky:
         - x: 90
           y: 25
         - 6
+  legs:
+    #Back Leg
+    - Circle:
+        - x: 18
+          y: 85
+        - 15
+    #Front Leg
+    - Circle:
+        - x: 69
+          y: 85
+        - 15
 ground:
   center: "ground_c.png"
   left: "ground_ml.png"

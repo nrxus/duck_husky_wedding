@@ -141,15 +141,19 @@ impl<T> World<T> {
         }
     }
 
-    pub fn force(&self, player: &Player<T>) -> glm::DVec2 {
+    pub fn force(&self, player: &Player<T>) -> (glm::DVec2, bool) {
         let gravity = glm::dvec2(0., 1.);
         let mut force = gravity;
+        let mut legs = player.legs().nudge(gravity + player.delta_pos);
         let mut body = player.body().nudge(gravity + player.delta_pos);
+        let mut touch_legs = false;
 
         for o in &self.obstacles {
-            if let Some(f) = o.mtv(&body) {
+            if let Some(f) = o.mtv(&legs) {
                 force = force + f;
+                legs = legs.nudge(f);
                 body = body.nudge(f);
+                touch_legs = true;
             }
         }
 
@@ -167,7 +171,7 @@ impl<T> World<T> {
             }
         }
 
-        force
+        (force, touch_legs)
     }
 }
 

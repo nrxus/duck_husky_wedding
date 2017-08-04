@@ -69,6 +69,7 @@ pub struct Player {
     pub idle_texture: Texture,
     pub out_size: Dimension,
     pub body: Vec<Shape>,
+    pub legs: Vec<Shape>,
 }
 
 #[derive(Debug, Deserialize)]

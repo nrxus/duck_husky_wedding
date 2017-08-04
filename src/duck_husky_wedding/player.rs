@@ -24,6 +24,7 @@ pub struct Player<T> {
     pub dst_rect: glm::DVec4,
     pub invincibility: Invincibility,
     body: Vec<data::Shape>,
+    legs: Vec<data::Shape>,
     action: Action<T>,
     animation: animation::Data<T>,
     texture: Rc<T>,
@@ -88,7 +89,13 @@ impl<T> Player<T> {
         };
         let animation = data.animation.load(texture_manager)?;
         let texture = data.idle_texture.load(texture_manager)?;
-        Ok(Player::new(animation, texture, dst_rect, data.body.clone()))
+        Ok(Player::new(
+            animation,
+            texture,
+            dst_rect,
+            data.body.clone(),
+            data.legs.clone(),
+        ))
     }
 
     pub fn new(
@@ -96,6 +103,7 @@ impl<T> Player<T> {
         texture: Rc<T>,
         dst_rect: glm::DVec4,
         body: Vec<data::Shape>,
+        legs: Vec<data::Shape>,
     ) -> Self {
         Player {
             action: Action::Standing(texture.clone()),
@@ -106,11 +114,16 @@ impl<T> Player<T> {
             texture,
             dst_rect,
             body,
+            legs,
         }
     }
 
     pub fn body(&self) -> Body {
         Body::new(&self.dst_rect, &self.body, self.backwards)
+    }
+
+    pub fn legs(&self) -> Body {
+        Body::new(&self.dst_rect, &self.legs, self.backwards)
     }
 
     pub fn process(&mut self, input: &input::State) {
@@ -138,43 +151,37 @@ impl<T> Player<T> {
         }
     }
 
-    pub fn update(&mut self, mut force: glm::DVec2, delta: Duration) {
+    pub fn update(&mut self, (mut force, on_floor): (glm::DVec2, bool), delta: Duration) {
         self.invincibility.update(delta);
         if force.y.abs() < 0.0000001 {
             force.y = 0.
         }
 
         let next_action = match self.action {
-            Action::Moving(ref mut a) => {
-                if self.delta_pos.y.abs() > 0.0000001 || force.y.abs() > 0.0000001 {
-                    Some(Action::Jumping(self.texture.clone(), 0))
-                } else if self.delta_pos.x == 0. {
-                    Some(Action::Standing(self.texture.clone()))
-                } else {
-                    a.animate(delta);
-                    None
-                }
-            }
-            Action::Standing(_) => {
-                if self.delta_pos.y.abs() > 0.0000001 || force.y.abs() > 0.0000001 {
-                    Some(Action::Jumping(self.texture.clone(), 0))
-                } else if self.delta_pos.x == 0. {
-                    None
-                } else {
-                    let animation = self.animation.clone().start();
-                    Some(Action::Moving(animation))
-                }
-            }
-            Action::Jumping(_, _) => {
-                if self.delta_pos.y.abs() > 0.0000001 || force.y.abs() > 0.0000001 {
-                    None
-                } else if self.delta_pos.x == 0. {
-                    Some(Action::Standing(self.texture.clone()))
-                } else {
-                    let animation = self.animation.clone().start();
-                    Some(Action::Moving(animation))
-                }
-            }
+            Action::Moving(ref mut a) => if !on_floor {
+                Some(Action::Jumping(self.texture.clone(), 0))
+            } else if self.delta_pos.x == 0. {
+                Some(Action::Standing(self.texture.clone()))
+            } else {
+                a.animate(delta);
+                None
+            },
+            Action::Standing(_) => if !on_floor {
+                Some(Action::Jumping(self.texture.clone(), 0))
+            } else if self.delta_pos.x == 0. {
+                None
+            } else {
+                let animation = self.animation.clone().start();
+                Some(Action::Moving(animation))
+            },
+            Action::Jumping(_, _) => if !on_floor {
+                None
+            } else if self.delta_pos.x == 0. {
+                Some(Action::Standing(self.texture.clone()))
+            } else {
+                let animation = self.animation.clone().start();
+                Some(Action::Moving(animation))
+            },
         };
 
         if let Some(a) = next_action {
@@ -201,7 +208,8 @@ impl<'t, R: Renderer<'t>> Scene<R> for Player<R::Texture> {
                 Action::Moving(ref a) => renderer.copy_asset(&a.tile(), options),
                 Action::Standing(ref t) | Action::Jumping(ref t, _) => renderer.copy(&*t, options),
             }?;
-            renderer.show(&self.body())
+            renderer.show(&self.body())?;
+            renderer.show(&self.legs())
         }
     }
 }
