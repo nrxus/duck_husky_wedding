@@ -63,14 +63,14 @@ husky:
           y: 40
     #Back Leg
     - Circle:
-        - x: 20
-          y: 80
-        - 20
+        - x: 18
+          y: 85
+        - 15
     #Front Leg
     - Circle:
-        - x: 65
-          y: 80
-        - 20
+        - x: 69
+          y: 85
+        - 15
     #Head
     - Circle:
         - x: 78
