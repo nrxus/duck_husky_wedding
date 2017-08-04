@@ -58,7 +58,7 @@ enum State<T, F> {
     Running,
     Transition,
     Finished(super::finish::Finish<T, F>),
-    TimeUp(T),
+    TimeUp { title: T, instructions: T },
 }
 
 pub struct GamePlay<T, F> {
@@ -214,7 +214,7 @@ impl<T, F> GamePlay<T, F> {
                 None
             }
             State::Finished(ref mut f) => f.update(delta, input),
-            State::TimeUp(_) => if input.did_press_key(Keycode::Return) {
+            State::TimeUp { .. } => if input.did_press_key(Keycode::Return) {
                 Some(super::Kind::Menu)
             } else {
                 None
@@ -296,11 +296,22 @@ impl<T, F> GamePlay<T, F> {
         }
         if self.timer.value.as_secs() == 0 && self.timer.value.subsec_nanos() == 0 {
             self.player.invincibility.deactivate();
-            self.state = State::TimeUp(
-                texturizer
-                    .texturize(&*self.time_up_font, "TIME UP!", &ColorRGBA(255, 0, 0, 255))
+            self.state = State::TimeUp {
+                title: texturizer
+                    .texturize(
+                        &*self.time_up_font,
+                        "TIME IS UP!",
+                        &ColorRGBA(255, 0, 0, 255),
+                    )
                     .unwrap(),
-            );
+                instructions: texturizer
+                    .texturize(
+                        &*self.time_up_font,
+                        "<PRESS ENTER TO GO BACK>",
+                        &ColorRGBA(255, 255, 255, 255),
+                    )
+                    .unwrap(),
+            };
         }
     }
 
@@ -342,16 +353,19 @@ where
 
         match self.state {
             State::Finished(ref f) => renderer.show(f),
-            State::TimeUp(ref t) => {
-                let dims = glm::to_ivec2(t.dims());
+            State::TimeUp {
+                ref title,
+                ref instructions,
+            } => {
+                let dims = glm::to_ivec2(title.dims());
                 renderer.copy(
-                    t,
-                    options::at(&glm::ivec4(
-                        640 - dims.x / 2,
-                        360 - dims.y / 2,
-                        dims.x,
-                        dims.y,
-                    )),
+                    title,
+                    options::at(&glm::ivec4(640 - dims.x / 2, 360 - dims.y, dims.x, dims.y)),
+                )?;
+                let dims = glm::to_ivec2(instructions.dims());
+                renderer.copy(
+                    instructions,
+                    options::at(&glm::ivec4(640 - dims.x / 2, 360, dims.x, dims.y)),
                 )
             }
             _ => Ok(()),
