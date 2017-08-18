@@ -1,4 +1,3 @@
-use duck_husky_wedding::button::{self, Button};
 use utils::Try;
 use errors::*;
 
@@ -8,6 +7,7 @@ use moho::input;
 use moho::errors as moho_errors;
 use moho::renderer::{options, ColorRGBA, Font, FontDetails, FontLoader, FontManager,
                      FontTexturizer, Renderer, Scene, Texture};
+use sdl2::keyboard::Keycode;
 
 use std::fs::File;
 use std::rc::Rc;
@@ -20,13 +20,13 @@ pub struct ScoreEntry {
 
 pub struct HighScore<T> {
     title: Rc<T>,
-    back: button::Static<T>,
+    instructions: Rc<T>,
     scores: Vec<T>,
 }
 
 pub struct Data<T> {
     title: Rc<T>,
-    back: button::Static<T>,
+    instructions: Rc<T>,
 }
 
 impl<T> Data<T> {
@@ -44,14 +44,15 @@ impl<T> Data<T> {
             size: 64,
         };
         let font = font_manager.load(&font_details)?;
-        let dims = font.measure("<")?;
-        let top_left = glm::ivec2(10, 360 - dims.y as i32 / 2);
-        let back = button::Static::from_text("<", texturizer, &*font, top_left)?;
-        let title_color = ColorRGBA(255, 255, 0, 255);
-        let title = Rc::new(texturizer.texturize(&*font, "High Scores", &title_color)?);
+        let color = ColorRGBA(255, 255, 0, 255);
+        let title = Rc::new(texturizer.texturize(&*font, "High Scores", &color)?);
+        let instructions = Rc::new(
+            texturizer
+                .texturize(&*font, "<PRESS ENTER TO GO TO MAIN MENU>", &color)?,
+        );
         Ok(Data {
-            title: title,
-            back: back,
+            title,
+            instructions,
         })
     }
 
@@ -85,15 +86,15 @@ impl<T> Data<T> {
             .collect::<Result<Vec<_>>>()?;
         Ok(HighScore {
             scores: scores,
-            back: self.back.clone(),
             title: self.title.clone(),
+            instructions: self.instructions.clone(),
         })
     }
 }
 
 impl<T> HighScore<T> {
     pub fn update(&mut self, input: &input::State) -> Option<super::Kind> {
-        if self.back.update(input) {
+        if input.did_press_key(Keycode::Return) {
             Some(super::Kind::Menu)
         } else {
             None
@@ -106,10 +107,19 @@ where
     R::Texture: Texture,
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        let title_dims = glm::to_ivec2(self.title.dims());
-        let title_rectangle = glm::ivec4(640 - title_dims.x / 2, 0, title_dims.x, title_dims.y);
-        renderer.show(&self.back)?;
-        renderer.copy(&self.title, options::at(&title_rectangle))?;
+        {
+            let texture = &*self.title;
+            let dims = glm::to_ivec2(texture.dims());
+            let rect = glm::ivec4(640 - dims.x / 2, 0, dims.x, dims.y);
+            renderer.copy(texture, options::at(&rect))
+        }?;
+
+        {
+            let texture = &*self.instructions;
+            let dims = glm::to_ivec2(texture.dims());
+            let rect = glm::ivec4(640 - dims.x / 2, 720 - dims.y, dims.x, dims.y);
+            renderer.copy(texture, options::at(&rect))
+        }?;
 
         self.scores
             .iter()
