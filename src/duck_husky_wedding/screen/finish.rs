@@ -148,6 +148,7 @@ impl<T, F> Finish<T, F> {
                 Some(ref s) => s.extract().map(|s| {
                     let file = OpenOptions::new()
                         .write(true)
+                        .truncate(true)
                         .open("media/high_scores.yaml")
                         .expect("high score file could not be opened!");
                     serde_yaml::to_writer(file, &s).expect("could not write to high score file");
