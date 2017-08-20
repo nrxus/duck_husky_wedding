@@ -39,17 +39,25 @@ impl<T> Data<T> {
         FL::Font: Font,
         FT: FontTexturizer<'t, FL::Font, Texture = T>,
     {
-        let font_details = FontDetails {
-            path: "media/fonts/kenpixel_mini.ttf",
-            size: 64,
-        };
-        let font = font_manager.load(&font_details)?;
         let color = ColorRGBA(255, 255, 0, 255);
-        let title = Rc::new(texturizer.texturize(&*font, "High Scores", &color)?);
-        let instructions = Rc::new(
-            texturizer
-                .texturize(&*font, "<PRESS ENTER TO GO TO MAIN MENU>", &color)?,
-        );
+
+        let title = {
+            let text = "High Scores";
+            let font = font_manager.load(&FontDetails {
+                path: "media/fonts/kenpixel_mini.ttf",
+                size: 64,
+            })?;
+            Rc::new(texturizer.texturize(&*font, text, &color)?)
+        };
+        let instructions = {
+            let text = "<PRESS ENTER TO GO TO MAIN MENU>";
+            let font = font_manager.load(&FontDetails {
+                path: "media/fonts/kenpixel_mini.ttf",
+                size: 32,
+            })?;
+            Rc::new(texturizer.texturize(&*font, text, &color)?)
+        };
+
         Ok(Data {
             title,
             instructions,
@@ -117,7 +125,7 @@ where
         {
             let texture = &*self.instructions;
             let dims = glm::to_ivec2(texture.dims());
-            let rect = glm::ivec4(640 - dims.x / 2, 720 - dims.y, dims.x, dims.y);
+            let rect = glm::ivec4(640 - dims.x / 2, 720 - dims.y * 2, dims.x, dims.y);
             renderer.copy(texture, options::at(&rect))
         }?;
 
@@ -128,7 +136,7 @@ where
                 let dims = glm::to_ivec2(s.dims());
                 (
                     s,
-                    glm::ivec4(640 - dims.x / 2, 200 + dims.y * i as i32, dims.x, dims.y),
+                    glm::ivec4(640 - dims.x / 2, 150 + dims.y * i as i32, dims.x, dims.y),
                 )
             })
             .map(|(s, d)| renderer.copy(s, options::at(&d)))
