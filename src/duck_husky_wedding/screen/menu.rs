@@ -77,26 +77,39 @@ where
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 enum ButtonKind {
     NewGame,
     HighScore,
 }
 
+struct Button<T> {
+    kind: ButtonKind,
+    inner: button::Static<T>,
+    center: glm::IVec2,
+}
+
+impl<T> Clone for Button<T> {
+    fn clone(&self) -> Self {
+        Button {
+            kind: self.kind,
+            center: self.center,
+            inner: self.inner.clone(),
+        }
+    }
+}
+
 struct ButtonManager<T> {
     selected: ButtonKind,
-    new_game: button::Static<T>,
-    high_score: button::Static<T>,
+    new_game: Button<T>,
+    high_score: Button<T>,
 }
 
 impl<T> Clone for ButtonManager<T> {
     fn clone(&self) -> Self {
-        let mut new_game = self.new_game.clone();
-        new_game.is_selected = true;
-
         ButtonManager {
-            new_game: new_game,
             selected: self.selected,
+            new_game: self.new_game.clone(),
             high_score: self.high_score.clone(),
         }
     }
@@ -108,12 +121,26 @@ impl<T> ButtonManager<T> {
         F: Font,
         FT: FontTexturizer<'t, F, Texture = T>,
     {
-        let mut new_game =
-            button::Static::center_text("New Game", texturizer, font, glm::ivec2(640, 250))?;
-        new_game.is_selected = true;
+        let new_game = {
+            let center = glm::ivec2(640, 250);
+            let inner = button::Static::with_text("New Game", texturizer, font)?;
+            Button {
+                center,
+                inner,
+                kind: ButtonKind::NewGame,
+            }
+        };
 
-        let high_score =
-            button::Static::center_text("High Scores", texturizer, font, glm::ivec2(640, 450))?;
+        let high_score = {
+            let center = glm::ivec2(640, 450);
+            let inner = button::Static::with_text("High Score", texturizer, font)?;
+            Button {
+                center,
+                inner,
+                kind: ButtonKind::HighScore,
+            }
+        };
+
         Ok(ButtonManager {
             new_game,
             high_score,
@@ -124,16 +151,8 @@ impl<T> ButtonManager<T> {
     pub fn update(&mut self, input: &input::State) -> Option<ButtonKind> {
         if input.did_press_key(Keycode::Down) ^ input.did_press_key(Keycode::Up) {
             self.selected = match self.selected {
-                ButtonKind::NewGame => {
-                    self.new_game.is_selected = false;
-                    self.high_score.is_selected = true;
-                    ButtonKind::HighScore
-                }
-                ButtonKind::HighScore => {
-                    self.high_score.is_selected = false;
-                    self.new_game.is_selected = true;
-                    ButtonKind::NewGame
-                }
+                ButtonKind::NewGame => ButtonKind::HighScore,
+                ButtonKind::HighScore => ButtonKind::NewGame,
             }
         }
 
@@ -150,7 +169,44 @@ where
     R::Texture: Texture,
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        renderer.show(&self.new_game)?;
-        renderer.show(&self.high_score)
+        {
+            let button = &self.new_game;
+
+            let dims = glm::to_ivec2(button.inner.dims);
+            let dst = glm::ivec4(
+                button.center.x - dims.x / 2,
+                button.center.y - dims.y / 2,
+                dims.x,
+                dims.y,
+            );
+
+            let texture = if button.kind == self.selected {
+                &*button.inner.selected
+            } else {
+                &*button.inner.idle
+            };
+
+            renderer.copy(texture, options::at(&dst))
+        }?;
+
+        {
+            let button = &self.high_score;
+
+            let dims = glm::to_ivec2(button.inner.dims);
+            let dst = glm::ivec4(
+                button.center.x - dims.x / 2,
+                button.center.y - dims.y / 2,
+                dims.x,
+                dims.y,
+            );
+
+            let texture = if button.kind == self.selected {
+                &*button.inner.selected
+            } else {
+                &*button.inner.idle
+            };
+
+            renderer.copy(texture, options::at(&dst))
+        }
     }
 }
