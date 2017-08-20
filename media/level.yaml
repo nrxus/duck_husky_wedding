@@ -17,12 +17,6 @@ obstacles:
     bottom_left:
       x: 10
       y: 3
-  - count:
-      x: 10
-      y: 1
-    bottom_left:
-      x: 14
-      y: 8
 goal:
   x: 40
   y: 1
@@ -36,6 +30,11 @@ coins:
     y: 1
   - x: 14
     y: 9
+spikes:
+  - count: 10
+    bottom_left:
+      x: 14
+      y: 8
 cats:
   - kind: Idle
     bottom_left:

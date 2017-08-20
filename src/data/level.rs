@@ -24,12 +24,19 @@ pub struct Obstacle {
 }
 
 #[derive(Debug, Deserialize)]
+pub struct Spike {
+    pub count: u32,
+    pub bottom_left: Dimension,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct Level {
     pub obstacles: Vec<Obstacle>,
     pub goal: Dimension,
     pub gems: Vec<Dimension>,
     pub coins: Vec<Dimension>,
     pub cats: Vec<Cat>,
+    pub spikes: Vec<Spike>,
 }
 
 impl Level {

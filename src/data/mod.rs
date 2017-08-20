@@ -115,6 +115,7 @@ pub struct Game {
     pub background: Image,
     pub goal: Image,
     pub heart: Image,
+    pub spike: Image,
 }
 
 impl Game {

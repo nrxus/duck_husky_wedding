@@ -166,3 +166,8 @@ heart:
   out_size:
     x: 50
     y: 47
+spike:
+  texture: "spike.png"
+  out_size:
+    x: 34
+    y: 34

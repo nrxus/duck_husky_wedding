@@ -10,14 +10,53 @@ use duck_husky_wedding::obstacle::Obstacle;
 use utils::Try;
 
 use glm;
-use moho::renderer::{Renderer, Scene, Texture, TextureLoader, TextureManager};
+use moho::shape::Rectangle;
+use moho::renderer::{options, Renderer, Scene, Texture, TextureLoader, TextureManager};
 use moho::errors as moho_errors;
 
+use std::rc::Rc;
 use std::time::Duration;
+
+pub struct Spike<T> {
+    count: u32,
+    texture: Rc<T>,
+    dims: glm::UVec2,
+    top_left: glm::IVec2,
+    body: Rectangle,
+}
+
+impl<'t, R: Renderer<'t>> Scene<R> for Spike<R::Texture> {
+    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+        (0..self.count)
+            .map(|i| {
+                glm::ivec4(
+                    self.top_left.x + (self.dims.x * i) as i32,
+                    self.top_left.y,
+                    self.dims.x as i32,
+                    self.dims.y as i32,
+                )
+            })
+            .map(|d| renderer.copy(&*self.texture, options::at(&d)))
+            .try()
+    }
+}
+
+impl<T> Clone for Spike<T> {
+    fn clone(&self) -> Self {
+        Spike {
+            top_left: self.top_left,
+            count: self.count,
+            dims: self.dims,
+            texture: self.texture.clone(),
+            body: self.body.clone(),
+        }
+    }
+}
 
 pub struct Data<T> {
     background: Background<T>,
     obstacles: Vec<Obstacle<T>>,
+    spikes: Vec<Spike<T>>,
     goal: Goal<T>,
     npc_pos: glm::UVec2,
     collectables: Vec<collectable::Data<T>>,
@@ -28,6 +67,7 @@ pub struct World<T> {
     background: Background<T>,
     obstacles: Vec<Obstacle<T>>,
     goal: Goal<T>,
+    pub spikes: Vec<Spike<T>>,
     pub collectables: Vec<Collectable<T>>,
     pub npc: Npc<T>,
     pub enemies: Vec<Cat<T>>,
@@ -97,6 +137,34 @@ impl<T> Data<T> {
             })
             .collect::<Result<Vec<_>>>()?;
 
+        let spikes = {
+            let texture = game.spike.texture.load(texture_manager)?;
+            let dims: glm::UVec2 = game.spike.out_size.into();
+
+            level
+                .spikes
+                .iter()
+                .map(|s| {
+                    let mut bl: glm::IVec2 = s.bottom_left.into();
+                    bl = bl * tile_size;
+                    bl.y = 720 - bl.y;
+                    let texture = texture.clone();
+                    let top_left = glm::ivec2(bl.x, bl.y - dims.y as i32);
+
+                    Spike {
+                        count: s.count,
+                        dims,
+                        texture,
+                        top_left,
+                        body: Rectangle {
+                            top_left: glm::dvec2(top_left.x as f64, (top_left.y + 5) as f64),
+                            dims: glm::dvec2((dims.x * s.count) as f64, (dims.y - 5) as f64),
+                        },
+                    }
+                })
+                .collect()
+        };
+
         Ok(Data {
             background,
             obstacles,
@@ -104,6 +172,7 @@ impl<T> Data<T> {
             npc_pos,
             collectables,
             enemies,
+            spikes,
         })
     }
 
@@ -124,6 +193,7 @@ impl<T> Data<T> {
             npc,
             background: self.background.clone(),
             obstacles: self.obstacles.clone(),
+            spikes: self.spikes.clone(),
             goal: self.goal.clone(),
             collectables,
             enemies,
@@ -170,6 +240,29 @@ impl<T> World<T> {
             }
         }
 
+        for s in &self.spikes {
+            if let Some(f) = legs.mtv(&s.body) {
+                force = force + f;
+                legs = legs.nudge(f);
+                body = body.nudge(f);
+                touch_legs = true;
+            }
+        }
+
+        for s in &self.spikes {
+            if let Some(f) = body.mtv(&s.body) {
+                force = force + f;
+                body = body.nudge(f);
+            }
+        }
+
+        for s in &self.spikes {
+            if let Some(f) = body.mtv(&s.body) {
+                force = force + f;
+                body = body.nudge(f);
+            }
+        }
+
         (force, touch_legs)
     }
 }
@@ -181,6 +274,7 @@ impl<'t, R: Renderer<'t>> Scene<R> for World<R::Texture> {
         self.obstacles.iter().map(|o| renderer.show(o)).try()?;
         self.collectables.iter().map(|c| renderer.show(c)).try()?;
         self.enemies.iter().map(|c| renderer.show(c)).try()?;
+        self.spikes.iter().map(|s| renderer.show(s)).try()?;
         renderer.show(&self.npc)
     }
 }
