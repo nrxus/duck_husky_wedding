@@ -107,7 +107,7 @@ impl<T, F> Finish<T, F> {
         let score_entry = {
             let path = "media/high_scores.yaml";
             let f = File::open(path)?;
-            let previous: Vec<ScoreEntry> = serde_yaml::from_reader(&f)?;
+            let previous: Vec<ScoreEntry> = serde_yaml::from_reader(&f).unwrap_or_default();
             let mut min_score = previous.iter().map(|s| s.score).min();
             if previous.len() < 10 {
                 min_score = None;

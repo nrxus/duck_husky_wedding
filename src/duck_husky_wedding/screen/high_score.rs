@@ -82,7 +82,7 @@ impl<T> Data<T> {
         let path = "media/high_scores.yaml";
         let f = File::open(path)?;
         let color = ColorRGBA(255, 255, 255, 255);
-        let scores: Vec<ScoreEntry> = serde_yaml::from_reader(&f)?;
+        let scores: Vec<ScoreEntry> = serde_yaml::from_reader(&f).unwrap_or_default();
         let scores = scores
             .iter()
             .map(|s| {
