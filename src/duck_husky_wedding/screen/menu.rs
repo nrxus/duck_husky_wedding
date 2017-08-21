@@ -164,49 +164,41 @@ impl<T> ButtonManager<T> {
     }
 }
 
+struct ButtonRenderer<'r, R: 'r> {
+    renderer: &'r mut R,
+    selected: ButtonKind,
+}
+
+impl<'r, 't, R: Renderer<'t>> ButtonRenderer<'r, R> {
+    fn show(&mut self, button: &Button<R::Texture>) -> moho_errors::Result<()> {
+        let dims = glm::to_ivec2(button.inner.dims);
+        let dst = glm::ivec4(
+            button.center.x - dims.x / 2,
+            button.center.y - dims.y / 2,
+            dims.x,
+            dims.y,
+        );
+
+        let texture = if button.kind == self.selected {
+            &*button.inner.selected
+        } else {
+            &*button.inner.idle
+        };
+
+        self.renderer.copy(texture, options::at(&dst))
+    }
+}
+
 impl<'t, R: Renderer<'t>> Scene<R> for ButtonManager<R::Texture>
 where
     R::Texture: Texture,
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        {
-            let button = &self.new_game;
-
-            let dims = glm::to_ivec2(button.inner.dims);
-            let dst = glm::ivec4(
-                button.center.x - dims.x / 2,
-                button.center.y - dims.y / 2,
-                dims.x,
-                dims.y,
-            );
-
-            let texture = if button.kind == self.selected {
-                &*button.inner.selected
-            } else {
-                &*button.inner.idle
-            };
-
-            renderer.copy(texture, options::at(&dst))
-        }?;
-
-        {
-            let button = &self.high_score;
-
-            let dims = glm::to_ivec2(button.inner.dims);
-            let dst = glm::ivec4(
-                button.center.x - dims.x / 2,
-                button.center.y - dims.y / 2,
-                dims.x,
-                dims.y,
-            );
-
-            let texture = if button.kind == self.selected {
-                &*button.inner.selected
-            } else {
-                &*button.inner.idle
-            };
-
-            renderer.copy(texture, options::at(&dst))
-        }
+        let mut renderer = ButtonRenderer {
+            renderer,
+            selected: self.selected,
+        };
+        renderer.show(&self.new_game)?;
+        renderer.show(&self.high_score)
     }
 }
