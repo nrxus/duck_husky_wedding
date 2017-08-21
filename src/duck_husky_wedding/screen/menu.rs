@@ -133,7 +133,7 @@ impl<T> ButtonManager<T> {
 
         let high_score = {
             let center = glm::ivec2(640, 450);
-            let inner = button::Static::with_text("High Score", texturizer, font)?;
+            let inner = button::Static::with_text("High Scores", texturizer, font)?;
             Button {
                 center,
                 inner,

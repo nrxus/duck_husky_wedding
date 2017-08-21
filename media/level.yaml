@@ -40,7 +40,7 @@ cats:
     bottom_left:
       x: 25
       y: 1
-  - kind: {Moving:3}
+  - kind: {Moving:6}
     bottom_left:
       x: 11
       y: 5

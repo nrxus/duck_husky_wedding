@@ -16,6 +16,12 @@ duck:
         - x: 75
           y: 20
         - 19
+    #Beak
+    - Rectangle:
+        - x: 80
+          y: 15
+        - x: 20
+          y: 10
     #Front Body
     - Circle:
         - x: 69
