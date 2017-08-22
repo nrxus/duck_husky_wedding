@@ -37,8 +37,7 @@ pub struct PlayerSelect<T> {
     avoid_text: Rc<T>,
     gem: Collectable<T>,
     coin: Collectable<T>,
-    husky: button::Animated<T>,
-    duck: button::Animated<T>,
+    button_manager: ButtonManager<T>,
     cat: Cat<T>,
 }
 
@@ -48,8 +47,7 @@ pub struct Data<T> {
     avoid_text: Rc<T>,
     gem: collectable::Data<T>,
     coin: collectable::Data<T>,
-    husky: button::Animated<T>,
-    duck: button::Animated<T>,
+    button_manager: ButtonManager<T>,
     cat: CatData<T>,
 }
 
@@ -73,28 +71,7 @@ impl<T> Data<T> {
         let font = font_manager.load(&font_details)?;
         let title_color = ColorRGBA(255, 255, 0, 255);
         let title = Rc::new(texturizer.texturize(&*font, "Select Player", &title_color)?);
-        let button_distance = 50.;
-
-        let husky = {
-            let data = &data.husky;
-            let idle = data.idle_texture.load(texture_manager)?;
-            let animation = data.animation.load(texture_manager)?;
-            let dims: glm::DVec2 = data.out_size.into();
-            let dims = dims * 1.5;
-            let top_left = glm::dvec2(640. - dims.x - button_distance / 2., 300. - dims.y);
-            let body = Rectangle { top_left, dims };
-            button::Animated::new(idle, animation, body)
-        };
-        let duck = {
-            let data = &data.duck;
-            let idle = data.idle_texture.load(texture_manager)?;
-            let animation = data.animation.load(texture_manager)?;
-            let dims: glm::DVec2 = data.out_size.into();
-            let dims = dims * 1.5;
-            let top_left = glm::dvec2(640. + button_distance / 2., 300. - dims.y);
-            let body = Rectangle { top_left, dims };
-            button::Animated::new(idle, animation, body)
-        };
+        let button_manager = ButtonManager::load(data, texture_manager)?;
         let collect_text = Rc::new(texturizer.texturize(&*font, "Collect", &title_color)?);
         let avoid_text = Rc::new(texturizer.texturize(&*font, "Avoid", &title_color)?);
         let collect_distance = 50;
@@ -122,8 +99,7 @@ impl<T> Data<T> {
 
         Ok(Data {
             title,
-            husky,
-            duck,
+            button_manager,
             collect_text,
             avoid_text,
             coin,
@@ -135,8 +111,7 @@ impl<T> Data<T> {
     pub fn activate(&self) -> PlayerSelect<T> {
         PlayerSelect {
             title: self.title.clone(),
-            duck: self.duck.clone(),
-            husky: self.husky.clone(),
+            button_manager: self.button_manager.clone(),
             collect_text: self.collect_text.clone(),
             avoid_text: self.avoid_text.clone(),
             gem: Collectable::new(&self.gem),
@@ -151,18 +126,13 @@ impl<T> Data<T> {
 
 impl<T> PlayerSelect<T> {
     pub fn update(&mut self, delta: Duration, input: &input::State) -> Option<super::Kind> {
-        if self.husky.update(input) {
-            Some(super::Kind::GamePlay(super::PlayerKind::Husky))
-        } else if self.duck.update(input) {
-            Some(super::Kind::GamePlay(super::PlayerKind::Duck))
-        } else {
+        let next = self.button_manager.update(delta, input);
+        if let None = next {
             self.gem.animate(delta);
             self.coin.animate(delta);
-            self.husky.animate(delta);
-            self.duck.animate(delta);
             self.cat.animation.animate(delta);
-            None
         }
+        next.map(|k| super::Kind::GamePlay(k))
     }
 }
 
@@ -178,8 +148,7 @@ where
             let dst = glm::ivec4(640 - dims.x / 2, 50, dims.x, dims.y);
             renderer.copy(&self.title, options::at(&dst))
         }?;
-        renderer.show(&self.husky)?;
-        renderer.show(&self.duck)?;
+        renderer.show(&self.button_manager)?;
 
         //avoid
         {
@@ -197,5 +166,98 @@ where
         }?;
         renderer.show(&self.coin)?;
         renderer.show(&self.gem)
+    }
+}
+
+enum Alignment {
+    Left,
+    Right,
+}
+
+trait ButtonLoader<T> {
+    fn load(
+        &mut self,
+        player: &data::Player,
+        offset: (f64, Alignment),
+    ) -> Result<button::Animated<T>>;
+}
+
+impl<'t, TL> ButtonLoader<TL::Texture> for TextureManager<'t, TL>
+where
+    TL: TextureLoader<'t>,
+    TL::Texture: Texture,
+{
+    fn load(
+        &mut self,
+        player: &data::Player,
+        (offset, alignment): (f64, Alignment),
+    ) -> Result<button::Animated<TL::Texture>> {
+        let idle = player.idle_texture.load(self)?;
+        let animation = player.animation.load(self)?;
+        let dims: glm::DVec2 = player.out_size.into();
+        let dims = dims * 1.5;
+        let offset = match alignment {
+            Alignment::Left => offset,
+            Alignment::Right => offset - dims.x,
+        };
+        let top_left = glm::dvec2(640. + offset, 300. - dims.y);
+        let body = Rectangle { top_left, dims };
+        Ok(button::Animated::new(idle, animation, body))
+    }
+}
+
+struct ButtonManager<T> {
+    selected: Option<super::PlayerKind>,
+    duck: button::Animated<T>,
+    husky: button::Animated<T>,
+}
+
+impl<T> Clone for ButtonManager<T> {
+    fn clone(&self) -> Self {
+        ButtonManager {
+            duck: self.duck.clone(),
+            husky: self.husky.clone(),
+            selected: self.selected,
+        }
+    }
+}
+
+impl<T> ButtonManager<T> {
+    fn load<'t, L>(data: &data::Game, loader: &mut L) -> Result<Self>
+    where
+        L: ButtonLoader<T>,
+    {
+        let distance = 50.;
+        let husky = loader
+            .load(&data.husky, (-distance / 2., Alignment::Right))?;
+        let duck = loader.load(&data.duck, (distance / 2., Alignment::Left))?;
+        Ok(ButtonManager {
+            husky,
+            duck,
+            selected: None,
+        })
+    }
+
+    fn update(&mut self, elapsed: Duration, input: &input::State) -> Option<super::PlayerKind> {
+        self.husky.animate(elapsed);
+        self.duck.animate(elapsed);
+
+        if self.husky.update(input) {
+            Some(super::PlayerKind::Husky)
+        } else if self.duck.update(input) {
+            Some(super::PlayerKind::Duck)
+        } else {
+            None
+        }
+    }
+}
+
+impl<'t, R: Renderer<'t>> Scene<R> for ButtonManager<R::Texture>
+where
+    R::Texture: Texture,
+{
+    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+        renderer.show(&self.husky)?;
+        renderer.show(&self.duck)
     }
 }
