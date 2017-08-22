@@ -9,7 +9,6 @@ use moho::errors as moho_errors;
 use moho::input;
 use moho::renderer::{options, ColorRGBA, FontDetails, FontLoader, FontManager, FontTexturizer,
                      Renderer, Scene, Texture, TextureLoader, TextureManager};
-use moho::shape::Rectangle;
 use sdl2::keyboard::Keycode;
 
 use std::rc::Rc;
@@ -179,7 +178,7 @@ trait ButtonLoader<T> {
     fn load(
         &mut self,
         player: &data::Player,
-        offset: (f64, Alignment),
+        offset: (i32, Alignment),
     ) -> Result<button::Animated<T>>;
 }
 
@@ -191,19 +190,22 @@ where
     fn load(
         &mut self,
         player: &data::Player,
-        (offset, alignment): (f64, Alignment),
+        (offset, alignment): (i32, Alignment),
     ) -> Result<button::Animated<TL::Texture>> {
         let idle = player.idle_texture.load(self)?;
         let animation = player.animation.load(self)?;
-        let dims: glm::DVec2 = player.out_size.into();
-        let dims = dims * 1.5;
+        let dims: glm::IVec2 = player.out_size.into();
+        let dims = glm::to_ivec2(glm::to_dvec2(dims) * 1.5);
         let offset = match alignment {
             Alignment::Left => offset,
             Alignment::Right => offset - dims.x,
         };
-        let top_left = glm::dvec2(640. + offset, 300. - dims.y);
-        let body = Rectangle { top_left, dims };
-        Ok(button::Animated::new(idle, animation, body))
+        let dst = glm::ivec4(640 + offset, 300 - dims.y, dims.x, dims.y);
+        Ok(button::Animated {
+            idle,
+            animation,
+            dst,
+        })
     }
 }
 
@@ -233,17 +235,16 @@ impl<T> ButtonManager<T> {
     where
         L: ButtonLoader<T>,
     {
-        let distance = 50.;
+        let distance = 50;
         let husky = {
             Button {
-                inner: loader
-                    .load(&data.husky, (-distance / 2., Alignment::Right))?,
+                inner: loader.load(&data.husky, (-distance / 2, Alignment::Right))?,
                 kind: super::PlayerKind::Husky,
             }
         };
         let duck = {
             Button {
-                inner: loader.load(&data.duck, (distance / 2., Alignment::Left))?,
+                inner: loader.load(&data.duck, (distance / 2, Alignment::Left))?,
                 kind: super::PlayerKind::Duck,
             }
         };
@@ -271,7 +272,7 @@ impl<T> ButtonManager<T> {
                 }) => {
                     self.selected = Some(SelectedButton {
                         kind: super::PlayerKind::Husky,
-                        animation: self.husky.inner.animation.clone().start(),
+                        animation: self.husky.animation(),
                     })
                 }
                 _ => {}
@@ -285,7 +286,7 @@ impl<T> ButtonManager<T> {
                 }) => {
                     self.selected = Some(SelectedButton {
                         kind: super::PlayerKind::Duck,
-                        animation: self.duck.inner.animation.clone().start(),
+                        animation: self.duck.animation(),
                     })
                 }
                 _ => {}
@@ -314,6 +315,12 @@ impl<T> Clone for Button<T> {
     }
 }
 
+impl<T> Button<T> {
+    fn animation(&self) -> Animation<T> {
+        self.inner.animation.clone().start()
+    }
+}
+
 struct ButtonRenderer<'b, 't, R: 'b + Renderer<'t>>
 where
     R::Texture: 'b,
@@ -324,17 +331,11 @@ where
 
 impl<'b, 't, R: Renderer<'t>> ButtonRenderer<'b, 't, R> {
     fn show(&mut self, button: &Button<R::Texture>) -> moho_errors::Result<()> {
-        let dst = glm::ivec4(
-            button.inner.body.top_left.x as i32,
-            button.inner.body.top_left.y as i32,
-            button.inner.body.dims.x as i32,
-            button.inner.body.dims.y as i32,
-        );
-
         match *self.selected {
             Some(ref b) if b.kind == button.kind => self.renderer
-                .copy_asset(&b.animation.tile(), options::at(&dst)),
-            _ => self.renderer.copy(&*button.inner.idle, options::at(&dst)),
+                .copy_asset(&b.animation.tile(), options::at(&button.inner.dst)),
+            _ => self.renderer
+                .copy(&*button.inner.idle, options::at(&button.inner.dst)),
         }
     }
 }
