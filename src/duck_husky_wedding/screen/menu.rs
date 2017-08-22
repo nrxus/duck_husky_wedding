@@ -103,6 +103,7 @@ struct ButtonManager<T> {
     selected: ButtonKind,
     new_game: Button<T>,
     high_score: Button<T>,
+    picker: Rc<T>,
 }
 
 impl<T> Clone for ButtonManager<T> {
@@ -111,6 +112,7 @@ impl<T> Clone for ButtonManager<T> {
             selected: self.selected,
             new_game: self.new_game.clone(),
             high_score: self.high_score.clone(),
+            picker: self.picker.clone(),
         }
     }
 }
@@ -141,9 +143,14 @@ impl<T> ButtonManager<T> {
             }
         };
 
+        let picker = texturizer
+            .texturize(font, "->", &ColorRGBA(255, 255, 0, 255))
+            .map(Rc::new)?;
+
         Ok(ButtonManager {
             new_game,
             high_score,
+            picker,
             selected: ButtonKind::NewGame,
         })
     }
@@ -164,13 +171,20 @@ impl<T> ButtonManager<T> {
     }
 }
 
-struct ButtonRenderer<'r, R: 'r> {
+struct ButtonRenderer<'r, 't, R: 'r + Renderer<'t>>
+where
+    R::Texture: 'r,
+{
     renderer: &'r mut R,
     selected: ButtonKind,
+    picker: &'r R::Texture,
 }
 
-impl<'r, 't, R: Renderer<'t>> ButtonRenderer<'r, R> {
-    fn show(&mut self, button: &Button<R::Texture>) -> moho_errors::Result<()> {
+impl<'r, 't, R: Renderer<'t>> ButtonRenderer<'r, 't, R> {
+    fn show(&mut self, button: &Button<R::Texture>) -> moho_errors::Result<()>
+    where
+        R::Texture: Texture,
+    {
         let dims = glm::to_ivec2(button.inner.dims);
         let dst = glm::ivec4(
             button.center.x - dims.x / 2,
@@ -180,6 +194,9 @@ impl<'r, 't, R: Renderer<'t>> ButtonRenderer<'r, R> {
         );
 
         let texture = if button.kind == self.selected {
+            let dims = glm::to_ivec2(self.picker.dims());
+            let dst = glm::ivec4(dst.x - dims.x - 5, dst.y, dims.x, dims.y);
+            self.renderer.copy(self.picker, options::at(&dst))?;
             &*button.inner.selected
         } else {
             &*button.inner.idle
@@ -197,6 +214,7 @@ where
         let mut renderer = ButtonRenderer {
             renderer,
             selected: self.selected,
+            picker: &*self.picker,
         };
         renderer.show(&self.new_game)?;
         renderer.show(&self.high_score)
