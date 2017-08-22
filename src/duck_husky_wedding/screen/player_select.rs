@@ -1,5 +1,5 @@
 use data;
-use duck_husky_wedding::button::{self, Button};
+use duck_husky_wedding::button;
 use duck_husky_wedding::collectable::{self, Collectable};
 use errors::*;
 
@@ -10,6 +10,7 @@ use moho::input;
 use moho::renderer::{options, ColorRGBA, FontDetails, FontLoader, FontManager, FontTexturizer,
                      Renderer, Scene, Texture, TextureLoader, TextureManager};
 use moho::shape::Rectangle;
+use sdl2::keyboard::Keycode;
 
 use std::rc::Rc;
 use std::time::Duration;
@@ -206,10 +207,15 @@ where
     }
 }
 
+struct SelectedButton<T> {
+    kind: super::PlayerKind,
+    animation: Animation<T>,
+}
+
 struct ButtonManager<T> {
-    selected: Option<super::PlayerKind>,
-    duck: button::Animated<T>,
-    husky: button::Animated<T>,
+    selected: Option<SelectedButton<T>>,
+    duck: Button<T>,
+    husky: Button<T>,
 }
 
 impl<T> Clone for ButtonManager<T> {
@@ -217,7 +223,7 @@ impl<T> Clone for ButtonManager<T> {
         ButtonManager {
             duck: self.duck.clone(),
             husky: self.husky.clone(),
-            selected: self.selected,
+            selected: None,
         }
     }
 }
@@ -228,9 +234,19 @@ impl<T> ButtonManager<T> {
         L: ButtonLoader<T>,
     {
         let distance = 50.;
-        let husky = loader
-            .load(&data.husky, (-distance / 2., Alignment::Right))?;
-        let duck = loader.load(&data.duck, (distance / 2., Alignment::Left))?;
+        let husky = {
+            Button {
+                inner: loader
+                    .load(&data.husky, (-distance / 2., Alignment::Right))?,
+                kind: super::PlayerKind::Husky,
+            }
+        };
+        let duck = {
+            Button {
+                inner: loader.load(&data.duck, (distance / 2., Alignment::Left))?,
+                kind: super::PlayerKind::Duck,
+            }
+        };
         Ok(ButtonManager {
             husky,
             duck,
@@ -239,15 +255,86 @@ impl<T> ButtonManager<T> {
     }
 
     fn update(&mut self, elapsed: Duration, input: &input::State) -> Option<super::PlayerKind> {
-        self.husky.animate(elapsed);
-        self.duck.animate(elapsed);
+        if let Some(ref mut s) = self.selected {
+            s.animation.animate(elapsed);
+        }
 
-        if self.husky.update(input) {
-            Some(super::PlayerKind::Husky)
-        } else if self.duck.update(input) {
-            Some(super::PlayerKind::Duck)
+        let left = input.did_press_key(Keycode::Left);
+        let right = input.did_press_key(Keycode::Right);
+
+        if left && !right {
+            match self.selected {
+                None |
+                Some(SelectedButton {
+                    kind: super::PlayerKind::Duck,
+                    ..
+                }) => {
+                    self.selected = Some(SelectedButton {
+                        kind: super::PlayerKind::Husky,
+                        animation: self.husky.inner.animation.clone().start(),
+                    })
+                }
+                _ => {}
+            }
+        } else if right && !left {
+            match self.selected {
+                None |
+                Some(SelectedButton {
+                    kind: super::PlayerKind::Husky,
+                    ..
+                }) => {
+                    self.selected = Some(SelectedButton {
+                        kind: super::PlayerKind::Duck,
+                        animation: self.duck.inner.animation.clone().start(),
+                    })
+                }
+                _ => {}
+            }
+        }
+
+        if input.did_press_key(Keycode::Return) {
+            self.selected.as_ref().map(|s| s.kind)
         } else {
             None
+        }
+    }
+}
+
+struct Button<T> {
+    inner: button::Animated<T>,
+    kind: super::PlayerKind,
+}
+
+impl<T> Clone for Button<T> {
+    fn clone(&self) -> Self {
+        Button {
+            inner: self.inner.clone(),
+            kind: self.kind,
+        }
+    }
+}
+
+struct ButtonRenderer<'b, 't, R: 'b + Renderer<'t>>
+where
+    R::Texture: 'b,
+{
+    renderer: &'b mut R,
+    selected: &'b Option<SelectedButton<R::Texture>>,
+}
+
+impl<'b, 't, R: Renderer<'t>> ButtonRenderer<'b, 't, R> {
+    fn show(&mut self, button: &Button<R::Texture>) -> moho_errors::Result<()> {
+        let dst = glm::ivec4(
+            button.inner.body.top_left.x as i32,
+            button.inner.body.top_left.y as i32,
+            button.inner.body.dims.x as i32,
+            button.inner.body.dims.y as i32,
+        );
+
+        match *self.selected {
+            Some(ref b) if b.kind == button.kind => self.renderer
+                .copy_asset(&b.animation.tile(), options::at(&dst)),
+            _ => self.renderer.copy(&*button.inner.idle, options::at(&dst)),
         }
     }
 }
@@ -257,6 +344,10 @@ where
     R::Texture: Texture,
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+        let mut renderer = ButtonRenderer {
+            renderer: renderer,
+            selected: &self.selected,
+        };
         renderer.show(&self.husky)?;
         renderer.show(&self.duck)
     }

@@ -57,7 +57,7 @@ pub struct Heart<T> {
     texture: Rc<T>,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum PlayerKind {
     Duck,
     Husky,
