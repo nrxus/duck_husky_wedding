@@ -36,8 +36,9 @@ impl<T> Data<T> {
         };
         let font = font_manager.load(&font_details)?;
         let title_color = ColorRGBA(255, 255, 0, 255);
-        let title = Rc::new(texturizer
-            .texturize(&*font, "Husky Loves Ducky", &title_color)?);
+        let title = texturizer
+            .texturize(&*font, "Husky Loves Ducky", &title_color)
+            .map(Rc::new)?;
         let button_manager = ButtonManager::load(texturizer, &*font)?;
         Ok(Data {
             title,

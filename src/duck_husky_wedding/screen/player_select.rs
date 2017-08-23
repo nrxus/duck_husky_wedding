@@ -70,10 +70,16 @@ impl<T> Data<T> {
         };
         let font = font_manager.load(&font_details)?;
         let title_color = ColorRGBA(255, 255, 0, 255);
-        let title = Rc::new(texturizer.texturize(&*font, "Select Player", &title_color)?);
+        let title = texturizer
+            .texturize(&*font, "Select Player", &title_color)
+            .map(Rc::new)?;
         let button_manager = ButtonManager::load(data, texture_manager)?;
-        let collect_text = Rc::new(texturizer.texturize(&*font, "Collect", &title_color)?);
-        let avoid_text = Rc::new(texturizer.texturize(&*font, "Avoid", &title_color)?);
+        let collect_text = texturizer
+            .texturize(&*font, "Collect", &title_color)
+            .map(Rc::new)?;
+        let avoid_text = texturizer
+            .texturize(&*font, "Avoid", &title_color)
+            .map(Rc::new)?;
         let collect_distance = 50;
         let coin = collectable::Data::load(
             glm::ivec2(

@@ -1,11 +1,11 @@
-extern crate glm;
-extern crate moho;
 #[macro_use]
 extern crate error_chain;
+extern crate glm;
+extern crate moho;
+extern crate sdl2;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_yaml;
-extern crate sdl2;
 
 mod duck_husky_wedding;
 mod level_viewer;

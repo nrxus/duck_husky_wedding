@@ -95,8 +95,7 @@ impl<T, F> EditText<T, F> {
             ]
         };
         let values = [None; 6];
-        let label = texturizer
-            .texturize(&*font, label, &ColorRGBA(255, 255, 255, 255))?;
+        let label = texturizer.texturize(&*font, label, &ColorRGBA(255, 255, 255, 255))?;
         Ok(EditText {
             label,
             tl,

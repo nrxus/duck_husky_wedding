@@ -29,10 +29,12 @@ impl<T> Static<T> {
     {
         let dims = glm::to_uvec2(font.measure(text)?);
 
-        let idle = Rc::new(texturizer
-            .texturize(font, text, &ColorRGBA(255, 255, 255, 255))?);
-        let selected = Rc::new(texturizer
-            .texturize(font, text, &ColorRGBA(255, 255, 0, 255))?);
+        let idle = texturizer
+            .texturize(font, text, &ColorRGBA(255, 255, 255, 255))
+            .map(Rc::new)?;
+        let selected = texturizer
+            .texturize(font, text, &ColorRGBA(255, 255, 0, 255))
+            .map(Rc::new)?;
 
         Ok(Static {
             idle,

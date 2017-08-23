@@ -400,8 +400,7 @@ where
             } => {
                 //border
                 renderer.set_draw_color(ColorRGBA(0, 0, 0, 255));
-                renderer
-                    .fill_rects(&[Rect::new(view.x, view.y, view.z as u32, view.w as u32)])?;
+                renderer.fill_rects(&[Rect::new(view.x, view.y, view.z as u32, view.w as u32)])?;
                 //background
                 renderer.set_draw_color(ColorRGBA(60, 0, 70, 255));
                 renderer.fill_rects(&[

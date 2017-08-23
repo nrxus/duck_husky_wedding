@@ -91,9 +91,10 @@ where
                     break 'game_loop;
                 }
 
-                let next_screen = screen_manager
-                    .mut_screen()
-                    .update(update_duration, state, self.texture_loader);
+                let next_screen =
+                    screen_manager
+                        .mut_screen()
+                        .update(update_duration, state, self.texture_loader);
                 if let Some(s) = next_screen {
                     screen_manager.select_screen(
                         s,
@@ -111,9 +112,7 @@ where
             // / update_duration.subsec_nanos() as f64;
             self.renderer.set_draw_color(color);
             self.renderer.clear();
-            screen_manager
-                .mut_screen()
-                .before_draw(self.texture_loader)?;
+            screen_manager.mut_screen().before_draw(self.texture_loader)?;
             self.renderer.show(screen_manager.screen())?;
             self.renderer.present();
         }

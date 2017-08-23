@@ -47,16 +47,16 @@ impl<T> Data<T> {
                 path: "media/fonts/kenpixel_mini.ttf",
                 size: 64,
             })?;
-            Rc::new(texturizer.texturize(&*font, text, &color)?)
-        };
+            texturizer.texturize(&*font, text, &color).map(Rc::new)
+        }?;
         let instructions = {
             let text = "<PRESS ENTER TO GO TO MAIN MENU>";
             let font = font_manager.load(&FontDetails {
                 path: "media/fonts/kenpixel_mini.ttf",
                 size: 32,
             })?;
-            Rc::new(texturizer.texturize(&*font, text, &color)?)
-        };
+            texturizer.texturize(&*font, text, &color).map(Rc::new)
+        }?;
 
         Ok(Data {
             title,
