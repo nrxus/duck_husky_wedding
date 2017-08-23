@@ -27,7 +27,7 @@ impl<T> Static<T> {
         F: Font,
         FT: FontTexturizer<'t, F, Texture = T>,
     {
-        let dims = glm::to_uvec2(font.measure(text)?);
+        let dims = font.measure(text)?;
 
         let idle = texturizer
             .texturize(font, text, &ColorRGBA(255, 255, 255, 255))
