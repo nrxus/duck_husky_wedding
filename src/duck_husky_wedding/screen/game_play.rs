@@ -2,6 +2,7 @@ use duck_husky_wedding::player::Player;
 use duck_husky_wedding::world::{self, World};
 use duck_husky_wedding::camera::ViewPort;
 use duck_husky_wedding::hud::TextBox;
+use duck_husky_wedding::font;
 use utils::{Center, Try};
 use data;
 use errors::*;
@@ -11,8 +12,8 @@ use utils::VecUtils;
 use glm;
 use moho::input;
 use moho::errors as moho_errors;
-use moho::renderer::{options, Canvas, ColorRGBA, Font, FontDetails, FontLoader, FontManager,
-                     FontTexturizer, Renderer, Scene, Texture, TextureLoader, TextureManager};
+use moho::renderer::{options, Canvas, ColorRGBA, Font, FontTexturizer, Renderer, Scene, Texture,
+                     TextureLoader, TextureManager};
 use sdl2::rect::Rect;
 use sdl2::keyboard::Keycode;
 
@@ -109,18 +110,18 @@ impl<T> Data<T> {
         Ok(Data { game, world, heart })
     }
 
-    pub fn activate<'t, 'f, TL, FL, FT>(
+    pub fn activate<'t, 'f, TL, FM, FT>(
         &self,
         texture_manager: &mut TextureManager<'t, TL>,
-        font_manager: &mut FontManager<'f, FL>,
+        font_manager: &mut FM,
         texturizer: &'t FT,
         kind: PlayerKind,
-    ) -> Result<GamePlay<T, FL::Font>>
+    ) -> Result<GamePlay<T, FM::Font>>
     where
         TL: TextureLoader<'t, Texture = T>,
         TL::Texture: Texture,
-        FL: FontLoader<'f>,
-        FT: FontTexturizer<'t, FL::Font, Texture = T>,
+        FM: font::Manager,
+        FT: FontTexturizer<'t, FM::Font, Texture = T>,
     {
         let (player, npc) = match kind {
             PlayerKind::Duck => (&self.game.duck, &self.game.husky),
@@ -129,10 +130,7 @@ impl<T> Data<T> {
         let player = Player::load(player, glm::uvec2(100, 300), texture_manager)?;
         let world = self.world.activate(npc, texture_manager)?;
         let viewport = ViewPort::new(glm::ivec2(1280, 720));
-        let font = font_manager.load(&FontDetails {
-            path: "media/fonts/kenpixel_mini.ttf",
-            size: 32,
-        })?;
+        let font = font_manager.load(font::Kind::KenPixel, 32)?;
         let timer = TextBox::load(
             Duration::from_secs(100),
             font.clone(),
@@ -146,32 +144,14 @@ impl<T> Data<T> {
             Box::new(|s| format!("Score: {:03}", s)),
         )?;
         let splashes = vec![];
-        let splash_font = {
-            let details = FontDetails {
-                path: "media/fonts/kenpixel_mini.ttf",
-                size: 24,
-            };
-            font_manager.load(&details)
-        }?;
-        let time_up_font = {
-            let details = FontDetails {
-                path: "media/fonts/kenpixel_mini.ttf",
-                size: 64,
-            };
-            font_manager.load(&details)
-        }?;
+        let splash_font = font_manager.load(font::Kind::KenPixel, 24)?;
+        let time_up_font = font_manager.load(font::Kind::KenPixel, 64)?;
         let finish = {
             let x_size = 1080;
             let y_size = 360;
             super::finish::Data {
-                title_font: font_manager.load(&FontDetails {
-                    path: "media/fonts/kenpixel_mini.ttf",
-                    size: 48,
-                })?,
-                detail_font: font_manager.load(&FontDetails {
-                    path: "media/fonts/joystix.monospace.ttf",
-                    size: 36,
-                })?,
+                title_font: font_manager.load(font::Kind::KenPixel, 48)?,
+                detail_font: font_manager.load(font::Kind::Joystix, 36)?,
                 view: glm::ivec4(640 - x_size / 2, 360 - y_size / 2, x_size, y_size),
             }
         };

@@ -1,17 +1,18 @@
-mod background;
 pub mod camera;
-mod player;
-mod button;
-mod screen;
-mod npc;
 pub mod world;
-mod obstacle;
-mod hud;
-mod goal;
-mod collectable;
-mod cat;
+mod background;
 mod body;
+mod button;
+mod cat;
+mod collectable;
 mod edit_text;
+mod font;
+mod goal;
+mod hud;
+mod npc;
+mod obstacle;
+mod player;
+mod screen;
 
 use errors::*;
 use data;
