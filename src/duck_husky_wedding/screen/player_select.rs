@@ -127,12 +127,12 @@ impl<T> Data<T> {
 impl<T> PlayerSelect<T> {
     pub fn update(&mut self, delta: Duration, input: &input::State) -> Option<super::Kind> {
         let next = self.button_manager.update(delta, input);
-        if let None = next {
+        if next.is_none() {
             self.gem.animate(delta);
             self.coin.animate(delta);
             self.cat.animation.animate(delta);
         }
-        next.map(|k| super::Kind::GamePlay(k))
+        next.map(super::Kind::GamePlay)
     }
 }
 
@@ -141,7 +141,6 @@ where
     R::Texture: Texture,
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-
         //title+buttons
         {
             let dims = glm::to_ivec2(self.title.dims());
@@ -231,7 +230,7 @@ impl<T> Clone for ButtonManager<T> {
 }
 
 impl<T> ButtonManager<T> {
-    fn load<'t, L>(data: &data::Game, loader: &mut L) -> Result<Self>
+    fn load<L>(data: &data::Game, loader: &mut L) -> Result<Self>
     where
         L: ButtonLoader<T>,
     {

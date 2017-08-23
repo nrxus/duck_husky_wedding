@@ -203,10 +203,10 @@ impl<T> Data<T> {
 
 impl<T> World<T> {
     pub fn update(&mut self, duration: Duration) {
-        for mut c in &mut self.collectables {
+        for c in &mut self.collectables {
             c.animate(duration);
         }
-        for mut e in &mut self.enemies {
+        for e in &mut self.enemies {
             e.update(duration);
         }
     }

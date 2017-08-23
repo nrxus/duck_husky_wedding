@@ -68,8 +68,8 @@ impl<T, F> Finish<T, F> {
         FT: FontTexturizer<'t, F, Texture = T>,
     {
         let view = data.view;
-        let title = texturizer
-            .texturize(&*data.title_font, "FINISHED!", &ColorRGBA(255, 255, 0, 255))?;
+        let title =
+            texturizer.texturize(&*data.title_font, "FINISHED!", &ColorRGBA(255, 255, 0, 255))?;
 
         let instructions = texturizer.texturize(
             &*data.title_font,
@@ -108,10 +108,12 @@ impl<T, F> Finish<T, F> {
             let path = "media/high_scores.yaml";
             let f = File::open(path)?;
             let previous: Vec<ScoreEntry> = serde_yaml::from_reader(&f).unwrap_or_default();
-            let mut min_score = previous.iter().map(|s| s.score).min();
-            if previous.len() < 10 {
-                min_score = None;
-            }
+            let min_score = if previous.len() < 10 {
+                None
+            } else {
+                previous.iter().map(|s| s.score).min()
+            };
+
             match min_score {
                 Some(min_score) if min_score > new_score => None,
                 _ => Some(ScoreData {
