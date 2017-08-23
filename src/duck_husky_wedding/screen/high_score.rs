@@ -1,3 +1,4 @@
+use duck_husky_wedding::font;
 use utils::Try;
 use errors::*;
 
@@ -5,8 +6,7 @@ use glm;
 use serde_yaml;
 use moho::input;
 use moho::errors as moho_errors;
-use moho::renderer::{options, ColorRGBA, Font, FontDetails, FontLoader, FontManager,
-                     FontTexturizer, Renderer, Scene, Texture};
+use moho::renderer::{options, ColorRGBA, FontTexturizer, Renderer, Scene, Texture};
 use sdl2::keyboard::Keycode;
 
 use std::fs::File;
@@ -30,31 +30,21 @@ pub struct Data<T> {
 }
 
 impl<T> Data<T> {
-    pub fn load<'f, 't, FT, FL>(
-        font_manager: &mut FontManager<'f, FL>,
-        texturizer: &'t FT,
-    ) -> Result<Self>
+    pub fn load<'f, 't, FT, FM>(font_manager: &mut FM, texturizer: &'t FT) -> Result<Self>
     where
-        FL: FontLoader<'f>,
-        FL::Font: Font,
-        FT: FontTexturizer<'t, FL::Font, Texture = T>,
+        FM: font::Manager,
+        FT: FontTexturizer<'t, FM::Font, Texture = T>,
     {
         let color = ColorRGBA(255, 255, 0, 255);
 
         let title = {
             let text = "High Scores";
-            let font = font_manager.load(&FontDetails {
-                path: "media/fonts/kenpixel_mini.ttf",
-                size: 64,
-            })?;
+            let font = font_manager.load(font::Kind::KenPixel, 64)?;
             texturizer.texturize(&*font, text, &color).map(Rc::new)
         }?;
         let instructions = {
             let text = "<PRESS ENTER TO GO TO MAIN MENU>";
-            let font = font_manager.load(&FontDetails {
-                path: "media/fonts/kenpixel_mini.ttf",
-                size: 32,
-            })?;
+            let font = font_manager.load(font::Kind::KenPixel, 32)?;
             texturizer.texturize(&*font, text, &color).map(Rc::new)
         }?;
 
@@ -64,20 +54,16 @@ impl<T> Data<T> {
         })
     }
 
-    pub fn activate<'f, 't, FT, FL>(
+    pub fn activate<'f, 't, FT, FM>(
         &mut self,
-        font_manager: &mut FontManager<'f, FL>,
+        font_manager: &mut FM,
         texturizer: &'t FT,
     ) -> Result<HighScore<T>>
     where
-        FL: FontLoader<'f>,
-        FT: FontTexturizer<'t, FL::Font, Texture = T>,
+        FM: font::Manager,
+        FT: FontTexturizer<'t, FM::Font, Texture = T>,
     {
-        let font_details = FontDetails {
-            path: "media/fonts/joystix.monospace.ttf",
-            size: 32,
-        };
-        let font = font_manager.load(&font_details)?;
+        let font = font_manager.load(font::Kind::Joystix, 32)?;
 
         let path = "media/high_scores.yaml";
         let f = File::open(path)?;

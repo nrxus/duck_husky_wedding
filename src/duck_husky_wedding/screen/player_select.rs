@@ -1,14 +1,15 @@
 use data;
 use duck_husky_wedding::button;
 use duck_husky_wedding::collectable::{self, Collectable};
+use duck_husky_wedding::font;
 use errors::*;
 
 use glm;
 use moho::animation::{self, Animation};
 use moho::errors as moho_errors;
 use moho::input;
-use moho::renderer::{options, ColorRGBA, FontDetails, FontLoader, FontManager, FontTexturizer,
-                     Renderer, Scene, Texture, TextureLoader, TextureManager};
+use moho::renderer::{options, ColorRGBA, FontTexturizer, Renderer, Scene, Texture, TextureLoader,
+                     TextureManager};
 use sdl2::keyboard::Keycode;
 
 use std::rc::Rc;
@@ -52,8 +53,8 @@ pub struct Data<T> {
 }
 
 impl<T> Data<T> {
-    pub fn load<'f, 't, FT, FL, TL>(
-        font_manager: &mut FontManager<'f, FL>,
+    pub fn load<'f, 't, FT, FM, TL>(
+        font_manager: &mut FM,
         texturizer: &'t FT,
         texture_manager: &mut TextureManager<'t, TL>,
         data: &data::Game,
@@ -61,14 +62,10 @@ impl<T> Data<T> {
     where
         T: Texture,
         TL: TextureLoader<'t, Texture = T>,
-        FL: FontLoader<'f>,
-        FT: FontTexturizer<'t, FL::Font, Texture = T>,
+        FM: font::Manager,
+        FT: FontTexturizer<'t, FM::Font, Texture = T>,
     {
-        let font_details = FontDetails {
-            path: "media/fonts/kenpixel_mini.ttf",
-            size: 64,
-        };
-        let font = font_manager.load(&font_details)?;
+        let font = font_manager.load(font::Kind::KenPixel, 64)?;
         let title_color = ColorRGBA(255, 255, 0, 255);
         let title = texturizer
             .texturize(&*font, "Select Player", &title_color)

@@ -1,11 +1,10 @@
 use errors::*;
-use duck_husky_wedding::button;
+use duck_husky_wedding::{button, font};
 
 use glm;
 use moho::errors as moho_errors;
 use moho::input;
-use moho::renderer::{options, ColorRGBA, Font, FontDetails, FontLoader, FontManager,
-                     FontTexturizer, Renderer, Scene, Texture};
+use moho::renderer::{options, ColorRGBA, Font, FontTexturizer, Renderer, Scene, Texture};
 
 use std::rc::Rc;
 use sdl2::keyboard::Keycode;
@@ -21,20 +20,13 @@ pub struct Data<T> {
 }
 
 impl<T> Data<T> {
-    pub fn load<'f, 't, FT, FL>(
-        font_manager: &mut FontManager<'f, FL>,
-        texturizer: &'t FT,
-    ) -> Result<Self>
+    pub fn load<'f, 't, FT, FM>(font_manager: &mut FM, texturizer: &'t FT) -> Result<Self>
     where
-        FL: FontLoader<'f>,
-        FL::Font: Font,
-        FT: FontTexturizer<'t, FL::Font, Texture = T>,
+        FM: font::Manager,
+        FM::Font: Font,
+        FT: FontTexturizer<'t, FM::Font, Texture = T>,
     {
-        let font_details = FontDetails {
-            path: "media/fonts/kenpixel_mini.ttf",
-            size: 64,
-        };
-        let font = font_manager.load(&font_details)?;
+        let font = font_manager.load(font::Kind::KenPixel, 64)?;
         let title_color = ColorRGBA(255, 255, 0, 255);
         let title = texturizer
             .texturize(&*font, "Husky Loves Ducky", &title_color)
