@@ -36,9 +36,10 @@ pub struct PlayerSelect<T> {
     title: Rc<T>,
     collect_text: Rc<T>,
     avoid_text: Rc<T>,
+    button_manager: ButtonManager<T>,
+    instructions: Rc<T>,
     gem: Collectable<T>,
     coin: Collectable<T>,
-    button_manager: ButtonManager<T>,
     cat: Cat<T>,
 }
 
@@ -46,9 +47,10 @@ pub struct Data<T> {
     title: Rc<T>,
     collect_text: Rc<T>,
     avoid_text: Rc<T>,
+    button_manager: ButtonManager<T>,
+    instructions: Rc<T>,
     gem: collectable::Data<T>,
     coin: collectable::Data<T>,
-    button_manager: ButtonManager<T>,
     cat: CatData<T>,
 }
 
@@ -99,6 +101,16 @@ impl<T> Data<T> {
             let dst = glm::ivec4(960 - dims.x / 2, 500, dims.x, dims.y);
             CatData { animation, dst }
         };
+        let instructions = {
+            let font = font_manager.load(font::Kind::KenPixel, 32)?;
+            texturizer
+                .texturize(
+                    &*font,
+                    "<Use Arrow Keys to choose player; then press Enter>",
+                    &title_color,
+                )
+                .map(Rc::new)
+        }?;
 
         Ok(Data {
             title,
@@ -108,6 +120,7 @@ impl<T> Data<T> {
             coin,
             gem,
             cat,
+            instructions,
         })
     }
 
@@ -123,6 +136,7 @@ impl<T> Data<T> {
                 dst: self.cat.dst,
                 animation: self.cat.animation.clone().start(),
             },
+            instructions: self.instructions.clone(),
         }
     }
 }
@@ -150,7 +164,11 @@ where
         renderer.show(&self.cat)?;
         renderer.copy(&self.collect_text, options::at(align::top(400).center(320)))?;
         renderer.show(&self.coin)?;
-        renderer.show(&self.gem)
+        renderer.show(&self.gem)?;
+        renderer.copy(
+            &self.instructions,
+            options::at(align::bottom(720).center(640)),
+        )
     }
 }
 
