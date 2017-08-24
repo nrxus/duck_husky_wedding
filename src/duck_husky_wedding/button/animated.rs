@@ -1,12 +1,12 @@
 use moho::animation;
-use glm;
+use moho::renderer::Destination;
 
 use std::rc::Rc;
 
 pub struct Animated<T> {
     pub idle: Rc<T>,
     pub animation: animation::Data<T>,
-    pub dst: glm::IVec4,
+    pub dst: Destination,
 }
 
 impl<T> Clone for Animated<T> {

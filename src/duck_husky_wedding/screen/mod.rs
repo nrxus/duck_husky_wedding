@@ -106,7 +106,7 @@ impl<T, F> Manager<T, F> {
     {
         let picker = game.heart.texture.load(texture_manager)?;
         let player_select =
-            player_select::Data::load(font_manager, texturizer, texture_manager, &game)?;
+            player_select::Data::load(font_manager, texturizer, texture_manager, &game, picker.clone())?;
         let menu = menu::Data::load(font_manager, texturizer, picker)?;
         let active = Screen::Menu(menu.activate());
         let game_play = game_play::Data::load(texture_manager, level, game)?;

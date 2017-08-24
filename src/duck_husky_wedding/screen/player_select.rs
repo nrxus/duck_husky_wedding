@@ -60,6 +60,7 @@ impl<T> Data<T> {
         texturizer: &'t FT,
         texture_manager: &mut TextureManager<'t, TL>,
         data: &data::Game,
+        picker: Rc<T>,
     ) -> Result<Self>
     where
         T: Texture,
@@ -72,7 +73,7 @@ impl<T> Data<T> {
         let title = texturizer
             .texturize(&*font, "Select Player", &title_color)
             .map(Rc::new)?;
-        let button_manager = ButtonManager::load(data, texture_manager)?;
+        let button_manager = ButtonManager::load(data, texture_manager, picker)?;
         let collect_text = texturizer
             .texturize(&*font, "Collect", &title_color)
             .map(Rc::new)?;
@@ -172,16 +173,11 @@ where
     }
 }
 
-enum Alignment {
-    Left,
-    Right,
-}
-
 trait ButtonLoader<T> {
     fn load(
         &mut self,
         player: &data::Player,
-        offset: (i32, Alignment),
+        alignment: align::Alignment<align::Horizontal>,
     ) -> Result<button::Animated<T>>;
 }
 
@@ -193,17 +189,13 @@ where
     fn load(
         &mut self,
         player: &data::Player,
-        (offset, alignment): (i32, Alignment),
+        alignment: align::Alignment<align::Horizontal>,
     ) -> Result<button::Animated<TL::Texture>> {
         let idle = player.idle_texture.load(self)?;
         let animation = player.animation.load(self)?;
         let dims: glm::IVec2 = player.out_size.into();
-        let dims = glm::to_ivec2(glm::to_dvec2(dims) * 1.5);
-        let offset = match alignment {
-            Alignment::Left => offset,
-            Alignment::Right => offset - dims.x,
-        };
-        let dst = glm::ivec4(640 + offset, 300 - dims.y, dims.x, dims.y);
+        let dims = glm::to_uvec2(glm::to_dvec2(dims) * 1.5);
+        let dst = alignment.bottom(300).dims(dims);
         Ok(button::Animated {
             idle,
             animation,
@@ -221,6 +213,7 @@ struct ButtonManager<T> {
     selected: Option<SelectedButton<T>>,
     duck: Button<T>,
     husky: Button<T>,
+    picker: Rc<T>,
 }
 
 impl<T> Clone for ButtonManager<T> {
@@ -228,32 +221,42 @@ impl<T> Clone for ButtonManager<T> {
         ButtonManager {
             duck: self.duck.clone(),
             husky: self.husky.clone(),
+            picker: self.picker.clone(),
             selected: None,
         }
     }
 }
 
 impl<T> ButtonManager<T> {
-    fn load<L>(data: &data::Game, loader: &mut L) -> Result<Self>
+    fn load<L>(data: &data::Game, loader: &mut L, picker: Rc<T>) -> Result<Self>
     where
         L: ButtonLoader<T>,
     {
         let distance = 50;
         let husky = {
+            let alignment = align::Alignment {
+                pos: 640 - distance / 2,
+                align: align::Horizontal::Right,
+            };
             Button {
-                inner: loader.load(&data.husky, (-distance / 2, Alignment::Right))?,
+                inner: loader.load(&data.husky, alignment)?,
                 kind: super::PlayerKind::Husky,
             }
         };
         let duck = {
+            let alignment = align::Alignment {
+                pos: 640 + distance / 2,
+                align: align::Horizontal::Left,
+            };
             Button {
-                inner: loader.load(&data.duck, (distance / 2, Alignment::Left))?,
+                inner: loader.load(&data.duck, alignment)?,
                 kind: super::PlayerKind::Duck,
             }
         };
         Ok(ButtonManager {
             husky,
             duck,
+            picker,
             selected: None,
         })
     }
@@ -330,6 +333,7 @@ where
 {
     renderer: &'b mut R,
     selected: &'b Option<SelectedButton<R::Texture>>,
+    picker: &'b R::Texture,
 }
 
 impl<'b, 't, R: Renderer<'t>> ButtonRenderer<'b, 't, R> {
@@ -337,7 +341,10 @@ impl<'b, 't, R: Renderer<'t>> ButtonRenderer<'b, 't, R> {
         let options = options::at(button.inner.dst);
         match *self.selected {
             Some(ref b) if b.kind == button.kind => {
-                self.renderer.copy_asset(&b.animation.tile(), options)
+                let rect = button.inner.dst.rect(|| unreachable!());
+                let dst = align::top(rect.y + rect.w + 10).center(rect.x + rect.z / 2);
+                self.renderer.copy_asset(&b.animation.tile(), options)?;
+                self.renderer.copy(self.picker, options::at(dst))
             }
             _ => self.renderer.copy(&*button.inner.idle, options),
         }
@@ -352,6 +359,7 @@ where
         let mut renderer = ButtonRenderer {
             renderer: renderer,
             selected: &self.selected,
+            picker: &*self.picker,
         };
         renderer.show(&self.husky)?;
         renderer.show(&self.duck)
