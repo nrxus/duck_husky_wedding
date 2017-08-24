@@ -209,7 +209,7 @@ impl<'t, R: Renderer<'t>> Scene<R> for Player<R::Texture> {
             Ok(())
         } else {
             let dst = glm::to_ivec4(self.dst_rect);
-            let mut options = options::at(&dst);
+            let mut options = options::at(dst);
             if self.backwards {
                 options = options.flip(TextureFlip::Horizontal);
             }

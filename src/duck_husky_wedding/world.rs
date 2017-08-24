@@ -36,7 +36,7 @@ impl<'t, R: Renderer<'t>> Scene<R> for Spike<R::Texture> {
                     self.dims.y as i32,
                 )
             })
-            .map(|d| renderer.copy(&*self.texture, options::at(&d)))
+            .map(|d| renderer.copy(&*self.texture, options::at(d)))
             .try()
     }
 }

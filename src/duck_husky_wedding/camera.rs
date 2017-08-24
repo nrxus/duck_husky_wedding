@@ -1,6 +1,6 @@
 use glm;
 use moho::errors as moho_errors;
-use moho::renderer::{Options, Renderer};
+use moho::renderer::{Options, Renderer, Texture};
 use sdl2::rect;
 
 use std::cmp;
@@ -44,7 +44,10 @@ impl ViewPort {
     }
 }
 
-impl<'c, 't, R: Renderer<'t>> Renderer<'t> for Camera<'c, R> {
+impl<'c, 't, R: Renderer<'t>> Renderer<'t> for Camera<'c, R>
+where
+    R::Texture: Texture,
+{
     type Texture = R::Texture;
 
     fn draw_rects(&mut self, rects: &[rect::Rect]) -> moho_errors::Result<()> {
@@ -79,15 +82,9 @@ impl<'c, 't, R: Renderer<'t>> Renderer<'t> for Camera<'c, R> {
 
     fn copy(&mut self, texture: &Self::Texture, options: Options) -> moho_errors::Result<()> {
         match options.dst {
-            Some(d) if self.viewport.contains(d) => {
-                let dst = glm::ivec4(
-                    d.x - self.viewport.translation.x,
-                    d.y - self.viewport.translation.y,
-                    d.z,
-                    d.w,
-                );
-                let options = options.at(&dst);
-                self.renderer.copy(texture, options)
+            Some(d) if self.viewport.contains(&d.rect(|| texture.dims())) => {
+                let dst = d.nudge(-self.viewport.translation);
+                self.renderer.copy(texture, options.at(dst))
             }
             Some(_) => Ok(()),
             None => self.renderer.copy(texture, options),

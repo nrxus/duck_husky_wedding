@@ -5,7 +5,7 @@ use utils::Try;
 use glm;
 use moho::errors as moho_errors;
 use moho::input;
-use moho::renderer::{options, ColorRGBA, FontTexturizer, Renderer, Scene, Texture};
+use moho::renderer::{options, ColorRGBA, Destination, FontTexturizer, Renderer, Scene, Texture};
 use sdl2::keyboard::Keycode;
 
 use std::cmp;
@@ -178,29 +178,29 @@ where
     R::Texture: Texture,
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        let mut tl = self.tl;
+        let mut dst: Destination = self.tl.into();
+
         {
             let texture = &self.label;
-            let dims = glm::to_ivec2(texture.dims());
-            let dst = glm::ivec4(tl.x, tl.y, dims.x, dims.y);
-            tl.x += dims.x;
-            renderer.copy(texture, options::at(&dst))
+            let options = options::at(dst);
+            dst = dst.nudge(glm::ivec2(texture.dims().x as i32, 0));
+            renderer.copy(texture, options)
         }?;
+
         self.textures
             .iter()
             .map(|t| &t.texture)
             .enumerate()
             .map(|(i, t)| {
-                let dims = glm::to_ivec2(t.dims());
-                let dst = glm::ivec4(tl.x, tl.y, dims.x, dims.y);
-                tl.x += dims.x;
+                let options = options::at(dst);
+                dst = dst.nudge(glm::ivec2(t.dims().x as i32, 0));
                 if i == self.active {
                     match self.flicker.state {
                         FlickerState::Hide => Ok(()),
-                        FlickerState::Show => renderer.copy(t, options::at(&dst)),
+                        FlickerState::Show => renderer.copy(t, options),
                     }
                 } else {
-                    renderer.copy(t, options::at(&dst))
+                    renderer.copy(t, options)
                 }
             })
             .try()

@@ -2,11 +2,10 @@ use duck_husky_wedding::font;
 use utils::Try;
 use errors::*;
 
-use glm;
 use serde_yaml;
 use moho::input;
 use moho::errors as moho_errors;
-use moho::renderer::{options, ColorRGBA, FontTexturizer, Renderer, Scene, Texture};
+use moho::renderer::{align, options, ColorRGBA, FontTexturizer, Renderer, Scene, Texture};
 use sdl2::keyboard::Keycode;
 
 use std::fs::File;
@@ -101,31 +100,21 @@ where
     R::Texture: Texture,
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        {
-            let texture = &*self.title;
-            let dims = glm::to_ivec2(texture.dims());
-            let rect = glm::ivec4(640 - dims.x / 2, 0, dims.x, dims.y);
-            renderer.copy(texture, options::at(&rect))
-        }?;
+        let center = align::center(640);
+
+        renderer.copy(&*self.title, options::at(center.top(0)))?;
 
         {
             let texture = &*self.instructions;
-            let dims = glm::to_ivec2(texture.dims());
-            let rect = glm::ivec4(640 - dims.x / 2, 720 - dims.y * 2, dims.x, dims.y);
-            renderer.copy(texture, options::at(&rect))
+            let dst = center.bottom(720 - texture.dims().y as i32);
+            renderer.copy(texture, options::at(dst))
         }?;
 
         self.scores
             .iter()
             .enumerate()
-            .map(|(i, s)| {
-                let dims = glm::to_ivec2(s.dims());
-                (
-                    s,
-                    glm::ivec4(640 - dims.x / 2, 150 + dims.y * i as i32, dims.x, dims.y),
-                )
-            })
-            .map(|(s, d)| renderer.copy(s, options::at(&d)))
+            .map(|(i, s)| ((s.dims().y * i as u32) as i32, s))
+            .map(|(d, s)| renderer.copy(s, options::at(center.top(150 + d))))
             .try()
     }
 }

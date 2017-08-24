@@ -5,7 +5,7 @@ use errors::*;
 
 use glm;
 use moho::errors as moho_errors;
-use moho::renderer::{options, Canvas, ColorRGBA, Font, FontTexturizer, Scene, Texture};
+use moho::renderer::{align, options, Canvas, ColorRGBA, Font, FontTexturizer, Scene, Texture};
 use moho::input;
 use sdl2::rect::Rect;
 use sdl2::keyboard::Keycode;
@@ -193,58 +193,44 @@ where
             ),
         ])?;
 
-        let mut top = self.view.y;
+        let mut top = align::top(self.view.y);
         //title
         {
             let texture = &self.title;
-            let dims = glm::to_ivec2(texture.dims());
-            let dst = glm::ivec4(640 - dims.x / 2, top, dims.x, dims.y);
-            top += 5 + dims.y;
-            renderer.copy(texture, options::at(&dst))
+            let options = options::at(top.center(640));
+            top = top.nudge(5 + texture.dims().y as i32);
+            renderer.copy(texture, options)
         }?;
 
         // score
         let left = 640 - self.score.dims().x as i32 / 2;
+        let mut dst = top.left(left);
         {
             let texture = &self.score;
-            let dims = glm::to_ivec2(texture.dims());
-            let dst = glm::ivec4(left, top, dims.x, dims.y);
-            top += 5 + dims.y;
-            renderer.copy(texture, options::at(&dst))
+            let options = options::at(dst);
+            dst = dst.nudge(glm::ivec2(0, 5 + texture.dims().y as i32));
+            renderer.copy(texture, options)
         }?;
 
         // time
         {
             let texture = &self.time;
-            let dims = glm::to_ivec2(texture.dims());
-            let dst = glm::ivec4(left, top, dims.x, dims.y);
-            top += 5 + dims.y;
-            renderer.copy(texture, options::at(&dst))
+            let options = options::at(dst);
+            dst = dst.nudge(glm::ivec2(0, 5 + texture.dims().y as i32));
+            renderer.copy(texture, options)
         }?;
 
         // total
-        {
-            let texture = &self.total;
-            let dims = glm::to_ivec2(texture.dims());
-            let dst = glm::ivec4(left, top, dims.x, dims.y);
-            renderer.copy(texture, options::at(&dst))
-        }?;
+        renderer.copy(&self.total, options::at(dst))?;
 
         if let Some(ref s) = self.score_entry {
             renderer.show(&s.name)?;
         }
 
         // instructions
-        {
-            let texture = &self.instructions;
-            let dims = glm::to_ivec2(texture.dims());
-            let dst = glm::ivec4(
-                640 - dims.x / 2,
-                self.view.y + self.view.w - dims.y - 5,
-                dims.x,
-                dims.y,
-            );
-            renderer.copy(texture, options::at(&dst))
-        }
+        renderer.copy(
+            &self.instructions,
+            options::at(align::bottom(self.view.y + self.view.w - 5).center(640)),
+        )
     }
 }

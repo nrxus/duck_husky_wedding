@@ -12,8 +12,9 @@ use utils::VecUtils;
 use glm;
 use moho::input;
 use moho::errors as moho_errors;
-use moho::renderer::{options, Canvas, ColorRGBA, Font, FontTexturizer, Renderer, Scene, Texture,
-                     TextureLoader, TextureManager};
+use moho::renderer::{align, options, Canvas, ColorRGBA, Destination, Font, FontTexturizer,
+                     Renderer, Scene, Texture, TextureLoader, TextureManager};
+use moho::shape::Shape;
 use sdl2::rect::Rect;
 use sdl2::keyboard::Keycode;
 
@@ -24,13 +25,13 @@ use std::time::Duration;
 struct Splash<T> {
     texture: T,
     duration: Duration,
-    dst: glm::IVec4,
+    dst: Destination,
 }
 
 impl<'t, R: Renderer<'t>> Scene<R> for Splash<R::Texture> {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         if self.is_active() {
-            renderer.copy(&self.texture, options::at(&self.dst))
+            renderer.copy(&self.texture, options::at(self.dst))
         } else {
             Ok(())
         }
@@ -43,7 +44,7 @@ impl<T> Splash<T> {
     }
 
     fn update(&mut self, delta: Duration) {
-        self.dst.y -= 2;
+        self.dst = self.dst.nudge(glm::ivec2(0, -2));
 
         self.duration = match self.duration.checked_sub(delta) {
             None => Duration::default(),
@@ -257,16 +258,10 @@ impl<T, F> GamePlay<T, F> {
                 let texture = texturizer
                     .texturize(self.splash_font.as_ref(), &format!("+{}", c.score), &color)
                     .unwrap();
-                let dims = texture.dims();
                 let splash = Splash {
                     texture,
                     duration: Duration::from_secs(1),
-                    dst: glm::ivec4(
-                        c.body.top_left.x as i32,
-                        c.body.top_left.y as i32,
-                        dims.x as i32,
-                        dims.y as i32,
-                    ),
+                    dst: glm::to_ivec2(c.body.center()).into(),
                 };
                 self.splashes.push(splash);
                 self.score.update(c.score as i32);
@@ -284,12 +279,10 @@ impl<T, F> GamePlay<T, F> {
                 let texture = texturizer
                     .texturize(self.splash_font.as_ref(), &format!("{}", dmg), &color)
                     .unwrap();
-                let dims = glm::to_ivec2(texture.dims());
-                let tl = glm::to_ivec2(self.player.dst_rect.center()) - dims / 2;
                 let splash = Splash {
                     texture,
                     duration: Duration::from_secs(1),
-                    dst: glm::ivec4(tl.x, tl.y, dims.x, dims.y),
+                    dst: glm::to_ivec2(self.player.dst_rect.center()).into(),
                 };
                 self.splashes.push(splash);
                 self.score.update(dmg);
@@ -347,29 +340,17 @@ where
             self.splashes.iter().map(|s| renderer.show(s)).try()?;
 
             if self.heart.zoom > 0. {
-                let dims = glm::to_dvec2(self.heart.size) * self.heart.zoom;
-                let y = cmp::min(self.world.npc.y(), self.player.dst_rect.y as i32);
-                let dst = glm::ivec4(
-                    self.world.npc.x() - (dims.x / 2.) as i32,
-                    y - (dims.y / 2.) as i32,
-                    dims.x as i32,
-                    dims.y as i32,
-                );
-                renderer.copy(&*self.heart.texture, options::at(&dst))?;
+                let dst = align::center(self.world.npc.x())
+                    .middle(cmp::min(self.world.npc.y(), self.player.dst_rect.y as i32))
+                    .dims(glm::to_uvec2(
+                        glm::to_dvec2(self.heart.size) * self.heart.zoom,
+                    ));
+                renderer.copy(&*self.heart.texture, options::at(dst))?;
             }
         }
 
-        let sc = glm::to_ivec2(self.score.dims());
-        renderer.copy_asset(
-            &self.score,
-            options::at(&glm::ivec4(320 - sc.x / 2, 0, sc.x, sc.y)),
-        )?;
-
-        let td = glm::to_ivec2(self.timer.dims());
-        renderer.copy_asset(
-            &self.timer,
-            options::at(&glm::ivec4(960 - td.x / 2, 0, td.x, td.y)),
-        )?;
+        renderer.copy_asset(&self.score, options::at(align::top(0).center(320)))?;
+        renderer.copy_asset(&self.timer, options::at(align::top(0).center(960)))?;
 
         match self.state {
             State::Finished(ref f) => renderer.show(f),
@@ -392,19 +373,8 @@ where
                     ),
                 ])?;
 
-                //title
-                let dims = glm::to_ivec2(title.dims());
-                renderer.copy(
-                    title,
-                    options::at(&glm::ivec4(640 - dims.x / 2, 360 - dims.y, dims.x, dims.y)),
-                )?;
-
-                //instructions
-                let dims = glm::to_ivec2(instructions.dims());
-                renderer.copy(
-                    instructions,
-                    options::at(&glm::ivec4(640 - dims.x / 2, 360, dims.x, dims.y)),
-                )
+                renderer.copy(title, options::at(align::bottom(360).center(640)))?;
+                renderer.copy(instructions, options::at(align::top(360).center(640)))
             }
             _ => Ok(()),
         }

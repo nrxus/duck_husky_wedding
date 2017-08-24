@@ -53,7 +53,7 @@ impl<'t, R: Renderer<'t>> Scene<R> for Npc<R::Texture> {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         renderer.copy(
             &*self.texture,
-            options::at(&self.dst).flip(TextureFlip::Horizontal),
+            options::at(self.dst).flip(TextureFlip::Horizontal),
         )
     }
 }

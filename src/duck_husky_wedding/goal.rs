@@ -40,6 +40,6 @@ impl<T> Clone for Goal<T> {
 
 impl<'t, R: Renderer<'t>> Scene<R> for Goal<R::Texture> {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        renderer.copy(&*self.texture, options::at(&self.dst))
+        renderer.copy(&*self.texture, options::at(self.dst))
     }
 }

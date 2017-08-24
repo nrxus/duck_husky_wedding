@@ -14,7 +14,7 @@ impl Kind {
     pub fn path(&self) -> &'static str {
         match *self {
             Kind::KenPixel => "media/fonts/kenpixel_mini.ttf",
-            Kind::Joystix => "media/fonts/kenpixel_mini.ttf",
+            Kind::Joystix => "media/fonts/joystix.monospace.ttf",
         }
     }
 }

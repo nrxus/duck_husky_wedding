@@ -8,8 +8,8 @@ use glm;
 use moho::animation::{self, Animation};
 use moho::errors as moho_errors;
 use moho::input;
-use moho::renderer::{options, ColorRGBA, FontTexturizer, Renderer, Scene, Texture, TextureLoader,
-                     TextureManager};
+use moho::renderer::{align, options, ColorRGBA, FontTexturizer, Renderer, Scene, Texture,
+                     TextureLoader, TextureManager};
 use sdl2::keyboard::Keycode;
 
 use std::rc::Rc;
@@ -27,7 +27,7 @@ struct Cat<T> {
 
 impl<'t, R: Renderer<'t>> Scene<R> for Cat<R::Texture> {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        renderer.copy_asset(&self.animation.tile(), options::at(&self.dst))
+        renderer.copy_asset(&self.animation.tile(), options::at(self.dst))
     }
 }
 
@@ -144,28 +144,11 @@ where
     R::Texture: Texture,
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        //title+buttons
-        {
-            let dims = glm::to_ivec2(self.title.dims());
-            let dst = glm::ivec4(640 - dims.x / 2, 50, dims.x, dims.y);
-            renderer.copy(&self.title, options::at(&dst))
-        }?;
+        renderer.copy(&self.title, options::at(align::top(50).center(640)))?;
         renderer.show(&self.button_manager)?;
-
-        //avoid
-        {
-            let dims = glm::to_ivec2(self.avoid_text.dims());
-            let dst = glm::ivec4(960 - dims.x / 2, 400, dims.x, dims.y);
-            renderer.copy(&self.avoid_text, options::at(&dst))
-        }?;
+        renderer.copy(&self.avoid_text, options::at(align::top(400).center(960)))?;
         renderer.show(&self.cat)?;
-
-        //collect
-        {
-            let dims = glm::to_ivec2(self.collect_text.dims());
-            let dst = glm::ivec4(320 - dims.x / 2, 400, dims.x, dims.y);
-            renderer.copy(&self.collect_text, options::at(&dst))
-        }?;
+        renderer.copy(&self.collect_text, options::at(align::top(400).center(320)))?;
         renderer.show(&self.coin)?;
         renderer.show(&self.gem)
     }
@@ -333,11 +316,12 @@ where
 
 impl<'b, 't, R: Renderer<'t>> ButtonRenderer<'b, 't, R> {
     fn show(&mut self, button: &Button<R::Texture>) -> moho_errors::Result<()> {
+        let options = options::at(button.inner.dst);
         match *self.selected {
-            Some(ref b) if b.kind == button.kind => self.renderer
-                .copy_asset(&b.animation.tile(), options::at(&button.inner.dst)),
-            _ => self.renderer
-                .copy(&*button.inner.idle, options::at(&button.inner.dst)),
+            Some(ref b) if b.kind == button.kind => {
+                self.renderer.copy_asset(&b.animation.tile(), options)
+            }
+            _ => self.renderer.copy(&*button.inner.idle, options),
         }
     }
 }

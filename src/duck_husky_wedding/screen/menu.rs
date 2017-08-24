@@ -4,7 +4,7 @@ use duck_husky_wedding::{button, font};
 use glm;
 use moho::errors as moho_errors;
 use moho::input;
-use moho::renderer::{options, ColorRGBA, Font, FontTexturizer, Renderer, Scene, Texture};
+use moho::renderer::{align, options, ColorRGBA, Font, FontTexturizer, Renderer, Scene, Texture};
 
 use std::rc::Rc;
 use sdl2::keyboard::Keycode;
@@ -63,10 +63,8 @@ where
     R::Texture: Texture,
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        renderer.show(&self.button_manager)?;
-        let title_dims = glm::to_ivec2(self.title.dims());
-        let title_rectangle = glm::ivec4(640 - title_dims.x / 2, 0, title_dims.x, title_dims.y);
-        renderer.copy(&self.title, options::at(&title_rectangle))
+        renderer.copy(&self.title, options::at(align::top(0).center(640)))?;
+        renderer.show(&self.button_manager)
     }
 }
 
@@ -178,24 +176,20 @@ impl<'r, 't, R: Renderer<'t>> ButtonRenderer<'r, 't, R> {
     where
         R::Texture: Texture,
     {
-        let dims = glm::to_ivec2(button.inner.dims);
-        let dst = glm::ivec4(
-            button.center.x - dims.x / 2,
-            button.center.y - dims.y / 2,
-            dims.x,
-            dims.y,
-        );
+        let middle = align::middle(button.center.y);
 
         let texture = if button.kind == self.selected {
-            let dims = glm::to_ivec2(self.picker.dims());
-            let dst = glm::ivec4(dst.x - dims.x - 5, dst.y, dims.x, dims.y);
-            self.renderer.copy(self.picker, options::at(&dst))?;
-            &*button.inner.selected
+            let texture = &*button.inner.selected;
+            let right = button.center.x - texture.dims().x as i32 / 2 - 5;
+            self.renderer
+                .copy(self.picker, options::at(middle.right(right)))?;
+            texture
         } else {
             &*button.inner.idle
         };
 
-        self.renderer.copy(texture, options::at(&dst))
+        self.renderer
+            .copy(texture, options::at(middle.center(button.center.x)))
     }
 }
 

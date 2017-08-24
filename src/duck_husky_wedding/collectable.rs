@@ -72,6 +72,6 @@ impl<'t, R: Renderer<'t>> Scene<R> for Collectable<R::Texture> {
             self.body.dims.y as i32,
         );
 
-        renderer.copy_asset(&self.animation.tile(), options::at(&dst))
+        renderer.copy_asset(&self.animation.tile(), options::at(dst))
     }
 }

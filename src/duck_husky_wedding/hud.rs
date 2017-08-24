@@ -1,8 +1,7 @@
 use errors::*;
 
-use glm;
 use moho::errors as moho_errors;
-use moho::renderer::{Asset, ColorRGBA, FontTexturizer, Options, Renderer, Texture};
+use moho::renderer::{Asset, ColorRGBA, FontTexturizer, Options, Renderer};
 
 use std::rc::Rc;
 use std::time::Duration;
@@ -116,13 +115,6 @@ impl<T, F, V: AsCached + Copy> TextBox<T, F, V> {
             self.text = TextCache::load(updated, &*self.font, texturizer, self.pattern.as_ref())?;
         }
         Ok(())
-    }
-
-    pub fn dims(&self) -> glm::UVec2
-    where
-        T: Texture,
-    {
-        self.text.texture.dims()
     }
 }
 

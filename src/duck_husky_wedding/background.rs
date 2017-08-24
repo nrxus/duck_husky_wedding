@@ -50,7 +50,7 @@ impl<'t, R: Renderer<'t>> Scene<R> for Background<R::Texture> {
                     self.dimensions.y as i32,
                 )
             })
-            .map(|d| renderer.copy(&*self.texture, options::at(&d)))
+            .map(|d| renderer.copy(&*self.texture, options::at(d)))
             .try()
     }
 }

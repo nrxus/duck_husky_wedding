@@ -118,7 +118,7 @@ impl<T> Cat<T> {
 impl<'t, R: Renderer<'t>> Scene<R> for Cat<R::Texture> {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         let dst_rect = glm::to_ivec4(self.dst);
-        let mut options = options::at(&dst_rect);
+        let mut options = options::at(dst_rect);
 
         match self.kind {
             Kind::Idle | Kind::Moving { left: true, .. } => {

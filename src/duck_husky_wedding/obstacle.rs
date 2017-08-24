@@ -121,7 +121,7 @@ impl<'t, R: Renderer<'t>> Scene<R> for Obstacle<R::Texture> {
                     ),
                 )
             })
-            .map(|(t, d)| renderer.copy(t, options::at(&d)))
+            .map(|(t, d)| renderer.copy(t, options::at(d)))
             .try()
     }
 }
