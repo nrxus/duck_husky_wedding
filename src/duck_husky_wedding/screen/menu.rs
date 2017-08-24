@@ -20,7 +20,11 @@ pub struct Data<T> {
 }
 
 impl<T> Data<T> {
-    pub fn load<'f, 't, FT, FM>(font_manager: &mut FM, texturizer: &'t FT) -> Result<Self>
+    pub fn load<'f, 't, FT, FM>(
+        font_manager: &mut FM,
+        texturizer: &'t FT,
+        picker: Rc<T>,
+    ) -> Result<Self>
     where
         FM: font::Manager,
         FM::Font: Font,
@@ -31,7 +35,7 @@ impl<T> Data<T> {
         let title = texturizer
             .texturize(&*font, "Husky Loves Ducky", &title_color)
             .map(Rc::new)?;
-        let button_manager = ButtonManager::load(texturizer, &*font)?;
+        let button_manager = ButtonManager::load(texturizer, &*font, picker)?;
         Ok(Data {
             title,
             button_manager,
@@ -109,7 +113,7 @@ impl<T> Clone for ButtonManager<T> {
 }
 
 impl<T> ButtonManager<T> {
-    pub fn load<'t, FT, F>(texturizer: &'t FT, font: &F) -> Result<Self>
+    pub fn load<'t, FT, F>(texturizer: &'t FT, font: &F, picker: Rc<T>) -> Result<Self>
     where
         F: Font,
         FT: FontTexturizer<'t, F, Texture = T>,
@@ -133,10 +137,6 @@ impl<T> ButtonManager<T> {
                 kind: ButtonKind::HighScore,
             }
         };
-
-        let picker = texturizer
-            .texturize(font, "->", &ColorRGBA(255, 255, 0, 255))
-            .map(Rc::new)?;
 
         Ok(ButtonManager {
             new_game,
@@ -180,7 +180,7 @@ impl<'r, 't, R: Renderer<'t>> ButtonRenderer<'r, 't, R> {
 
         let texture = if button.kind == self.selected {
             let texture = &*button.inner.selected;
-            let right = button.center.x - texture.dims().x as i32 / 2 - 5;
+            let right = button.center.x - texture.dims().x as i32 / 2 - 10;
             self.renderer
                 .copy(self.picker, options::at(middle.right(right)))?;
             texture
