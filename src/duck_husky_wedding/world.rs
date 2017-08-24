@@ -211,11 +211,12 @@ impl<T> World<T> {
         }
     }
 
-    pub fn force(&self, player: &Player<T>) -> (glm::DVec2, bool) {
+    pub fn force(&self, player: &Player<T>) -> (glm::DVec2, bool, bool) {
         let mut force = glm::dvec2(0., 0.);
         let mut legs = player.legs().nudge(player.delta_pos);
         let mut body = player.body().nudge(player.delta_pos);
         let mut touch_legs = false;
+        let mut touch_spikes = false;
 
         for o in &self.obstacles {
             if let Some(f) = o.mtv(&legs) {
@@ -246,6 +247,7 @@ impl<T> World<T> {
                 legs = legs.nudge(f);
                 body = body.nudge(f);
                 touch_legs = true;
+                touch_spikes = true;
             }
         }
 
@@ -263,7 +265,7 @@ impl<T> World<T> {
             }
         }
 
-        (force, touch_legs)
+        (force, touch_legs, touch_spikes)
     }
 }
 

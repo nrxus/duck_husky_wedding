@@ -241,8 +241,8 @@ impl<T, F> GamePlay<T, F> {
 
         self.player.process(input);
         self.timer.update(delta);
-        let force = self.world.force(&self.player);
-        self.player.update(force, delta);
+        let (force, legs, touch_spikes) = self.world.force(&self.player);
+        self.player.update((force, legs), delta);
         let center = {
             let dst = self.player.dst_rect;
             glm::ivec2((dst.x + dst.z / 2.) as i32, (dst.y + dst.w / 2.) as i32)
@@ -266,14 +266,23 @@ impl<T, F> GamePlay<T, F> {
                 self.splashes.push(splash);
                 self.score.update(c.score as i32);
             }
-            if !self.player.invincibility.is_active() &&
-                self.world
-                    .enemies
-                    .iter()
-                    .map(|e| e.body())
-                    .any(|b| b.collides(&player))
+            let dmg = if self.player.invincibility.is_active() {
+                None
+            } else if self.world
+                .enemies
+                .iter()
+                .map(|e| e.body())
+                .any(|b| b.collides(&player))
             {
-                let dmg = -20;
+                Some(20)
+            } else if touch_spikes {
+                Some(40)
+            } else {
+                None
+            };
+
+            if let Some(d) = dmg {
+                let dmg = -d;
                 self.player.invincibility.activate();
                 let color = ColorRGBA(255, 0, 0, 255);
                 let texture = texturizer
