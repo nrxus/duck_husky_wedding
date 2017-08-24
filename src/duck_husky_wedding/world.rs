@@ -157,8 +157,8 @@ impl<T> Data<T> {
                         texture,
                         top_left,
                         body: Rectangle {
-                            top_left: glm::dvec2(top_left.x as f64, (top_left.y + 5) as f64),
-                            dims: glm::dvec2((dims.x * s.count) as f64, (dims.y - 5) as f64),
+                            top_left: glm::dvec2(top_left.x as f64, (top_left.y + 9) as f64),
+                            dims: glm::dvec2((dims.x * s.count) as f64, (dims.y - 9) as f64),
                         },
                     }
                 })
