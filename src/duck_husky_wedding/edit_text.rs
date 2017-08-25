@@ -1,4 +1,5 @@
 use duck_husky_wedding::hud::{AsCached, CacheValue, TextCache};
+use duck_husky_wedding::flicker::{self, Flicker};
 use errors::*;
 use utils::Try;
 
@@ -19,46 +20,6 @@ impl AsCached for Option<char> {
         match *self {
             None => '_',
             Some(c) => c,
-        }
-    }
-}
-
-enum FlickerState {
-    Hide,
-    Show,
-}
-
-impl FlickerState {
-    fn toggle(&mut self) {
-        *self = match *self {
-            FlickerState::Hide => FlickerState::Show,
-            FlickerState::Show => FlickerState::Hide,
-        }
-    }
-}
-
-struct Flicker {
-    duration: Duration,
-    remaining: Duration,
-    state: FlickerState,
-}
-
-impl Flicker {
-    fn new(duration: Duration) -> Self {
-        Flicker {
-            duration,
-            state: FlickerState::Show,
-            remaining: duration,
-        }
-    }
-
-    fn update(&mut self, delta: Duration) {
-        match self.remaining.checked_sub(delta) {
-            None => {
-                self.state.toggle();
-                self.remaining = self.duration;
-            }
-            Some(d) => self.remaining = d,
         }
     }
 }
@@ -196,8 +157,8 @@ where
                 dst = dst.nudge(glm::ivec2(t.dims().x as i32, 0));
                 if i == self.active {
                     match self.flicker.state {
-                        FlickerState::Hide => Ok(()),
-                        FlickerState::Show => renderer.copy(t, options),
+                        flicker::State::Hide => Ok(()),
+                        flicker::State::Show => renderer.copy(t, options),
                     }
                 } else {
                     renderer.copy(t, options)

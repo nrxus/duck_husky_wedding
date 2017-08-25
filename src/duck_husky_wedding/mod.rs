@@ -6,6 +6,7 @@ mod button;
 mod cat;
 mod collectable;
 mod edit_text;
+mod flicker;
 mod font;
 mod goal;
 mod hud;
