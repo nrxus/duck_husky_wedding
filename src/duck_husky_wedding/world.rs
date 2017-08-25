@@ -230,6 +230,7 @@ impl<T> World<T> {
         for o in &self.obstacles {
             if let Some(f) = o.mtv(&body) {
                 force = force + f;
+                legs = legs.nudge(f);
                 body = body.nudge(f);
             }
         }
@@ -237,6 +238,7 @@ impl<T> World<T> {
         for o in &self.obstacles {
             if let Some(f) = o.mtv(&body) {
                 force = force + f;
+                legs = legs.nudge(f);
                 body = body.nudge(f);
             }
         }

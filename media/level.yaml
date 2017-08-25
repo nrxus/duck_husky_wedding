@@ -34,33 +34,65 @@ obstacles:
       y: 1
     bottom_left:
       x: 18
-      y: 13
+      y: 15
   - count:
       x: 7
       y: 1
     bottom_left:
-      x: 10
-      y: 9
+      x: 9
+      y: 12
+  - count:
+      x: 3
+      y: 1
+    bottom_left:
+      x: 19
+      y: 10
+  - count:
+      x: 3
+      y: 1
+    bottom_left:
+      x: 13
+      y: 7
   - count:
       x: 7
       y: 1
     bottom_left:
-      x: 18
+      x: 19
       y: 5
+  - count:
+      x: 3
+      y: 1
+    bottom_left:
+      x: 15
+      y: 3
+  - count:
+      x: 3
+      y: 1
+    bottom_left:
+      x: 26
+      y: 2
 gems:
   - x: 2
     y: 20
   - x: 2
     y: 19
-  - x: 4
+  - x: 3
     y: 20
-  - x: 4
+  - x: 3
     y: 19
-coins:
   - x: 9
+    y: 13
+coins:
+  - x: 8
     y: 19
-  - x: 15
+  - x: 14
     y: 19
+  - x: 19
+    y: 11
+  - x: 25
+    y: 6
+  - x: 16
+    y: 4
 spikes:
   - count: 3
     bottom_left:
@@ -73,11 +105,11 @@ spikes:
 cats:
   - kind: {Moving:5}
     bottom_left:
-      x: 10
-      y: 10
+      x: 9
+      y: 13
   - kind: {Moving:5}
     bottom_left:
-      x: 18
+      x: 19
       y: 6
 goal:
   x: 40

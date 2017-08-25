@@ -8,40 +8,47 @@ duck:
       y: 1
   idle_texture: "standing_duck.png"
   out_size:
-    x: 108
-    y: 81
+    x: 88
+    y: 66
   body:
     #Head
     - Circle:
         - x: 75
-          y: 20
-        - 19
-    #Beak
-    - Rectangle:
-        - x: 80
-          y: 15
-        - x: 20
-          y: 10
+          y: 19
+        - 16
     #Front Body
     - Circle:
-        - x: 69
-          y: 57
-        - 27
+        - x: 80
+          y: 59
+        - 14
+    - Circle:
+        - x: 71
+          y: 70
+        - 12
+    - Circle:
+        - x: 77
+          y: 65
+        - 10
+    - Rectangle:
+        - x: 28
+          y: 34
+        - x: 58
+          y: 37
     #Middle Body
     - Circle:
-        - x: 43
+        - x: 44
           y: 61
         - 23
     #Middle Tail
     - Circle:
-        - x: 29
+        - x: 30
           y: 64
-        - 10
+        - 11
     #End Tail
     - Circle:
-        - x: 23
+        - x: 24
           y: 64
-        - 8
+        - 9
   legs:
     #Legs
     - Rectangle:
@@ -59,8 +66,8 @@ husky:
       y: 1
   idle_texture: "standing_husky.png"
   out_size:
-    x: 126
-    y: 90
+    x: 105
+    y: 75
   body:
     #Body
     - Rectangle:
@@ -128,8 +135,8 @@ coin:
       x: 4
       y: 1
   out_size:
-    x: 40
-    y: 40
+    x: 34
+    y: 34
   score: 50
 gem:
   animation:
@@ -140,8 +147,8 @@ gem:
       x: 10
       y: 1
   out_size:
-    x: 40
-    y: 40
+    x: 34
+    y: 34
   score: 100
 cat:
   walking:
@@ -159,8 +166,8 @@ cat:
       x: 5
       y: 1
   out_size:
-    x: 100
-    y: 75
+    x: 68
+    y: 51
   body:
     - Rectangle:
         - x: 0
@@ -170,8 +177,8 @@ cat:
 heart:
   texture: "heart.png"
   out_size:
-    x: 50
-    y: 47
+    x: 40
+    y: 38
 spike:
   texture: "spike.png"
   out_size:

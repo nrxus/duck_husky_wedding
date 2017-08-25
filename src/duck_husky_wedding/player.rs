@@ -116,9 +116,11 @@ impl<T> Player<T> {
             match self.action {
                 Action::Jumping(_, ref mut held) => if *held < 10 {
                     held.add_assign(1);
-                    self.delta_pos.y -= 6. / *held as f64;
+                    self.delta_pos.y -= 3.9 / *held as f64;
                 },
-                _ => self.delta_pos.y = -6.,
+                _ => if input.did_press_key(Keycode::Up) {
+                    self.delta_pos.y = -3.9;
+                },
             }
         } else if let Action::Jumping(_, ref mut held) = self.action {
             held.add_assign(15);
@@ -126,18 +128,20 @@ impl<T> Player<T> {
 
         if left ^ right {
             self.backwards = left;
-            self.delta_pos.x = if left { -6. } else { 6. };
+            self.delta_pos.x = if left { -4.5 } else { 4.5 };
         } else {
             self.delta_pos.x = 0.;
         }
 
-        self.delta_pos.y += 1.1;
+        self.delta_pos.y += 0.75;
     }
 
     pub fn update(&mut self, (force, on_floor): (glm::DVec2, bool), delta: Duration) {
         if let Some(i) = self.invincibility {
             self.invincibility = i.update(delta);
         }
+
+        let same_y = self.delta_pos.y.signum() == force.y.signum();
 
         let next_action = match self.action {
             Action::Moving(ref mut a) => if !on_floor {
@@ -156,10 +160,9 @@ impl<T> Player<T> {
                 let animation = self.animation.clone().start();
                 Some(Action::Moving(animation))
             },
-            Action::Jumping(_, ref mut held) => if !on_floor {
-                if self.delta_pos.y.abs() > 0. && force.y.abs() > 0. &&
-                    self.delta_pos.y.signum() != force.y.signum()
-                {
+            Action::Jumping(_, ref mut held) => if !on_floor || (on_floor && self.delta_pos.y < 0.)
+            {
+                if self.delta_pos.y.abs() > 0. && force.y.abs() > 0. && !same_y {
                     held.add_assign(100);
                 }
                 None
@@ -178,9 +181,7 @@ impl<T> Player<T> {
         self.dst_rect.x += self.delta_pos.x + force.x;
         self.dst_rect.y += self.delta_pos.y + force.y;
 
-        if self.delta_pos.y.abs() > 0. && force.y.abs() > 0. &&
-            self.delta_pos.y.signum() != force.y.signum()
-        {
+        if self.delta_pos.y.abs() > 0. && force.y.abs() > 0. && !same_y {
             self.delta_pos.y = 0.
         }
     }

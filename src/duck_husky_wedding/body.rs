@@ -7,6 +7,7 @@ use moho::shape::{Circle, Intersect, Rectangle, Shape};
 use moho::renderer::{Renderer, Scene};
 use sdl2::rect;
 
+#[derive(Debug)]
 pub struct Body {
     pub rectangles: Vec<Rectangle>,
     pub circles: Vec<Circle>,
@@ -68,7 +69,13 @@ impl Body {
     {
         let c_mtvs = self.circles.iter().map(|c| c.mtv(fixed));
         let r_mtvs = self.rectangles.iter().map(|r| r.mtv(fixed));
-        c_mtvs.chain(r_mtvs).filter_map(|m| m).nth(0)
+        c_mtvs
+            .chain(r_mtvs)
+            .filter_map(|m| m)
+            .take(2)
+            .max_by(|&a, &b| {
+                glm::length(a).partial_cmp(&glm::length(b)).unwrap()
+            })
     }
 
     pub fn collides(&self, other: &Body) -> bool {

@@ -266,6 +266,7 @@ impl<T, F> GamePlay<T, F> {
                 self.splashes.push(splash);
                 self.score.update(c.score as i32);
             }
+
             let dmg = if self.player.invincibility.is_some() {
                 None
             } else if self.world
