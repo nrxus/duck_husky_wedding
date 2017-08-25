@@ -65,9 +65,14 @@ where
                 t.y += 5;
             }
             if input.is_key_down(Keycode::R) {
-                let level_data = data::Level::load("media/level.yaml")?;
-                world = world::Data::load(&mut self.texture_manager, &level_data, &game_data)?
-                    .activate(&game_data.duck, &mut self.texture_manager)?;
+                let texture_manager = &mut self.texture_manager;
+                let result = data::Level::load("media/level.yaml")
+                    .and_then(|l| world::Data::load(texture_manager, &l, &game_data))
+                    .and_then(|w| w.activate(&game_data.duck, texture_manager));
+                match result {
+                    Ok(w) => world = w,
+                    Err(err) => println!("error reloading: {:?}", err),
+                }
             }
 
             viewport.translate(t);

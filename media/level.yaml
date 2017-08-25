@@ -6,41 +6,75 @@ obstacles:
       x: 0
       y: 0
   - count:
-      x: 1
-      y: 20
+      x: 5
+      y: 18
     bottom_left:
       x: 0
       y: 0
   - count:
-      x: 15
-      y: 2
+      x: 2
+      y: 10
+    bottom_left:
+      x: 0
+      y: 17
+  - count:
+      x: 3
+      y: 1
+    bottom_left:
+      x: 8
+      y: 17
+  - count:
+      x: 3
+      y: 1
+    bottom_left:
+      x: 14
+      y: 17
+  - count:
+      x: 3
+      y: 1
+    bottom_left:
+      x: 18
+      y: 13
+  - count:
+      x: 7
+      y: 1
     bottom_left:
       x: 10
-      y: 3
+      y: 9
+  - count:
+      x: 7
+      y: 1
+    bottom_left:
+      x: 18
+      y: 5
+gems:
+  - x: 2
+    y: 19
+  - x: 2
+    y: 18
+coins:
+  - x: 9
+    y: 18
+  - x: 15
+    y: 18
+spikes:
+  - count: 3
+    bottom_left:
+      x: 5
+      y: 17
+  - count: 3
+    bottom_left:
+      x: 11
+      y: 17
+cats:
+  - kind: {Moving:5}
+    bottom_left:
+      x: 10
+      y: 10
+  - kind: {Moving:5}
+    bottom_left:
+      x: 18
+      y: 6
 goal:
   x: 40
   y: 1
-gems:
-  - x: 1
-    y: 1
-  - x: 14
-    y: 5
-coins:
-  - x: 35
-    y: 1
-  - x: 14
-    y: 9
-spikes:
-  - count: 10
-    bottom_left:
-      x: 14
-      y: 8
-cats:
-  - kind: Idle
-    bottom_left:
-      x: 25
-      y: 1
-  - kind: {Moving:6}
-    bottom_left:
-      x: 11
-      y: 5
