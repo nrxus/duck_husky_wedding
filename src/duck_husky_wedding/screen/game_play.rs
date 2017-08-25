@@ -266,7 +266,7 @@ impl<T, F> GamePlay<T, F> {
                 self.splashes.push(splash);
                 self.score.update(c.score as i32);
             }
-            let dmg = if self.player.invincibility.is_active() {
+            let dmg = if self.player.invincibility.is_some() {
                 None
             } else if self.world
                 .enemies
@@ -283,7 +283,7 @@ impl<T, F> GamePlay<T, F> {
 
             if let Some(d) = dmg {
                 let dmg = -d;
-                self.player.invincibility.activate();
+                self.player.invincible();
                 let color = ColorRGBA(255, 0, 0, 255);
                 let texture = texturizer
                     .texturize(self.splash_font.as_ref(), &format!("{}", dmg), &color)
@@ -298,11 +298,11 @@ impl<T, F> GamePlay<T, F> {
             }
         }
         if (self.player.dst_rect.x + self.player.dst_rect.z) as i32 >= self.world.npc.x() {
-            self.player.invincibility.deactivate();
+            self.player.invincibility = None;
             self.state = State::Transition;
         }
         if self.timer.value.as_secs() == 0 && self.timer.value.subsec_nanos() == 0 {
-            self.player.invincibility.deactivate();
+            self.player.invincibility = None;
             let x_size = 800;
             let y_size = 200;
             self.state = State::TimeUp {

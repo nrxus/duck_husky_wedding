@@ -1,5 +1,5 @@
 use duck_husky_wedding::hud::{AsCached, CacheValue, TextCache};
-use duck_husky_wedding::flicker::{self, Flicker};
+use duck_husky_wedding::flicker::Flicker;
 use errors::*;
 use utils::Try;
 
@@ -155,13 +155,10 @@ where
             .map(|(i, t)| {
                 let options = options::at(dst);
                 dst = dst.nudge(glm::ivec2(t.dims().x as i32, 0));
-                if i == self.active {
-                    match self.flicker.state {
-                        flicker::State::Hide => Ok(()),
-                        flicker::State::Show => renderer.copy(t, options),
-                    }
-                } else {
+                if i != self.active || self.flicker.is_shown() {
                     renderer.copy(t, options)
+                } else {
+                    Ok(())
                 }
             })
             .try()

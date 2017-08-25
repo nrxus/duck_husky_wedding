@@ -1,4 +1,5 @@
 use duck_husky_wedding::body::Body;
+use duck_husky_wedding::flicker::Flicker;
 use data;
 use errors::*;
 
@@ -22,7 +23,7 @@ enum Action<T> {
 pub struct Player<T> {
     pub delta_pos: glm::DVec2,
     pub dst_rect: glm::DVec4,
-    pub invincibility: Invincibility,
+    pub invincibility: Option<Invincibility>,
     body: Vec<data::Shape>,
     legs: Vec<data::Shape>,
     action: Action<T>,
@@ -31,45 +32,25 @@ pub struct Player<T> {
     backwards: bool,
 }
 
-pub enum Invincibility {
-    None,
-    Show(Duration, u32),
-    Hide(Duration, u32),
+#[derive(Debug, Clone, Copy)]
+pub struct Invincibility {
+    duration: Duration,
+    flicker: Flicker,
 }
 
 impl Invincibility {
-    pub fn is_active(&self) -> bool {
-        if let Invincibility::None = *self {
-            false
-        } else {
-            true
-        }
+    fn new() -> Self {
+        let flicker = Flicker::new(Duration::from_millis(100));
+        let duration = Duration::from_secs(1);
+        Invincibility { flicker, duration }
     }
 
-    pub fn activate(&mut self) {
-        if let Invincibility::None = *self {
-            *self = Invincibility::Hide(Duration::from_secs(1), 0);
-        }
-    }
-
-    pub fn deactivate(&mut self) {
-        *self = Invincibility::None
-    }
-
-    fn update(&mut self, delta: Duration) {
-        match *self {
-            Invincibility::None => {}
-            Invincibility::Show(d, i) => match d.checked_sub(delta) {
-                None => *self = Invincibility::None,
-                Some(d) if i < 1 => *self = Invincibility::Show(d, i + 1),
-                Some(d) => *self = Invincibility::Hide(d, 0),
-            },
-            Invincibility::Hide(d, i) => match d.checked_sub(delta) {
-                None => *self = Invincibility::None,
-                Some(d) if i < 1 => *self = Invincibility::Hide(d, i + 1),
-                Some(d) => *self = Invincibility::Show(d, 0),
-            },
-        }
+    fn update(mut self, delta: Duration) -> Option<Self> {
+        self.duration.checked_sub(delta).map(|d| {
+            self.duration = d;
+            self.flicker.update(delta);
+            self
+        })
     }
 }
 
@@ -109,7 +90,7 @@ impl<T> Player<T> {
             action: Action::Standing(texture.clone()),
             delta_pos: glm::dvec2(0., 0.),
             backwards: false,
-            invincibility: Invincibility::None,
+            invincibility: None,
             animation,
             texture,
             dst_rect,
@@ -154,7 +135,9 @@ impl<T> Player<T> {
     }
 
     pub fn update(&mut self, (force, on_floor): (glm::DVec2, bool), delta: Duration) {
-        self.invincibility.update(delta);
+        if let Some(i) = self.invincibility {
+            self.invincibility = i.update(delta);
+        }
 
         let next_action = match self.action {
             Action::Moving(ref mut a) => if !on_floor {
@@ -201,13 +184,18 @@ impl<T> Player<T> {
             self.delta_pos.y = 0.
         }
     }
+
+    pub fn invincible(&mut self) {
+        self.invincibility = Some(Invincibility::new());
+    }
 }
 
 impl<'t, R: Renderer<'t>> Scene<R> for Player<R::Texture> {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        if let Invincibility::Hide(..) = self.invincibility {
-            Ok(())
-        } else {
+        if self.invincibility
+            .map(|i| i.flicker.is_shown())
+            .unwrap_or(true)
+        {
             let dst = glm::to_ivec4(self.dst_rect);
             let mut options = options::at(dst);
             if self.backwards {
@@ -219,6 +207,8 @@ impl<'t, R: Renderer<'t>> Scene<R> for Player<R::Texture> {
             }?;
             renderer.show(&self.body())?;
             renderer.show(&self.legs())
+        } else {
+            Ok(())
         }
     }
 }
