@@ -114,7 +114,7 @@ impl<T> Player<T> {
 
         if up {
             match self.action {
-                Action::Jumping(_, ref mut held) => if *held < 15 {
+                Action::Jumping(_, ref mut held) => if *held < 10 {
                     held.add_assign(1);
                     self.delta_pos.y -= 6. / *held as f64;
                 },
@@ -131,7 +131,7 @@ impl<T> Player<T> {
             self.delta_pos.x = 0.;
         }
 
-        self.delta_pos.y += 1.;
+        self.delta_pos.y += 1.1;
     }
 
     pub fn update(&mut self, (force, on_floor): (glm::DVec2, bool), delta: Duration) {

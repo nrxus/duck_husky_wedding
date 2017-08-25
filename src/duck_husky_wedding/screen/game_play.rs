@@ -142,7 +142,7 @@ impl<T> Data<T> {
             0,
             font.clone(),
             texturizer,
-            Box::new(|s| format!("Score: {:03}", s)),
+            Box::new(|s| format!("Score: {:05}", s)),
         )?;
         let splashes = vec![];
         let splash_font = font_manager.load(font::Kind::KenPixel, 24)?;

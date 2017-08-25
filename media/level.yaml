@@ -7,7 +7,7 @@ obstacles:
       y: 0
   - count:
       x: 5
-      y: 18
+      y: 19
     bottom_left:
       x: 0
       y: 0
@@ -16,19 +16,19 @@ obstacles:
       y: 10
     bottom_left:
       x: 0
-      y: 17
+      y: 18
   - count:
       x: 3
       y: 1
     bottom_left:
       x: 8
-      y: 17
+      y: 18
   - count:
       x: 3
       y: 1
     bottom_left:
       x: 14
-      y: 17
+      y: 18
   - count:
       x: 3
       y: 1
@@ -49,23 +49,27 @@ obstacles:
       y: 5
 gems:
   - x: 2
-    y: 19
+    y: 20
   - x: 2
-    y: 18
+    y: 19
+  - x: 4
+    y: 20
+  - x: 4
+    y: 19
 coins:
   - x: 9
-    y: 18
+    y: 19
   - x: 15
-    y: 18
+    y: 19
 spikes:
   - count: 3
     bottom_left:
       x: 5
-      y: 17
+      y: 18
   - count: 3
     bottom_left:
       x: 11
-      y: 17
+      y: 18
 cats:
   - kind: {Moving:5}
     bottom_left:
