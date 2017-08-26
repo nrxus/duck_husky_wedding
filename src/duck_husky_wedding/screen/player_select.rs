@@ -1,6 +1,5 @@
 use data;
 use duck_husky_wedding::button;
-use duck_husky_wedding::collectable::{self, Collectable};
 use duck_husky_wedding::font;
 use errors::*;
 
@@ -8,26 +7,41 @@ use glm;
 use moho::animation::{self, Animation};
 use moho::errors as moho_errors;
 use moho::input;
-use moho::renderer::{align, options, ColorRGBA, FontTexturizer, Renderer, Scene, Texture,
-                     TextureLoader, TextureManager};
+use moho::renderer::{align, options, ColorRGBA, Destination, FontTexturizer, Renderer, Scene,
+                     Texture, TextureLoader, TextureManager};
 use sdl2::keyboard::Keycode;
 
 use std::rc::Rc;
 use std::time::Duration;
 
-struct CatData<T> {
+struct AnimatedData<T> {
     animation: animation::Data<T>,
-    dst: glm::IVec4,
+    dst: Destination,
 }
 
-struct Cat<T> {
+struct Animated<T> {
     animation: Animation<T>,
-    dst: glm::IVec4,
+    dst: Destination,
 }
 
-impl<'t, R: Renderer<'t>> Scene<R> for Cat<R::Texture> {
+impl<T> AnimatedData<T> {
+    fn start(&self) -> Animated<T> {
+        Animated {
+            dst: self.dst,
+            animation: self.animation.clone().start(),
+        }
+    }
+}
+
+impl<'t, R: Renderer<'t>> Scene<R> for Animated<R::Texture> {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         renderer.copy_asset(&self.animation.tile(), options::at(self.dst))
+    }
+}
+
+impl<T> Animated<T> {
+    fn animate(&mut self, delta: Duration) {
+        self.animation.animate(delta);
     }
 }
 
@@ -38,9 +52,9 @@ pub struct PlayerSelect<T> {
     avoid_text: Rc<T>,
     button_manager: ButtonManager<T>,
     instructions: Rc<T>,
-    gem: Collectable<T>,
-    coin: Collectable<T>,
-    cat: Cat<T>,
+    gem: Animated<T>,
+    coin: Animated<T>,
+    cat: Animated<T>,
 }
 
 pub struct Data<T> {
@@ -49,9 +63,9 @@ pub struct Data<T> {
     avoid_text: Rc<T>,
     button_manager: ButtonManager<T>,
     instructions: Rc<T>,
-    gem: collectable::Data<T>,
-    coin: collectable::Data<T>,
-    cat: CatData<T>,
+    gem: AnimatedData<T>,
+    coin: AnimatedData<T>,
+    cat: AnimatedData<T>,
 }
 
 impl<T> Data<T> {
@@ -81,26 +95,30 @@ impl<T> Data<T> {
             .texturize(&*font, "Avoid", &title_color)
             .map(Rc::new)?;
         let collect_distance = 50;
-        let coin = collectable::Data::load(
-            glm::ivec2(
-                320 - collect_distance / 2 - data.coin.out_size.x as i32,
-                550,
-            ),
-            &data.coin,
-            texture_manager,
-        )?;
-        let gem = collectable::Data::load(
-            glm::ivec2(320 + collect_distance / 2, 550),
-            &data.gem,
-            texture_manager,
-        )?;
+        let coin = {
+            let data = &data.coin;
+            let animation = data.animation.load(texture_manager)?;
+            let dims: glm::DVec2 = data.out_size.into();
+            let dst = align::right(320 - collect_distance / 2)
+                .top(550)
+                .dims(glm::to_uvec2(dims * 2.));
+            AnimatedData { animation, dst }
+        };
+        let gem = {
+            let data = &data.gem;
+            let animation = data.animation.load(texture_manager)?;
+            let dims: glm::DVec2 = data.out_size.into();
+            let dst = align::left(320 + collect_distance / 2)
+                .top(550)
+                .dims(glm::to_uvec2(dims * 2.2));
+            AnimatedData { animation, dst }
+        };
         let cat = {
             let data = &data.cat;
             let animation = data.idle.load(texture_manager)?;
             let dims: glm::DVec2 = data.out_size.into();
-            let dims = glm::to_ivec2(dims * 1.5);
-            let dst = glm::ivec4(960 - dims.x / 2, 500, dims.x, dims.y);
-            CatData { animation, dst }
+            let dst = align::center(960).top(500).dims(glm::to_uvec2(dims * 2.));
+            AnimatedData { animation, dst }
         };
         let instructions = {
             let font = font_manager.load(font::Kind::KenPixel, 32)?;
@@ -131,12 +149,9 @@ impl<T> Data<T> {
             button_manager: self.button_manager.clone(),
             collect_text: self.collect_text.clone(),
             avoid_text: self.avoid_text.clone(),
-            gem: Collectable::new(&self.gem),
-            coin: Collectable::new(&self.coin),
-            cat: Cat {
-                dst: self.cat.dst,
-                animation: self.cat.animation.clone().start(),
-            },
+            gem: self.gem.start(),
+            coin: self.coin.start(),
+            cat: self.cat.start(),
             instructions: self.instructions.clone(),
         }
     }
@@ -148,7 +163,7 @@ impl<T> PlayerSelect<T> {
         if next.is_none() {
             self.gem.animate(delta);
             self.coin.animate(delta);
-            self.cat.animation.animate(delta);
+            self.cat.animate(delta);
         }
         next.map(super::Kind::GamePlay)
     }
@@ -194,7 +209,7 @@ where
         let idle = player.idle_texture.load(self)?;
         let animation = player.animation.load(self)?;
         let dims: glm::IVec2 = player.out_size.into();
-        let dims = glm::to_uvec2(glm::to_dvec2(dims) * 1.5);
+        let dims = glm::to_uvec2(glm::to_dvec2(dims) * 2.);
         let dst = alignment.bottom(300).dims(dims);
         Ok(button::Animated {
             idle,

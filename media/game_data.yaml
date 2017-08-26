@@ -135,8 +135,8 @@ coin:
       x: 4
       y: 1
   out_size:
-    x: 34
-    y: 34
+    x: 28
+    y: 28
   score: 50
 gem:
   animation:
@@ -147,8 +147,8 @@ gem:
       x: 10
       y: 1
   out_size:
-    x: 34
-    y: 34
+    x: 28
+    y: 28
   score: 100
 cat:
   walking:
