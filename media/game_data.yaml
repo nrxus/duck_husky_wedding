@@ -181,8 +181,8 @@ cat:
 heart:
   texture: "heart.png"
   out_size:
-    x: 40
-    y: 38
+    x: 32
+    y: 32
 spike:
   texture: "spike.png"
   out_size:
