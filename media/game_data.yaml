@@ -8,8 +8,8 @@ duck:
       y: 1
   idle_texture: "standing_duck.png"
   out_size:
-    x: 88
-    y: 66
+    x: 80
+    y: 60
   body:
     #Head
     - Circle:
@@ -52,9 +52,9 @@ duck:
   legs:
     #Legs
     - Rectangle:
-        - x: 42
+        - x: 41
           y: 80
-        - x: 30
+        - x: 31
           y: 20
 husky:
   animation:
@@ -66,8 +66,8 @@ husky:
       y: 1
   idle_texture: "standing_husky.png"
   out_size:
-    x: 105
-    y: 75
+    x: 91
+    y: 65
   body:
     #Body
     - Rectangle:
@@ -169,11 +169,15 @@ cat:
     x: 68
     y: 51
   body:
+    - Circle:
+        - x: 87
+          y: 25
+        - 15
     - Rectangle:
-        - x: 0
-          y: 0
-        - x: 100
-          y: 100
+        - x: 15
+          y: 37
+        - x: 69
+          y: 60
 heart:
   texture: "heart.png"
   out_size:

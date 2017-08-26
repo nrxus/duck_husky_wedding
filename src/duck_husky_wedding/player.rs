@@ -118,9 +118,9 @@ impl<T> Player<T> {
                     held.add_assign(1);
                     self.delta_pos.y -= 3.9 / *held as f64;
                 },
-                _ => if input.did_press_key(Keycode::Up) {
+                _ => {
                     self.delta_pos.y = -3.9;
-                },
+                }
             }
         } else if let Action::Jumping(_, ref mut held) = self.action {
             held.add_assign(15);

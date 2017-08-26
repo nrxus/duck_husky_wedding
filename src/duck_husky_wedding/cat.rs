@@ -39,7 +39,7 @@ impl<T> Data<T> {
     {
         let dst = {
             let dims: glm::DVec2 = data.out_size.into();
-            glm::dvec4(bl.x as f64, bl.y as f64 - dims.y, dims.x, dims.y)
+            glm::dvec4(bl.x as f64, bl.y as f64 - dims.y + 4., dims.x, dims.y)
         };
         let animation = match kind {
             Kind::Idle => &data.idle,
@@ -81,7 +81,7 @@ impl<T> Cat<T> {
             mut left,
         } = self.kind
         {
-            let step = 2;
+            let step = 1;
             let updated = if left {
                 if current < step {
                     left = false;
