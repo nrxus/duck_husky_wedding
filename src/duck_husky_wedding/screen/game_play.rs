@@ -249,11 +249,13 @@ impl<T, F> GamePlay<T, F> {
         };
         self.viewport.center(center);
         {
-            let player = self.player.body();
+            let body = self.player.body();
+            let legs = self.player.legs();
+
             let color = ColorRGBA(0, 200, 125, 255);
             for c in self.world
                 .collectables
-                .retain_or_drain(|c| !player.intersects(&c.body))
+                .retain_or_drain(|c| !body.intersects(&c.body) && !legs.intersects(&c.body))
             {
                 let texture = texturizer
                     .texturize(self.splash_font.as_ref(), &format!("+{}", c.score), &color)
@@ -273,7 +275,7 @@ impl<T, F> GamePlay<T, F> {
                 .enemies
                 .iter()
                 .map(|e| e.body())
-                .any(|b| b.collides(&player))
+                .any(|b| b.collides(&body) || b.collides(&legs))
             {
                 Some(20)
             } else if touch_spikes {

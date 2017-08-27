@@ -110,7 +110,7 @@ impl<T> Data<T> {
             let dims: glm::DVec2 = data.out_size.into();
             let dst = align::left(320 + collect_distance / 2)
                 .top(550)
-                .dims(glm::to_uvec2(dims * 2.2));
+                .dims(glm::to_uvec2(dims * 2.));
             AnimatedData { animation, dst }
         };
         let cat = {

@@ -34,16 +34,26 @@ duck:
           y: 34
         - x: 58
           y: 37
-    #Middle Body
+    # Middle Body
     - Circle:
         - x: 44
           y: 61
         - 23
     #Middle Tail
     - Circle:
-        - x: 30
+        - x: 31
           y: 64
         - 11
+    #End Tail
+    - Circle:
+        - x: 28
+          y: 64
+        - 10
+    #End Tail
+    - Circle:
+        - x: 26
+          y: 64
+        - 10
     #End Tail
     - Circle:
         - x: 24
