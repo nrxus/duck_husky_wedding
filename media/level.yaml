@@ -1,10 +1,12 @@
 obstacles:
+  # Initial Floor
   - count:
-      x: 50
+      x: 19
       y: 1
     bottom_left:
       x: 0
       y: 0
+  # Left Wall
   - count:
       x: 4
       y: 19
@@ -17,6 +19,7 @@ obstacles:
     bottom_left:
       x: 0
       y: 18
+  # Top Spike Segment
   - count:
       x: 2
       y: 1
@@ -29,6 +32,7 @@ obstacles:
     bottom_left:
       x: 12
       y: 18
+  # Stairs To Heaven
   - count:
       x: 2
       y: 1
@@ -71,6 +75,7 @@ obstacles:
     bottom_left:
       x: 21
       y: 0
+  # Small Stairs to Cat
   - count:
       x: 4
       y: 2
@@ -84,12 +89,95 @@ obstacles:
       x: 20
       y: 0
   - count:
+      x: 3
+      y: 1
+    bottom_left:
+      x: 28
+      y: 2
+  - count:
       x: 7
       y: 4
     bottom_left:
       x: 22
       y: 0
+  # High Cats
+  - count:
+      x: 8
+      y: 1
+    bottom_left:
+      x: 23
+      y: 13
+  - count:
+      x: 5
+      y: 1
+    bottom_left:
+      x: 30
+      y: 16
+  - count:
+      x: 6
+      y: 1
+    bottom_left:
+      x: 34
+      y: 13
+  - count:
+      x: 5
+      y: 1
+    bottom_left:
+      x: 39
+      y: 16
+  - count:
+      x: 8
+      y: 1
+    bottom_left:
+      x: 43
+      y: 13
+  # Cat Pit
+  - count:
+      x: 5
+      y: 1
+    bottom_left:
+      x: 30
+      y: 6
+  - count:
+      x: 2
+      y: 1
+    bottom_left:
+      x: 38
+      y: 6
+  - count:
+      x: 2
+      y: 1
+    bottom_left:
+      x: 43
+      y: 6
+  - count:
+      x: 5
+      y: 1
+    bottom_left:
+      x: 48
+      y: 6
+  # Spike Pit
+  - count:
+      x: 3
+      y: 1
+    bottom_left:
+      x: 32
+      y: 0
+  - count:
+      x: 7
+      y: 1
+    bottom_left:
+      x: 38
+      y: 0
+  # Floor to the End
+  - count:
+      x: 50
+      y: 1
+    bottom_left:
+      x: 48
+      y: 0
 gems:
+  # Top Spikes
   - x: 2
     y: 20
   - x: 2
@@ -98,17 +186,41 @@ gems:
     y: 20
   - x: 3
     y: 19
+  # Stairs to Heaven
   - x: 8
     y: 13
   - x: 10
     y: 8
+  # High Cats
+  - x: 30
+    y: 14
+  - x: 34
+    y: 14
+  # Fall from Grace
+  - x: 41
+    y: 11
+  # Cat Pit
+  - x: 38
+    y: 7
+  - x: 39
+    y: 7
+  - x: 43
+    y: 7
+  - x: 44
+    y: 7
+  # Spike Pit
+  - x: 41
+    y: 1
 coins:
+  # Top Spikes
   - x: 7
     y: 19
+  # Stairs to Heaven
   - x: 13
     y: 19
   - x: 20
     y: 7
+  # Small Stairs to Cat
   - x: 13
     y: 4
   - x: 18
@@ -117,7 +229,31 @@ coins:
     y: 3
   - x: 22
     y: 4
+  # High Cats
+  - x: 23
+    y: 14
+  # Fall From Grace
+  - x: 32
+    y: 12
+  - x: 32
+    y: 11
+  - x: 32
+    y: 10
+  - x: 52
+    y: 12
+  - x: 52
+    y: 11
+  - x: 52
+    y: 10
+  # Spike Pit
+  - x: 32
+    y: 1
+  - x: 33
+    y: 1
+  - x: 34
+    y: 1
 spikes:
+  # Top Spikes
   - count: 3
     bottom_left:
       x: 4
@@ -126,7 +262,20 @@ spikes:
     bottom_left:
       x: 9
       y: 18
+  - count: 3
+    bottom_left:
+      x: 29
+      y: 0
+  - count: 3
+    bottom_left:
+      x: 35
+      y: 0
+  - count: 3
+    bottom_left:
+      x: 45
+      y: 0
 cats:
+  # Stairs to Heaven
   - kind: {Moving:4}
     bottom_left:
       x: 8
@@ -135,10 +284,33 @@ cats:
     bottom_left:
       x: 15
       y: 7
+  # Small Stairs to Cat
   - kind: {Moving:5}
     bottom_left:
       x: 22
       y: 4
+  # High Cats
+  - kind: {Moving:6}
+    bottom_left:
+      x: 23
+      y: 14
+  - kind: {Moving:4}
+    bottom_left:
+      x: 34
+      y: 14
+  - kind: {Moving:6}
+    bottom_left:
+      x: 43
+      y: 14
+  # Cat Pit
+  - kind: {Moving:3}
+    bottom_left:
+      x: 30
+      y: 7
+  - kind: {Moving:3}
+    bottom_left:
+      x: 48
+      y: 7
 goal:
-  x: 40
+  x: 90
   y: 1
