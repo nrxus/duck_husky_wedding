@@ -277,9 +277,9 @@ impl<T, F> GamePlay<T, F> {
                 .map(|e| e.body())
                 .any(|b| b.collides(&body) || b.collides(&legs))
             {
-                Some(20)
+                Some(25)
             } else if touch_spikes {
-                Some(40)
+                Some(50)
             } else {
                 None
             };
