@@ -78,27 +78,27 @@ impl<T, F> Finish<T, F> {
         )?;
 
         let duration = duration.as_secs();
-        let new_score = duration as u32 + score;
+        let new_score = 3 * duration as u32 + score;
         let total = texturizer.texturize(
             &*data.detail_font,
-            &format!("     total: {:>06}", new_score),
+            &format!("         total: {:>06}", new_score),
             &ColorRGBA(255, 255, 255, 255),
         )?;
 
         let score = texturizer.texturize(
             &*data.detail_font,
-            &format!("     score: {:>06}", score),
+            &format!("         score: {:>06}", score),
             &ColorRGBA(255, 255, 255, 255),
         )?;
 
         let time = texturizer.texturize(
             &*data.detail_font,
-            &format!("time bonus: {:>06}", duration),
+            &format!("time bonus(x3): {:>06}", duration),
             &ColorRGBA(255, 255, 255, 255),
         )?;
 
         let name = EditText::load(
-            "Enter Name: ",
+            "  Enter Name: ",
             glm::ivec2(369, 400),
             data.detail_font.clone(),
             texturizer,
