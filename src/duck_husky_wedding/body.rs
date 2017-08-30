@@ -95,7 +95,7 @@ impl Body {
 
 impl<'t, R: Renderer<'t>> Scene<R> for Body {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        // return Ok(());
+        return Ok(());
         let circles = self.circles.iter().map(|c| {
             let hdims = glm::dvec2(c.radius, c.radius);
             glm::dvec4(

@@ -74,7 +74,7 @@ impl<T, F> Finish<T, F> {
         let instructions = texturizer.texturize(
             &*data.title_font,
             "<PRESS ENTER TO CONTINUE>",
-            &ColorRGBA(255, 255, 255, 255),
+            &ColorRGBA(255, 255, 0, 255),
         )?;
 
         let duration = duration.as_secs();
