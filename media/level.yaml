@@ -203,7 +203,7 @@ obstacles:
       x: 66
       y: 0
   - count:
-      x: 22
+      x: 23
       y: 4
     bottom_left:
       x: 67
@@ -222,7 +222,7 @@ obstacles:
       y: 6
   # Platform
   - count:
-      x: 18
+      x: 19
       y: 1
     bottom_left:
       x: 73
@@ -247,7 +247,7 @@ obstacles:
       y: 9
   # Gem Stair
   - count:
-      x: 2
+      x: 4
       y: 1
     bottom_left:
       x: 83
@@ -262,78 +262,90 @@ obstacles:
       x: 2
       y: 1
     bottom_left:
-      x: 83
+      x: 81
+      y: 14
+  - count:
+      x: 2
+      y: 1
+    bottom_left:
+      x: 87
       y: 14
   # Stairs to Platform
   - count:
       x: 4
       y: 3
     bottom_left:
-      x: 92
+      x: 93
       y: 3
   - count:
       x: 2
       y: 3
     bottom_left:
-      x: 92
+      x: 93
       y: 5
   - count:
       x: 3
       y: 2
     bottom_left:
-      x: 90
+      x: 91
       y: 6
-  # Last Cat Trap
-  - count:
-      x: 6
-      y: 1
-    bottom_left:
-      x: 100
-      y: 3
   # Last Stairs to Heaven
   - count:
       x: 3
       y: 1
     bottom_left:
-      x: 99
-      y: 8
+      x: 98
+      y: 9
   - count:
       x: 5
       y: 1
     bottom_left:
-      x: 103
+      x: 104
       y: 10
   - count:
       x: 5
       y: 1
     bottom_left:
-      x: 109
+      x: 110
       y: 12
   - count:
       x: 3
       y: 1
     bottom_left:
-      x: 115
-      y: 14
+      x: 117
+      y: 15
   # Last Heaven
   - count:
       x: 3
       y: 4
     bottom_left:
-      x: 121
+      x: 122
       y: 13
   - count:
       x: 3
-      y: 4
+      y: 5
     bottom_left:
-      x: 121
-      y: 20
+      x: 122
+      y: 19
   - count:
       x: 10
       y: 11
     bottom_left:
-      x: 123
+      x: 124
       y: 13
+  # Cat Trap
+  - count:
+      x: 6
+      y: 1
+    bottom_left:
+      x: 101
+      y: 3
+  - count:
+      x: 6
+      y: 1
+    bottom_left:
+      x: 116
+      y: 3
 gems:
   # Top Spikes
   - x: 2
@@ -372,6 +384,50 @@ gems:
   # Wall Divider
   - x: 68
     y: 4
+  - x: 73
+    y: 7
+  # Gem Stair
+  - x: 85
+    y: 9
+  - x: 84
+    y: 9
+  - x: 81
+    y: 15
+  - x: 88
+    y: 15
+  # Last Fall From Grace
+  - x: 116
+    y: 11
+  - x: 116
+    y: 10
+  - x: 116
+    y: 9
+  # Last Heaven
+  - x: 123
+    y: 17
+  - x: 122
+    y: 17
+  - x: 123
+    y: 18
+  - x: 122
+    y: 18
+  # Cat Trap
+  - x: 102
+    y: 1
+  - x: 102
+    y: 2
+  - x: 105
+    y: 1
+  - x: 105
+    y: 2
+  - x: 117
+    y: 1
+  - x: 117
+    y: 2
+  - x: 120
+    y: 1
+  - x: 120
+    y: 2
 coins:
   # Top Spikes
   - x: 7
@@ -416,6 +472,67 @@ coins:
   # Stairs to Second Stage
   - x: 61
     y: 1
+  # Hallway
+  - x: 79
+    y: 4
+  - x: 80
+    y: 4
+  - x: 81
+    y: 4
+  - x: 82
+    y: 4
+  - x: 83
+    y: 4
+  # Gem Stair
+  - x: 83
+    y: 9
+  - x: 86
+    y: 9
+  - x: 82
+    y: 15
+  - x: 87
+    y: 15
+  # Last Stairs to Heaven
+  - x: 99
+    y: 10
+  - x: 118
+    y: 16
+  # Last Fall From Grace
+  - x: 102
+    y: 9
+  - x: 102
+    y: 8
+  - x: 102
+    y: 7
+  # Cat Trap
+  - x: 93
+    y: 1
+  - x: 94
+    y: 1
+  - x: 95
+    y: 1
+  - x: 96
+    y: 1
+  - x: 97
+    y: 1
+  - x: 98
+    y: 1
+  - x: 99
+    y: 1
+  - x: 108
+    y: 1
+  - x: 109
+    y: 1
+  - x: 110
+    y: 1
+  - x: 111
+    y: 1
+  - x: 112
+    y: 1
+  - x: 113
+    y: 1
+  - x: 114
+    y: 1
 spikes:
   # Top Spikes
   - count: 3
@@ -438,7 +555,7 @@ spikes:
     bottom_left:
       x: 45
       y: 0
-  - count: 12
+  - count: 13
     bottom_left:
       x: 78
       y: 7
@@ -480,10 +597,44 @@ cats:
       x: 48
       y: 7
   # Wall Divider
-  - kind: {Moving: 8}
+  - kind: {Moving: 6}
     bottom_left:
       x: 68
       y: 4
+  # Last Stairs to Heaven
+  - kind: {Moving: 3}
+    bottom_left:
+      x: 104
+      y: 11
+  - kind: {Moving: 3}
+    bottom_left:
+      x: 110
+      y: 13
+  # Cat Trap
+  - kind: {Moving: 4}
+    bottom_left:
+      x: 101
+      y: 4
+  - kind: {Moving: 11}
+    bottom_left:
+      x: 90
+      y: 1
+  - kind: Idle
+    bottom_left:
+      x: 103
+      y: 1
+  - kind: {Moving: 4}
+    bottom_left:
+      x: 116
+      y: 4
+  - kind: {Moving: 11}
+    bottom_left:
+      x: 105
+      y: 1
+  - kind: Idle
+    bottom_left:
+      x: 118
+      y: 1
 goal:
-  x: 124
+  x: 125
   y: 1
