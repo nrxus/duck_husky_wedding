@@ -169,13 +169,171 @@ obstacles:
     bottom_left:
       x: 38
       y: 0
+  # Stairs to Second Stage
+  - count:
+      x: 2
+      y: 1
+    bottom_left:
+      x: 60
+      y: 3
+  - count:
+      x: 2
+      y: 1
+    bottom_left:
+      x: 61
+      y: 6
+  - count:
+      x: 2
+      y: 1
+    bottom_left:
+      x: 60
+      y: 9
   # Floor to the End
   - count:
-      x: 50
+      x: 100
       y: 1
     bottom_left:
       x: 48
       y: 0
+  # Wall Divider
+  - count:
+      x: 2
+      y: 12
+    bottom_left:
+      x: 66
+      y: 0
+  - count:
+      x: 22
+      y: 4
+    bottom_left:
+      x: 67
+      y: 0
+  - count:
+      x: 2
+      y: 12
+    bottom_left:
+      x: 66
+      y: 0
+  - count:
+      x: 3
+      y: 6
+    bottom_left:
+      x: 67
+      y: 6
+  # Platform
+  - count:
+      x: 18
+      y: 1
+    bottom_left:
+      x: 73
+      y: 6
+  - count:
+      x: 3
+      y: 2
+    bottom_left:
+      x: 75
+      y: 6
+  - count:
+      x: 2
+      y: 6
+    bottom_left:
+      x: 74
+      y: 6
+  - count:
+      x: 2
+      y: 3
+    bottom_left:
+      x: 73
+      y: 9
+  # Gem Stair
+  - count:
+      x: 2
+      y: 1
+    bottom_left:
+      x: 83
+      y: 8
+  - count:
+      x: 2
+      y: 1
+    bottom_left:
+      x: 84
+      y: 11
+  - count:
+      x: 2
+      y: 1
+    bottom_left:
+      x: 83
+      y: 14
+  # Stairs to Platform
+  - count:
+      x: 4
+      y: 3
+    bottom_left:
+      x: 92
+      y: 3
+  - count:
+      x: 2
+      y: 3
+    bottom_left:
+      x: 92
+      y: 5
+  - count:
+      x: 3
+      y: 2
+    bottom_left:
+      x: 90
+      y: 6
+  # Last Cat Trap
+  - count:
+      x: 6
+      y: 1
+    bottom_left:
+      x: 100
+      y: 3
+  # Last Stairs to Heaven
+  - count:
+      x: 3
+      y: 1
+    bottom_left:
+      x: 99
+      y: 8
+  - count:
+      x: 5
+      y: 1
+    bottom_left:
+      x: 103
+      y: 10
+  - count:
+      x: 5
+      y: 1
+    bottom_left:
+      x: 109
+      y: 12
+  - count:
+      x: 3
+      y: 1
+    bottom_left:
+      x: 115
+      y: 14
+  # Last Heaven
+  - count:
+      x: 3
+      y: 4
+    bottom_left:
+      x: 121
+      y: 13
+  - count:
+      x: 3
+      y: 4
+    bottom_left:
+      x: 121
+      y: 20
+  - count:
+      x: 10
+      y: 11
+    bottom_left:
+      x: 123
+      y: 13
 gems:
   # Top Spikes
   - x: 2
@@ -211,6 +369,9 @@ gems:
   # Spike Pit
   - x: 41
     y: 1
+  # Wall Divider
+  - x: 68
+    y: 4
 coins:
   # Top Spikes
   - x: 7
@@ -252,6 +413,9 @@ coins:
     y: 1
   - x: 34
     y: 1
+  # Stairs to Second Stage
+  - x: 61
+    y: 1
 spikes:
   # Top Spikes
   - count: 3
@@ -274,6 +438,10 @@ spikes:
     bottom_left:
       x: 45
       y: 0
+  - count: 12
+    bottom_left:
+      x: 78
+      y: 7
 cats:
   # Stairs to Heaven
   - kind: {Moving:4}
@@ -311,6 +479,11 @@ cats:
     bottom_left:
       x: 48
       y: 7
+  # Wall Divider
+  - kind: {Moving: 8}
+    bottom_left:
+      x: 68
+      y: 4
 goal:
-  x: 90
+  x: 124
   y: 1
