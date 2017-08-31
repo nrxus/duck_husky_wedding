@@ -183,7 +183,7 @@ where
         renderer.show(&self.gem)?;
         renderer.copy(
             &self.instructions,
-            options::at(align::bottom(720).center(640)),
+            options::at(align::bottom(720 - self.instructions.dims().y as i32).center(640)),
         )
     }
 }
