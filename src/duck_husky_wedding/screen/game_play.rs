@@ -133,7 +133,7 @@ impl<T> Data<T> {
         let viewport = ViewPort::new(glm::ivec2(1280, 720));
         let font = font_manager.load(font::Kind::KenPixel, 32)?;
         let timer = TextBox::load(
-            Duration::from_secs(120),
+            Duration::from_secs(110),
             font.clone(),
             texturizer,
             Box::new(|v| format!("Time: {:03}", v)),
