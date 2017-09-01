@@ -134,6 +134,7 @@ impl<T> Player<T> {
         }
 
         self.delta_pos.y += 0.75;
+        self.delta_pos.y = self.delta_pos.y.min(25.);
     }
 
     pub fn update(&mut self, (force, on_floor): (glm::DVec2, bool), delta: Duration) {
@@ -184,6 +185,9 @@ impl<T> Player<T> {
         if self.delta_pos.y.abs() > 0. && force.y.abs() > 0. && !same_y {
             self.delta_pos.y = 0.
         }
+
+        let max_y = 720. - 17. - self.dst_rect.w;
+        self.dst_rect.y = self.dst_rect.y.min(max_y);
     }
 
     pub fn invincible(&mut self) {
