@@ -147,7 +147,7 @@ coin:
   out_size:
     x: 28
     y: 28
-  score: 50
+  score: 25
 gem:
   animation:
     texture: "gem.png"
@@ -159,7 +159,7 @@ gem:
   out_size:
     x: 28
     y: 28
-  score: 100
+  score: 50
 cat:
   walking:
     texture: "walking_cat.png"
