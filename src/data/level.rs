@@ -27,6 +27,12 @@ pub struct Obstacle {
 pub struct Spike {
     pub count: u32,
     pub bottom_left: Dimension,
+    #[serde(default)]
+    pub left_expand: bool,
+    #[serde(default)]
+    pub right_expand: bool,
+    #[serde(default)]
+    pub bottom_expand: bool,
 }
 
 #[derive(Debug, Deserialize)]
