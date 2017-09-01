@@ -539,26 +539,39 @@ spikes:
     bottom_left:
       x: 4
       y: 18
+    left: Top
+    right: Top
   - count: 3
     bottom_left:
       x: 9
       y: 18
+    left: Top
+    right: Top
   - count: 3
     bottom_left:
       x: 29
       y: 0
+    left: Middle
+    right: Top
   - count: 3
     bottom_left:
       x: 35
       y: 0
+    left: Top
+    right: Top
   - count: 3
     bottom_left:
       x: 45
       y: 0
+    left: Top
+    right: Top
   - count: 13
     bottom_left:
       x: 78
       y: 7
+    left: Top
+    right: Top
+    bottom: Middle
 cats:
   # Stairs to Heaven
   - kind: {Moving:4}

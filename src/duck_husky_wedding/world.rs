@@ -23,10 +23,27 @@ pub struct Spike<T> {
     dims: glm::UVec2,
     top_left: glm::IVec2,
     body: Rectangle,
+    expand_left: Option<Rc<T>>,
+    expand_right: Option<Rc<T>>,
+    expand_bottom: Option<Rc<T>>,
 }
 
 impl<'t, R: Renderer<'t>> Scene<R> for Spike<R::Texture> {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+        if let Some(ref g) = self.expand_left {
+            let d = glm::ivec4(
+                self.top_left.x - self.dims.x as i32,
+                self.top_left.y,
+                self.dims.x as i32,
+                self.dims.y as i32,
+            );
+            renderer.copy(g.as_ref(), options::at(d))?;
+            if let Some(ref g) = self.expand_bottom {
+                let d = glm::ivec4(d.x, d.y + self.dims.y as i32, d.z, d.w);
+                renderer.copy(g.as_ref(), options::at(d))?;
+            }
+        }
+
         (0..self.count)
             .map(|i| {
                 glm::ivec4(
@@ -36,8 +53,30 @@ impl<'t, R: Renderer<'t>> Scene<R> for Spike<R::Texture> {
                     self.dims.y as i32,
                 )
             })
-            .map(|d| renderer.copy(&*self.texture, options::at(d)))
-            .try()
+            .map(|d| {
+                if let Some(ref g) = self.expand_bottom {
+                    let rect = glm::ivec4(d.x, d.y + self.dims.y as i32, d.z, d.w);
+                    renderer.copy(g.as_ref(), options::at(rect))?;
+                }
+                renderer.copy(&*self.texture, options::at(d))
+            })
+            .try()?;
+
+        if let Some(ref g) = self.expand_right {
+            let d = glm::ivec4(
+                self.top_left.x + (self.dims.x * self.count) as i32,
+                self.top_left.y,
+                self.dims.x as i32,
+                self.dims.y as i32,
+            );
+            renderer.copy(g.as_ref(), options::at(d))?;
+            if let Some(ref g) = self.expand_bottom {
+                let d = glm::ivec4(d.x, d.y + self.dims.y as i32, d.z, d.w);
+                renderer.copy(g.as_ref(), options::at(d))?;
+            }
+        }
+
+        Ok(())
     }
 }
 
@@ -47,6 +86,9 @@ impl<T> Clone for Spike<T> {
             top_left: self.top_left,
             count: self.count,
             dims: self.dims,
+            expand_left: self.expand_left.clone(),
+            expand_right: self.expand_right.clone(),
+            expand_bottom: self.expand_bottom.clone(),
             texture: self.texture.clone(),
             body: self.body.clone(),
         }
@@ -150,12 +192,21 @@ impl<T> Data<T> {
                     bl.y = 720 - bl.y;
                     let texture = texture.clone();
                     let top_left = glm::ivec2(bl.x, bl.y - dims.y as i32);
+                    let expand_left = s.left
+                        .map(|l| l.load(&game.ground, texture_manager).unwrap());
+                    let expand_right = s.right
+                        .map(|l| l.load(&game.ground, texture_manager).unwrap());
+                    let expand_bottom = s.bottom
+                        .map(|l| l.load(&game.ground, texture_manager).unwrap());
 
                     Spike {
                         count: s.count,
                         dims,
                         texture,
                         top_left,
+                        expand_left,
+                        expand_right,
+                        expand_bottom,
                         body: Rectangle {
                             top_left: glm::dvec2(top_left.x as f64, (top_left.y + 9) as f64),
                             dims: glm::dvec2((dims.x * s.count) as f64, (dims.y - 9) as f64),
