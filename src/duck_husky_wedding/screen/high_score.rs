@@ -63,11 +63,12 @@ impl<T> Data<T> {
         FT: FontTexturizer<'t, FM::Font, Texture = T>,
     {
         let font = font_manager.load(font::Kind::Joystix, 32)?;
-
-        let path = "media/high_scores.yaml";
-        let f = File::open(path)?;
         let color = ColorRGBA(255, 255, 255, 255);
-        let scores: Vec<ScoreEntry> = serde_yaml::from_reader(&f).unwrap_or_default();
+
+        let scores: Vec<ScoreEntry> = File::open("media/high_scores.yaml")
+            .chain_err(|| "")
+            .and_then(|f| serde_yaml::from_reader(f).map_err(Into::into))
+            .unwrap_or_default();
         let scores = scores
             .iter()
             .map(|s| {

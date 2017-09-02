@@ -105,9 +105,10 @@ impl<T, F> Finish<T, F> {
         )?;
 
         let score_entry = {
-            let path = "media/high_scores.yaml";
-            let f = File::open(path)?;
-            let previous: Vec<ScoreEntry> = serde_yaml::from_reader(&f).unwrap_or_default();
+            let previous: Vec<ScoreEntry> = File::open("media/high_scores.yaml")
+                .chain_err(|| "")
+                .and_then(|f| serde_yaml::from_reader(f).map_err(Into::into))
+                .unwrap_or_default();
             let min_score = if previous.len() < 10 {
                 None
             } else {
@@ -153,6 +154,7 @@ impl<T, F> Finish<T, F> {
                 Some(ref s) => s.extract().map(|s| {
                     let file = OpenOptions::new()
                         .write(true)
+                        .create(true)
                         .truncate(true)
                         .open("media/high_scores.yaml")
                         .expect("high score file could not be opened!");
