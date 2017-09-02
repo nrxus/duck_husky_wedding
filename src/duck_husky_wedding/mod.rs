@@ -1,6 +1,7 @@
 pub mod camera;
 pub mod world;
 mod background;
+mod high_score;
 mod body;
 mod button;
 mod cat;

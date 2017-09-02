@@ -1,21 +1,14 @@
 use duck_husky_wedding::font;
+use duck_husky_wedding::high_score;
 use utils::Try;
 use errors::*;
 
-use serde_yaml;
 use moho::input;
 use moho::errors as moho_errors;
 use moho::renderer::{align, options, ColorRGBA, FontTexturizer, Renderer, Scene, Texture};
 use sdl2::keyboard::Keycode;
 
-use std::fs::File;
 use std::rc::Rc;
-
-#[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct ScoreEntry {
-    pub score: u32,
-    pub name: String,
-}
 
 pub struct HighScore<T> {
     title: Rc<T>,
@@ -65,11 +58,7 @@ impl<T> Data<T> {
         let font = font_manager.load(font::Kind::Joystix, 32)?;
         let color = ColorRGBA(255, 255, 255, 255);
 
-        let scores: Vec<ScoreEntry> = File::open("media/high_scores.yaml")
-            .chain_err(|| "")
-            .and_then(|f| serde_yaml::from_reader(f).map_err(Into::into))
-            .unwrap_or_default();
-        let scores = scores
+        let scores = high_score::get()
             .iter()
             .map(|s| {
                 let score = format!("{:06}{:5}{:>6}", s.score, "", s.name);

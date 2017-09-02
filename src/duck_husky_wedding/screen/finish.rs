@@ -1,5 +1,5 @@
 use duck_husky_wedding::edit_text::EditText;
-use super::high_score::ScoreEntry;
+use duck_husky_wedding::high_score::{self, ScoreEntry};
 
 use errors::*;
 
@@ -9,10 +9,7 @@ use moho::renderer::{align, options, Canvas, ColorRGBA, Font, FontTexturizer, Sc
 use moho::input;
 use sdl2::rect::Rect;
 use sdl2::keyboard::Keycode;
-use serde_yaml;
 
-use std::fs::OpenOptions;
-use std::fs::File;
 use std::rc::Rc;
 use std::time::Duration;
 
@@ -105,10 +102,7 @@ impl<T, F> Finish<T, F> {
         )?;
 
         let score_entry = {
-            let previous: Vec<ScoreEntry> = File::open("media/high_scores.yaml")
-                .chain_err(|| "")
-                .and_then(|f| serde_yaml::from_reader(f).map_err(Into::into))
-                .unwrap_or_default();
+            let previous = high_score::get();
             let min_score = if previous.len() < 10 {
                 None
             } else {
@@ -118,9 +112,9 @@ impl<T, F> Finish<T, F> {
             match min_score {
                 Some(min_score) if min_score > new_score => None,
                 _ => Some(ScoreData {
-                    previous: previous,
-                    current: new_score,
+                    previous,
                     name,
+                    current: new_score,
                 }),
             }
         };
@@ -151,14 +145,8 @@ impl<T, F> Finish<T, F> {
         if state.did_press_key(Keycode::Return) {
             match self.score_entry {
                 None => Some(super::Kind::Menu),
-                Some(ref s) => s.extract().map(|s| {
-                    let file = OpenOptions::new()
-                        .write(true)
-                        .create(true)
-                        .truncate(true)
-                        .open("media/high_scores.yaml")
-                        .expect("high score file could not be opened!");
-                    serde_yaml::to_writer(file, &s).expect("could not write to high score file");
+                Some(ref s) => s.extract().map(|ref s| {
+                    high_score::create(s).expect("could not write to high score file");
                     super::Kind::HighScore
                 }),
             }
