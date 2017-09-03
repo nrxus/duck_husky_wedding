@@ -3,8 +3,7 @@ use duck_husky_wedding::high_score;
 use utils::Try;
 use errors::*;
 
-use moho::input;
-use moho::errors as moho_errors;
+use moho::{self, input};
 use moho::renderer::{align, options, ColorRGBA, FontTexturizer, Renderer, Scene, Texture};
 use sdl2::keyboard::Keycode;
 
@@ -89,7 +88,7 @@ impl<'t, R: Renderer<'t>> Scene<R> for HighScore<R::Texture>
 where
     R::Texture: Texture,
 {
-    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+    fn show(&self, renderer: &mut R) -> moho::errors::Result<()> {
         let center = align::center(640);
 
         renderer.copy(&*self.title, options::at(center.top(0)))?;

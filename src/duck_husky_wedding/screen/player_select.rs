@@ -100,7 +100,7 @@ impl<T> Data<T> {
             let animation = data.animation.load(texture_manager)?;
             let dims: glm::DVec2 = data.out_size.into();
             let dst = align::right(320 - collect_distance / 2)
-                .top(550)
+                .top(525)
                 .dims(glm::to_uvec2(dims * 2.));
             AnimatedData { animation, dst }
         };
@@ -109,7 +109,7 @@ impl<T> Data<T> {
             let animation = data.animation.load(texture_manager)?;
             let dims: glm::DVec2 = data.out_size.into();
             let dst = align::left(320 + collect_distance / 2)
-                .top(550)
+                .top(525)
                 .dims(glm::to_uvec2(dims * 2.));
             AnimatedData { animation, dst }
         };
