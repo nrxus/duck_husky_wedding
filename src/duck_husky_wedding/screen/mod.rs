@@ -81,7 +81,7 @@ impl<T, F> Screen<T, F> {
 }
 
 pub struct Manager<T, F> {
-    menu: menu::Data<T>,
+    menu: Menu<T>,
     game_play: game_play::Data<T>,
     high_score: high_score::Data<T>,
     player_select: player_select::Data<T>,
@@ -105,10 +105,15 @@ impl<T, F> Manager<T, F> {
         R: FontTexturizer<'t, F, Texture = T>,
     {
         let picker = game.heart.texture.load(texture_manager)?;
-        let player_select =
-            player_select::Data::load(font_manager, texturizer, texture_manager, &game, picker.clone())?;
-        let menu = menu::Data::load(font_manager, texturizer, picker)?;
-        let active = Screen::Menu(menu.activate());
+        let player_select = player_select::Data::load(
+            font_manager,
+            texturizer,
+            texture_manager,
+            &game,
+            picker.clone(),
+        )?;
+        let menu = Menu::load(font_manager, texturizer, texture_manager, &game, picker)?;
+        let active = Screen::Menu(menu.clone());
         let game_play = game_play::Data::load(texture_manager, level, game)?;
         let high_score = high_score::Data::load(font_manager, texturizer)?;
         Ok(Manager {
@@ -142,7 +147,7 @@ impl<T, F> Manager<T, F> {
         FT: FontTexturizer<'t, F, Texture = T>,
     {
         self.active = match screen {
-            Kind::Menu => Screen::Menu(self.menu.activate()),
+            Kind::Menu => Screen::Menu(self.menu.clone()),
             Kind::PlayerSelect => Screen::PlayerSelect(self.player_select.activate()),
             Kind::GamePlay(k) => Screen::GamePlay(
                 self.game_play

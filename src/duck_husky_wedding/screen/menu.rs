@@ -1,55 +1,115 @@
+use data;
 use errors::*;
 use duck_husky_wedding::{button, font};
 
 use glm;
-use moho::errors as moho_errors;
-use moho::input;
-use moho::renderer::{align, options, ColorRGBA, Font, FontTexturizer, Renderer, Scene, Texture};
+use moho::{self, input};
+use moho::renderer::{align, options, ColorRGBA, Destination, Font, FontTexturizer, Renderer,
+                     Scene, Texture, TextureFlip, TextureLoader, TextureManager};
 
 use std::rc::Rc;
 use sdl2::keyboard::Keycode;
 
+pub struct Image<T> {
+    texture: Rc<T>,
+    dst: Destination,
+}
+
+impl<T> Clone for Image<T> {
+    fn clone(&self) -> Self {
+        Image {
+            texture: self.texture.clone(),
+            dst: self.dst,
+        }
+    }
+}
+
 pub struct Menu<T> {
-    title: Rc<T>,
+    husky: Image<T>,
+    duck: Image<T>,
+    heart: Image<T>,
     button_manager: ButtonManager<T>,
+    instructions: Rc<T>,
 }
 
-pub struct Data<T> {
-    title: Rc<T>,
-    button_manager: ButtonManager<T>,
+impl<T> Clone for Menu<T> {
+    fn clone(&self) -> Self {
+        Menu {
+            button_manager: self.button_manager.clone(),
+            duck: self.duck.clone(),
+            husky: self.husky.clone(),
+            heart: self.heart.clone(),
+            instructions: self.instructions.clone(),
+        }
+    }
 }
 
-impl<T> Data<T> {
-    pub fn load<'f, 't, FT, FM>(
+impl<T> Menu<T> {
+    pub fn load<'f, 't, FT, FM, TL>(
         font_manager: &mut FM,
         texturizer: &'t FT,
+        texture_manager: &mut TextureManager<'t, TL>,
+        data: &data::Game,
         picker: Rc<T>,
     ) -> Result<Self>
     where
+        T: Texture,
+        TL: TextureLoader<'t, Texture = T>,
         FM: font::Manager,
         FM::Font: Font,
         FT: FontTexturizer<'t, FM::Font, Texture = T>,
     {
-        let font = font_manager.load(font::Kind::KenPixel, 64)?;
-        let title_color = ColorRGBA(255, 255, 0, 255);
-        let title = texturizer
-            .texturize(&*font, "Husky Loves Ducky", &title_color)
-            .map(Rc::new)?;
-        let button_manager = ButtonManager::load(texturizer, &*font, picker)?;
-        Ok(Data {
-            title,
+        let button_manager = {
+            font_manager
+                .load(font::Kind::KenPixel, 64)
+                .and_then(|f| ButtonManager::load(texturizer, f.as_ref(), picker))
+        }?;
+
+        let scale = 2;
+
+        let husky = {
+            let texture = data.husky.idle_texture.load(texture_manager)?;
+            let dims: glm::UVec2 = data.husky.out_size.into();
+            let dims = dims * scale;
+            let dst = align::right(640 - 32 - 30).middle(125).dims(dims);
+            Image { texture, dst }
+        };
+
+        let heart = {
+            let texture = data.heart.texture.load(texture_manager)?;
+            let dims: glm::UVec2 = data.heart.out_size.into();
+            let dims = dims * scale;
+            let dst = align::center(640).middle(125).dims(dims);
+            Image { texture, dst }
+        };
+
+        let duck = {
+            let texture = data.duck.idle_texture.load(texture_manager)?;
+            let dims: glm::UVec2 = data.duck.out_size.into();
+            let dims = dims * scale;
+            let dst = align::left(640 + 32 + 30).middle(125).dims(dims);
+            Image { texture, dst }
+        };
+
+        let instructions = {
+            let font = font_manager.load(font::Kind::KenPixel, 32)?;
+            let color = ColorRGBA(255, 255, 0, 255);
+            texturizer
+                .texturize(
+                    &*font,
+                    "<Use Arrow Keys to select option; then press Enter>",
+                    &color,
+                )
+                .map(Rc::new)
+        }?;
+
+        Ok(Menu {
+            husky,
+            duck,
+            heart,
             button_manager,
+            instructions,
         })
-    }
-
-    pub fn activate(&self) -> Menu<T> {
-        let title = self.title.clone();
-        let button_manager = self.button_manager.clone();
-
-        Menu {
-            title,
-            button_manager,
-        }
     }
 }
 
@@ -66,8 +126,19 @@ impl<'t, R: Renderer<'t>> Scene<R> for Menu<R::Texture>
 where
     R::Texture: Texture,
 {
-    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        renderer.copy(&self.title, options::at(align::top(0).center(640)))?;
+    fn show(&self, renderer: &mut R) -> moho::errors::Result<()> {
+        renderer.copy(&*self.husky.texture, options::at(self.husky.dst))?;
+        renderer.copy(&*self.heart.texture, options::at(self.heart.dst))?;
+        renderer.copy(
+            &*self.duck.texture,
+            options::at(self.duck.dst).flip(TextureFlip::Horizontal),
+        )?;
+        renderer.copy(
+            &self.instructions,
+            options::at(
+                align::bottom(720 - self.instructions.dims().y as i32).center(640),
+            ),
+        )?;
         renderer.show(&self.button_manager)
     }
 }
@@ -119,7 +190,7 @@ impl<T> ButtonManager<T> {
         FT: FontTexturizer<'t, F, Texture = T>,
     {
         let new_game = {
-            let center = glm::ivec2(640, 250);
+            let center = glm::ivec2(640, 325);
             let inner = button::Static::with_text("New Game", texturizer, font)?;
             Button {
                 center,
@@ -129,7 +200,7 @@ impl<T> ButtonManager<T> {
         };
 
         let high_score = {
-            let center = glm::ivec2(640, 450);
+            let center = glm::ivec2(640, 500);
             let inner = button::Static::with_text("High Scores", texturizer, font)?;
             Button {
                 center,
@@ -172,7 +243,7 @@ where
 }
 
 impl<'r, 't, R: Renderer<'t>> ButtonRenderer<'r, 't, R> {
-    fn show(&mut self, button: &Button<R::Texture>) -> moho_errors::Result<()>
+    fn show(&mut self, button: &Button<R::Texture>) -> moho::errors::Result<()>
     where
         R::Texture: Texture,
     {
@@ -197,7 +268,7 @@ impl<'t, R: Renderer<'t>> Scene<R> for ButtonManager<R::Texture>
 where
     R::Texture: Texture,
 {
-    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+    fn show(&self, renderer: &mut R) -> moho::errors::Result<()> {
         let mut renderer = ButtonRenderer {
             renderer,
             selected: self.selected,
