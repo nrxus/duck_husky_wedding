@@ -128,7 +128,7 @@ impl<T> Data<T> {
             PlayerKind::Duck => (&self.game.duck, &self.game.husky),
             PlayerKind::Husky => (&self.game.husky, &self.game.duck),
         };
-        let player = Player::load(player, glm::uvec2(100, 300), texture_manager)?;
+        let player = Player::load(player, glm::uvec2(150, 400), texture_manager)?;
         let world = self.world.activate(npc, texture_manager)?;
         let viewport = ViewPort::new(glm::ivec2(1280, 720));
         let font = font_manager.load(font::Kind::KenPixel, 32)?;
