@@ -65,8 +65,9 @@ impl<T> Player<T> {
         TL: TextureLoader<'t, Texture = T>,
     {
         let dst_rect = {
-            let dims = data.out_size;
-            glm::dvec4(tl.x as f64, tl.y as f64, dims.x as f64, dims.y as f64)
+            let dims = glm::DVec2::from(data.out_size);
+            let tl = glm::to_dvec2(tl);
+            glm::dvec4(tl.x, tl.y, dims.x, dims.y)
         };
         let animation = data.animation.load(texture_manager)?;
         let texture = data.idle_texture.load(texture_manager)?;
@@ -116,7 +117,7 @@ impl<T> Player<T> {
             match self.action {
                 Action::Jumping(_, ref mut held) => if *held < 10 {
                     held.add_assign(1);
-                    self.delta_pos.y -= 3.9 / *held as f64;
+                    self.delta_pos.y -= 3.9 / f64::from(*held)
                 },
                 _ => {
                     self.delta_pos.y = -3.9;

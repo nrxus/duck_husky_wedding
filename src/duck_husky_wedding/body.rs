@@ -24,23 +24,21 @@ impl Body {
                     if flip {
                         tl.x = 100 - tl.x - d.x;
                     }
-                    let left = rect.x + rect.z * tl.x as f64 / 100.;
-                    let top = rect.y + rect.w * tl.y as f64 / 100.;
-                    rectangles.push(Rectangle {
-                        top_left: glm::dvec2(left, top),
-                        dims: glm::dvec2(rect.z * d.x as f64 / 100., rect.w * d.y as f64 / 100.),
-                    })
+                    let tl = glm::DVec2::from(tl) / 100.;
+                    let d = glm::DVec2::from(d) / 100.;
+                    let top_left = glm::dvec2(rect.x + rect.z * tl.x, rect.y + rect.w * tl.y);
+                    let dims = glm::dvec2(rect.z * d.x, rect.w * d.y);
+                    rectangles.push(Rectangle { top_left, dims })
                 }
                 data::Shape::Circle(mut c, r) => {
                     if flip {
                         c.x = 100 - c.x;
                     }
-                    let x = rect.x + rect.z * c.x as f64 / 100.;
-                    let y = rect.y + rect.w * c.y as f64 / 100.;
-                    circles.push(Circle {
-                        center: glm::dvec2(x, y),
-                        radius: rect.z.min(rect.w) * r as f64 / 100.,
-                    })
+                    let c = glm::DVec2::from(c) / 100.;
+                    let r = f64::from(r) / 100.;
+                    let center = glm::dvec2(rect.x + rect.z * c.x, rect.y + rect.w * c.y);
+                    let radius = rect.z.min(rect.w) * r;
+                    circles.push(Circle { center, radius })
                 }
             }
         }

@@ -37,7 +37,7 @@ impl Sprite {
     {
         let texture = self.texture.load(texture_manager)?;
         let sheet = TileSheet::new(self.tiles.into(), texture);
-        let duration = Duration::from_millis(self.duration / self.frames as u64);
+        let duration = Duration::from_millis(self.duration / u64::from(self.frames));
         let animator = animator::Data::new(self.frames, duration);
         Ok(animation::Data::new(animator, sheet))
     }
@@ -142,6 +142,6 @@ impl From<Dimension> for glm::IVec2 {
 impl From<Dimension> for glm::DVec2 {
     fn from(dim: Dimension) -> glm::DVec2 {
         let Dimension { x, y } = dim;
-        glm::dvec2(x as f64, y as f64)
+        glm::dvec2(x.into(), y.into())
     }
 }

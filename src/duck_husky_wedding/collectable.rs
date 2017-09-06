@@ -35,8 +35,9 @@ impl<T: Texture> Data<T> {
         TL: TextureLoader<'t, Texture = T>,
     {
         let body = {
-            let dims: glm::DVec2 = data.out_size.into();
-            let top_left = glm::dvec2(bl.x as f64, bl.y as f64 - dims.y);
+            let dims = glm::DVec2::from(data.out_size);
+            let bl = glm::to_dvec2(bl);
+            let top_left = glm::dvec2(bl.x, bl.y - dims.y);
             Rectangle { top_left, dims }
         };
 

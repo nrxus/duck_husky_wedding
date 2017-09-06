@@ -208,8 +208,8 @@ impl<T> Data<T> {
                         expand_right,
                         expand_bottom,
                         body: Rectangle {
-                            top_left: glm::dvec2(top_left.x as f64, (top_left.y + 9) as f64),
-                            dims: glm::dvec2((dims.x * s.count) as f64, (dims.y - 9) as f64),
+                            top_left: glm::dvec2(top_left.x.into(), (top_left.y + 9).into()),
+                            dims: glm::dvec2((dims.x * s.count).into(), (dims.y - 9).into()),
                         },
                     }
                 })
