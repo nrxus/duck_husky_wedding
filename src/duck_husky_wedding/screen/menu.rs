@@ -4,15 +4,15 @@ use duck_husky_wedding::{button, font};
 
 use glm;
 use moho::{self, input};
-use moho::renderer::{align, options, ColorRGBA, Destination, Font, FontTexturizer, Renderer,
-                     Scene, Texture, TextureFlip, TextureLoader, TextureManager};
+use moho::renderer::{align, options, ColorRGBA, Font, FontTexturizer, Renderer, Scene, Texture,
+                     TextureLoader, TextureManager};
 
 use std::rc::Rc;
 use sdl2::keyboard::Keycode;
 
 pub struct Image<T> {
     texture: Rc<T>,
-    dst: Destination,
+    dst: options::Destination,
 }
 
 impl<T> Clone for Image<T> {
@@ -131,7 +131,7 @@ where
         renderer.copy(&*self.heart.texture, options::at(self.heart.dst))?;
         renderer.copy(
             &*self.duck.texture,
-            options::at(self.duck.dst).flip(TextureFlip::Horizontal),
+            options::at(self.duck.dst).flip(options::Flip::Horizontal),
         )?;
         renderer.copy(
             &self.instructions,

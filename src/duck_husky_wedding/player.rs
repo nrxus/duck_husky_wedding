@@ -7,7 +7,7 @@ use glm;
 use moho::animation::{self, Animation};
 use moho::errors as moho_errors;
 use moho::input;
-use moho::renderer::{options, Renderer, Scene, Texture, TextureFlip, TextureLoader, TextureManager};
+use moho::renderer::{options, Renderer, Scene, Texture, TextureLoader, TextureManager};
 use sdl2::keyboard::Keycode;
 
 use std::ops::AddAssign;
@@ -205,7 +205,7 @@ impl<'t, R: Renderer<'t>> Scene<R> for Player<R::Texture> {
             let dst = glm::to_ivec4(self.dst_rect);
             let mut options = options::at(dst);
             if self.backwards {
-                options = options.flip(TextureFlip::Horizontal);
+                options = options.flip(options::Flip::Horizontal);
             }
             match self.action {
                 Action::Moving(ref a) => renderer.copy_asset(&a.tile(), options),

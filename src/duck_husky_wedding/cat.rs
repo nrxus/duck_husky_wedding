@@ -5,7 +5,7 @@ use duck_husky_wedding::body::Body;
 use glm;
 use moho::animation::{self, Animation};
 use moho::errors as moho_errors;
-use moho::renderer::{options, Renderer, Scene, Texture, TextureFlip, TextureLoader, TextureManager};
+use moho::renderer::{options, Renderer, Scene, Texture, TextureLoader, TextureManager};
 
 use std::time::Duration;
 
@@ -123,7 +123,7 @@ impl<'t, R: Renderer<'t>> Scene<R> for Cat<R::Texture> {
 
         match self.kind {
             Kind::Idle | Kind::Moving { left: true, .. } => {
-                options = options.flip(TextureFlip::Horizontal)
+                options = options.flip(options::Flip::Horizontal)
             }
             _ => {}
         }

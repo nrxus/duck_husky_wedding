@@ -12,8 +12,8 @@ use utils::VecUtils;
 use glm;
 use moho::input;
 use moho::errors as moho_errors;
-use moho::renderer::{align, options, Canvas, ColorRGBA, Destination, Font, FontTexturizer,
-                     Renderer, Scene, Texture, TextureLoader, TextureManager};
+use moho::renderer::{align, options, Canvas, ColorRGBA, Font, FontTexturizer, Renderer, Scene,
+                     Texture, TextureLoader, TextureManager};
 use moho::shape::Shape;
 use sdl2::rect::Rect;
 use sdl2::keyboard::Keycode;
@@ -25,7 +25,7 @@ use std::time::Duration;
 struct Splash<T> {
     texture: T,
     duration: Duration,
-    dst: Destination,
+    dst: options::Destination,
 }
 
 impl<'t, R: Renderer<'t>> Scene<R> for Splash<R::Texture> {

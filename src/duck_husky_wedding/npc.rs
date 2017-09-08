@@ -2,7 +2,7 @@ use data;
 use errors::*;
 
 use moho::errors as moho_errors;
-use moho::renderer::{options, Renderer, Scene, TextureFlip, TextureLoader, TextureManager};
+use moho::renderer::{options, Renderer, Scene, TextureLoader, TextureManager};
 
 use glm;
 use std::rc::Rc;
@@ -53,7 +53,7 @@ impl<'t, R: Renderer<'t>> Scene<R> for Npc<R::Texture> {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
         renderer.copy(
             &*self.texture,
-            options::at(self.dst).flip(TextureFlip::Horizontal),
+            options::at(self.dst).flip(options::Flip::Horizontal),
         )
     }
 }

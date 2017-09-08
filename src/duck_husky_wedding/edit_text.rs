@@ -6,7 +6,7 @@ use utils::Try;
 use glm;
 use moho::errors as moho_errors;
 use moho::input;
-use moho::renderer::{options, ColorRGBA, Destination, FontTexturizer, Renderer, Scene, Texture};
+use moho::renderer::{options, ColorRGBA, FontTexturizer, Renderer, Scene, Texture};
 use sdl2::keyboard::Keycode;
 
 use std::cmp;
@@ -139,7 +139,7 @@ where
     R::Texture: Texture,
 {
     fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
-        let mut dst: Destination = self.tl.into();
+        let mut dst: options::Destination = self.tl.into();
 
         {
             let texture = &self.label;

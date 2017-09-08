@@ -7,8 +7,8 @@ use glm;
 use moho::animation::{self, Animation};
 use moho::errors as moho_errors;
 use moho::input;
-use moho::renderer::{align, options, ColorRGBA, Destination, FontTexturizer, Renderer, Scene,
-                     Texture, TextureLoader, TextureManager};
+use moho::renderer::{align, options, ColorRGBA, FontTexturizer, Renderer, Scene, Texture,
+                     TextureLoader, TextureManager};
 use sdl2::keyboard::Keycode;
 
 use std::rc::Rc;
@@ -16,12 +16,12 @@ use std::time::Duration;
 
 struct AnimatedData<T> {
     animation: animation::Data<T>,
-    dst: Destination,
+    dst: options::Destination,
 }
 
 struct Animated<T> {
     animation: Animation<T>,
-    dst: Destination,
+    dst: options::Destination,
 }
 
 impl<T> AnimatedData<T> {
@@ -183,7 +183,9 @@ where
         renderer.show(&self.gem)?;
         renderer.copy(
             &self.instructions,
-            options::at(align::bottom(720 - self.instructions.dims().y as i32).center(640)),
+            options::at(
+                align::bottom(720 - self.instructions.dims().y as i32).center(640),
+            ),
         )
     }
 }

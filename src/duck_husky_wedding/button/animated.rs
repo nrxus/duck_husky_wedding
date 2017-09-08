@@ -1,12 +1,12 @@
 use moho::animation;
-use moho::renderer::Destination;
+use moho::renderer::options;
 
 use std::rc::Rc;
 
 pub struct Animated<T> {
     pub idle: Rc<T>,
     pub animation: animation::Data<T>,
-    pub dst: Destination,
+    pub dst: options::Destination,
 }
 
 impl<T> Clone for Animated<T> {
