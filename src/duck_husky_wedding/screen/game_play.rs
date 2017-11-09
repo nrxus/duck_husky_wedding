@@ -210,8 +210,8 @@ impl<T, F> GamePlay<T, F> {
                             self.timer.value,
                         ).unwrap(),
                     );
-                } else if (self.player.dst_rect.y + self.player.dst_rect.w) as i32 >=
-                    self.world.npc.bottom()
+                } else if (self.player.dst_rect.y + self.player.dst_rect.w) as i32
+                    >= self.world.npc.bottom()
                 {
                     self.heart.zoom += 0.05;
                 } else {

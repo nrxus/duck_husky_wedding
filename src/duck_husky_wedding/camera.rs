@@ -1,6 +1,6 @@
 use glm;
 use moho::errors as moho_errors;
-use moho::renderer::{Options, Renderer, Texture};
+use moho::renderer::{ColorRGBA, Options, Renderer, Texture};
 use sdl2::rect;
 
 use std::cmp;
@@ -31,9 +31,9 @@ impl ViewPort {
     }
 
     pub fn contains(&self, rect: &glm::IVec4) -> bool {
-        !(self.translation.x > rect.x + rect.z) && !(self.translation.x + self.dims.x < rect.x) &&
-            !(self.translation.y > rect.y + rect.w) &&
-            !(self.translation.y + self.dims.y < rect.y)
+        !(self.translation.x > rect.x + rect.z) && !(self.translation.x + self.dims.x < rect.x)
+            && !(self.translation.y > rect.y + rect.w)
+            && !(self.translation.y + self.dims.y < rect.y)
     }
 
     pub fn camera<'c, 't, R: Renderer<'t>>(&'c self, renderer: &'c mut R) -> Camera<'c, R> {
@@ -49,6 +49,10 @@ where
     R::Texture: Texture,
 {
     type Texture = R::Texture;
+
+    fn set_draw_color(&mut self, color: ColorRGBA) {
+        self.renderer.set_draw_color(color)
+    }
 
     fn draw_rects(&mut self, rects: &[rect::Rect]) -> moho_errors::Result<()> {
         let rects: Vec<_> = rects

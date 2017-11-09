@@ -135,9 +135,7 @@ where
         )?;
         renderer.copy(
             &self.instructions,
-            options::at(
-                align::bottom(720 - self.instructions.dims().y as i32).center(640),
-            ),
+            options::at(align::bottom(720 - self.instructions.dims().y as i32).center(640)),
         )?;
         renderer.show(&self.button_manager)
     }
