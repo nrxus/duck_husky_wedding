@@ -1,9 +1,8 @@
 use data;
 use errors::*;
 
-
+use moho;
 use moho::animation::{self, Animation};
-use moho::errors as moho_errors;
 use moho::renderer::{options, Renderer, Scene, Texture, TextureLoader, TextureManager};
 use moho::shape::Rectangle;
 
@@ -65,7 +64,7 @@ impl<T> Collectable<T> {
 }
 
 impl<'t, R: Renderer<'t>> Scene<R> for Collectable<R::Texture> {
-    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+    fn show(&self, renderer: &mut R) -> moho::errors::Result<()> {
         let dst = glm::ivec4(
             self.body.top_left.x as i32,
             self.body.top_left.y as i32,

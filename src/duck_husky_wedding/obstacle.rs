@@ -3,9 +3,9 @@ use duck_husky_wedding::body::Body;
 use utils::Try;
 use errors::*;
 
+use moho;
 use moho::shape::Rectangle;
 use moho::renderer::{options, Renderer, Scene, TextureLoader, TextureManager};
-use moho::errors as moho_errors;
 
 use glm;
 
@@ -92,7 +92,7 @@ impl<T> Obstacle<T> {
 }
 
 impl<'t, R: Renderer<'t>> Scene<R> for Obstacle<R::Texture> {
-    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+    fn show(&self, renderer: &mut R) -> moho::errors::Result<()> {
         (0..self.count.x)
             .flat_map(|i| (0..self.count.y).map(move |j| (i, j)))
             .map(|(i, j)| {

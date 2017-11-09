@@ -10,9 +10,9 @@ use duck_husky_wedding::obstacle::Obstacle;
 use utils::Try;
 
 use glm;
+use moho;
 use moho::shape::Rectangle;
 use moho::renderer::{options, Renderer, Scene, Texture, TextureLoader, TextureManager};
-use moho::errors as moho_errors;
 
 use std::rc::Rc;
 use std::time::Duration;
@@ -29,7 +29,7 @@ pub struct Spike<T> {
 }
 
 impl<'t, R: Renderer<'t>> Scene<R> for Spike<R::Texture> {
-    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+    fn show(&self, renderer: &mut R) -> moho::errors::Result<()> {
         if let Some(ref g) = self.expand_left {
             let d = glm::ivec4(
                 self.top_left.x - self.dims.x as i32,
@@ -323,7 +323,7 @@ impl<T> World<T> {
 }
 
 impl<'t, R: Renderer<'t>> Scene<R> for World<R::Texture> {
-    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+    fn show(&self, renderer: &mut R) -> moho::errors::Result<()> {
         renderer.show(&self.background)?;
         renderer.show(&self.goal)?;
         self.obstacles.iter().map(|o| renderer.show(o)).try()?;

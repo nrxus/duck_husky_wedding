@@ -1,5 +1,5 @@
 use glm;
-use moho::errors as moho_errors;
+use moho;
 use moho::renderer::{ColorRGBA, Options, Renderer, Texture};
 use sdl2::rect;
 
@@ -54,7 +54,7 @@ where
         self.renderer.set_draw_color(color)
     }
 
-    fn draw_rects(&mut self, rects: &[rect::Rect]) -> moho_errors::Result<()> {
+    fn draw_rects(&mut self, rects: &[rect::Rect]) -> moho::errors::Result<()> {
         let rects: Vec<_> = rects
             .iter()
             .map(|r| {
@@ -69,7 +69,7 @@ where
         self.renderer.draw_rects(&rects)
     }
 
-    fn fill_rects(&mut self, rects: &[rect::Rect]) -> moho_errors::Result<()> {
+    fn fill_rects(&mut self, rects: &[rect::Rect]) -> moho::errors::Result<()> {
         let rects: Vec<_> = rects
             .iter()
             .map(|r| {
@@ -84,7 +84,7 @@ where
         self.renderer.fill_rects(&rects)
     }
 
-    fn copy(&mut self, texture: &Self::Texture, options: Options) -> moho_errors::Result<()> {
+    fn copy(&mut self, texture: &Self::Texture, options: Options) -> moho::errors::Result<()> {
         match options.dst {
             Some(d) if self.viewport.contains(&d.rect(|| texture.dims())) => {
                 let dst = d.nudge(-self.viewport.translation);

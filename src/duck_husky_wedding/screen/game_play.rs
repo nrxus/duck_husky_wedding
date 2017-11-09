@@ -10,8 +10,7 @@ use errors::*;
 use utils::VecUtils;
 
 use glm;
-use moho::input;
-use moho::errors as moho_errors;
+use moho::{self, input};
 use moho::renderer::{align, options, Canvas, ColorRGBA, Font, FontTexturizer, Renderer, Scene,
                      Texture, TextureLoader, TextureManager};
 use moho::shape::Shape;
@@ -29,7 +28,7 @@ struct Splash<T> {
 }
 
 impl<'t, R: Renderer<'t>> Scene<R> for Splash<R::Texture> {
-    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+    fn show(&self, renderer: &mut R) -> moho::errors::Result<()> {
         if self.is_active() {
             renderer.copy(&self.texture, options::at(self.dst))
         } else {
@@ -344,7 +343,7 @@ impl<'t, R: Canvas<'t>, F> Scene<R> for GamePlay<R::Texture, F>
 where
     R::Texture: Texture,
 {
-    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+    fn show(&self, renderer: &mut R) -> moho::errors::Result<()> {
         {
             let mut renderer = self.viewport.camera(renderer);
             renderer.show(&self.world)?;

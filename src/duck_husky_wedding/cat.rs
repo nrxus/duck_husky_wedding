@@ -3,8 +3,8 @@ use errors::*;
 use duck_husky_wedding::body::Body;
 
 use glm;
+use moho;
 use moho::animation::{self, Animation};
-use moho::errors as moho_errors;
 use moho::renderer::{options, Renderer, Scene, Texture, TextureLoader, TextureManager};
 
 use std::time::Duration;
@@ -117,7 +117,7 @@ impl<T> Cat<T> {
 }
 
 impl<'t, R: Renderer<'t>> Scene<R> for Cat<R::Texture> {
-    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+    fn show(&self, renderer: &mut R) -> moho::errors::Result<()> {
         let dst_rect = glm::to_ivec4(self.dst);
         let mut options = options::at(dst_rect);
 

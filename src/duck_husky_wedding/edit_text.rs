@@ -4,8 +4,7 @@ use errors::*;
 use utils::Try;
 
 use glm;
-use moho::errors as moho_errors;
-use moho::input;
+use moho::{self, input};
 use moho::renderer::{options, ColorRGBA, FontTexturizer, Renderer, Scene, Texture};
 use sdl2::keyboard::Keycode;
 
@@ -138,7 +137,7 @@ impl<'t, R: Renderer<'t>, F> Scene<R> for EditText<R::Texture, F>
 where
     R::Texture: Texture,
 {
-    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+    fn show(&self, renderer: &mut R) -> moho::errors::Result<()> {
         let mut dst: options::Destination = self.tl.into();
 
         {

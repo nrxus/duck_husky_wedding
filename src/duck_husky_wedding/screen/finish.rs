@@ -4,7 +4,7 @@ use duck_husky_wedding::high_score::{self, ScoreEntry};
 use errors::*;
 
 use glm;
-use moho::errors as moho_errors;
+use moho;
 use moho::renderer::{align, options, Canvas, ColorRGBA, Font, FontTexturizer, Scene, Texture};
 use moho::input;
 use sdl2::rect::Rect;
@@ -163,7 +163,7 @@ impl<'t, R: Canvas<'t>, F> Scene<R> for Finish<R::Texture, F>
 where
     R::Texture: Texture,
 {
-    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+    fn show(&self, renderer: &mut R) -> moho::errors::Result<()> {
         renderer.set_draw_color(ColorRGBA(0, 0, 0, 255));
         renderer.fill_rects(&[
             Rect::new(

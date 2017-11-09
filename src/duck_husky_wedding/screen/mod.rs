@@ -10,8 +10,7 @@ use self::game_play::{GamePlay, PlayerKind};
 use self::high_score::HighScore;
 use self::player_select::PlayerSelect;
 
-use moho::errors as moho_errors;
-use moho::input;
+use moho::{self, input};
 use moho::renderer::{Canvas, Font, FontLoader, FontManager, FontTexturizer, Scene, Texture,
                      TextureLoader, TextureManager};
 
@@ -37,7 +36,7 @@ impl<'t, R: Canvas<'t>, F> Scene<R> for Screen<R::Texture, F>
 where
     R::Texture: Texture,
 {
-    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+    fn show(&self, renderer: &mut R) -> moho::errors::Result<()> {
         match *self {
             Screen::Menu(ref s) => renderer.show(s),
             Screen::GamePlay(ref s) => renderer.show(s),

@@ -2,7 +2,7 @@ use data;
 use errors::*;
 
 use glm;
-use moho::errors as moho_errors;
+use moho;
 use moho::renderer::{options, Renderer, Scene, Texture, TextureLoader, TextureManager};
 
 use std::rc::Rc;
@@ -39,7 +39,7 @@ impl<T> Clone for Goal<T> {
 }
 
 impl<'t, R: Renderer<'t>> Scene<R> for Goal<R::Texture> {
-    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+    fn show(&self, renderer: &mut R) -> moho::errors::Result<()> {
         renderer.copy(&*self.texture, options::at(self.dst))
     }
 }

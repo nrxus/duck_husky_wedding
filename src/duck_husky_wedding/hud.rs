@@ -1,6 +1,6 @@
 use errors::*;
 
-use moho::errors as moho_errors;
+use moho;
 use moho::renderer::{Asset, ColorRGBA, FontTexturizer, Options, Renderer};
 
 use std::rc::Rc;
@@ -119,7 +119,7 @@ impl<T, F, V: AsCached + Copy> TextBox<T, F, V> {
 }
 
 impl<'t, R: Renderer<'t>, F, V: AsCached> Asset<R> for TextBox<R::Texture, F, V> {
-    fn draw(&self, options: Options, renderer: &mut R) -> moho_errors::Result<()> {
+    fn draw(&self, options: Options, renderer: &mut R) -> moho::errors::Result<()> {
         renderer.copy(&self.text.texture, options)
     }
 }

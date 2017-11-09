@@ -3,7 +3,7 @@ use errors::*;
 use data;
 
 use glm;
-use moho::errors as moho_errors;
+use moho;
 use moho::renderer::{options, Renderer, Scene, TextureLoader, TextureManager};
 
 use std::rc::Rc;
@@ -40,7 +40,7 @@ impl<T> Background<T> {
 }
 
 impl<'t, R: Renderer<'t>> Scene<R> for Background<R::Texture> {
-    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+    fn show(&self, renderer: &mut R) -> moho::errors::Result<()> {
         (0..4)
             .map(|i| {
                 glm::ivec4(

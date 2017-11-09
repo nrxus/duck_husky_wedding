@@ -5,8 +5,7 @@ use errors::*;
 
 use glm;
 use moho::animation::{self, Animation};
-use moho::errors as moho_errors;
-use moho::input;
+use moho::{self, input};
 use moho::renderer::{align, options, ColorRGBA, FontTexturizer, Renderer, Scene, Texture,
                      TextureLoader, TextureManager};
 use sdl2::keyboard::Keycode;
@@ -34,7 +33,7 @@ impl<T> AnimatedData<T> {
 }
 
 impl<'t, R: Renderer<'t>> Scene<R> for Animated<R::Texture> {
-    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+    fn show(&self, renderer: &mut R) -> moho::errors::Result<()> {
         renderer.copy_asset(&self.animation.tile(), options::at(self.dst))
     }
 }
@@ -173,7 +172,7 @@ impl<'t, R: Renderer<'t>> Scene<R> for PlayerSelect<R::Texture>
 where
     R::Texture: Texture,
 {
-    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+    fn show(&self, renderer: &mut R) -> moho::errors::Result<()> {
         renderer.copy(&self.title, options::at(align::top(50).center(640)))?;
         renderer.show(&self.button_manager)?;
         renderer.copy(&self.avoid_text, options::at(align::top(400).center(960)))?;
@@ -352,7 +351,7 @@ where
 }
 
 impl<'b, 't, R: Renderer<'t>> ButtonRenderer<'b, 't, R> {
-    fn show(&mut self, button: &Button<R::Texture>) -> moho_errors::Result<()> {
+    fn show(&mut self, button: &Button<R::Texture>) -> moho::errors::Result<()> {
         let options = options::at(button.inner.dst);
         match *self.selected {
             Some(ref b) if b.kind == button.kind => {
@@ -370,7 +369,7 @@ impl<'t, R: Renderer<'t>> Scene<R> for ButtonManager<R::Texture>
 where
     R::Texture: Texture,
 {
-    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+    fn show(&self, renderer: &mut R) -> moho::errors::Result<()> {
         let mut renderer = ButtonRenderer {
             renderer: renderer,
             selected: &self.selected,

@@ -5,8 +5,7 @@ use errors::*;
 
 use glm;
 use moho::animation::{self, Animation};
-use moho::errors as moho_errors;
-use moho::input;
+use moho::{self, input};
 use moho::renderer::{options, Renderer, Scene, Texture, TextureLoader, TextureManager};
 use sdl2::keyboard::Keycode;
 
@@ -197,7 +196,7 @@ impl<T> Player<T> {
 }
 
 impl<'t, R: Renderer<'t>> Scene<R> for Player<R::Texture> {
-    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+    fn show(&self, renderer: &mut R) -> moho::errors::Result<()> {
         if self.invincibility
             .map(|i| i.flicker.is_shown())
             .unwrap_or(true)

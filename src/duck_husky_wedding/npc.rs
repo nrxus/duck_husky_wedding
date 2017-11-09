@@ -1,7 +1,7 @@
 use data;
 use errors::*;
 
-use moho::errors as moho_errors;
+use moho;
 use moho::renderer::{options, Renderer, Scene, TextureLoader, TextureManager};
 
 use glm;
@@ -50,7 +50,7 @@ impl<T> Npc<T> {
 }
 
 impl<'t, R: Renderer<'t>> Scene<R> for Npc<R::Texture> {
-    fn show(&self, renderer: &mut R) -> moho_errors::Result<()> {
+    fn show(&self, renderer: &mut R) -> moho::errors::Result<()> {
         renderer.copy(
             &*self.texture,
             options::at(self.dst).flip(options::Flip::Horizontal),
