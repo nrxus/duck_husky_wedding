@@ -68,8 +68,8 @@ impl<T> Data<T> {
             .collect::<Result<Vec<_>>>()?;
         Ok(HighScore {
             scores: scores,
-            title: self.title.clone(),
-            instructions: self.instructions.clone(),
+            title: Rc::clone(&self.title),
+            instructions: Rc::clone(&self.instructions),
         })
     }
 }

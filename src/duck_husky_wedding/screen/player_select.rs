@@ -144,14 +144,14 @@ impl<T> Data<T> {
 
     pub fn activate(&self) -> PlayerSelect<T> {
         PlayerSelect {
-            title: self.title.clone(),
+            title: Rc::clone(&self.title),
             button_manager: self.button_manager.clone(),
-            collect_text: self.collect_text.clone(),
-            avoid_text: self.avoid_text.clone(),
+            collect_text: Rc::clone(&self.collect_text),
+            avoid_text: Rc::clone(&self.avoid_text),
             gem: self.gem.start(),
             coin: self.coin.start(),
             cat: self.cat.start(),
-            instructions: self.instructions.clone(),
+            instructions: Rc::clone(&self.instructions),
         }
     }
 }
@@ -235,7 +235,7 @@ impl<T> Clone for ButtonManager<T> {
         ButtonManager {
             duck: self.duck.clone(),
             husky: self.husky.clone(),
-            picker: self.picker.clone(),
+            picker: Rc::clone(&self.picker),
             selected: None,
         }
     }

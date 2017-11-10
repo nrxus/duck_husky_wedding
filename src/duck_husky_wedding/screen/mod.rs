@@ -16,6 +16,7 @@ use moho::renderer::{Canvas, Font, FontLoader, FontManager, FontTexturizer, Scen
 
 use errors::*;
 
+use std::rc::Rc;
 use std::time::Duration;
 
 pub enum Kind {
@@ -109,7 +110,7 @@ impl<T, F> Manager<T, F> {
             texturizer,
             texture_manager,
             &game,
-            picker.clone(),
+            Rc::clone(&picker),
         )?;
         let menu = Menu::load(font_manager, texturizer, texture_manager, &game, picker)?;
         let active = Screen::Menu(menu.clone());

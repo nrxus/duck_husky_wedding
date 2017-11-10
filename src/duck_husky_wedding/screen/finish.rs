@@ -97,7 +97,7 @@ impl<T, F> Finish<T, F> {
         let name = EditText::load(
             "Enter Name: ",
             glm::ivec2(369, 400),
-            data.detail_font.clone(),
+            Rc::clone(&data.detail_font),
             texturizer,
         )?;
 

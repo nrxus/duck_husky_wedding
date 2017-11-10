@@ -133,13 +133,13 @@ impl<T> Data<T> {
         let font = font_manager.load(font::Kind::KenPixel, 32)?;
         let timer = TextBox::load(
             Duration::from_secs(110),
-            font.clone(),
+            Rc::clone(&font),
             texturizer,
             Box::new(|v| format!("Time: {:03}", v)),
         )?;
         let score = TextBox::load(
             0,
-            font.clone(),
+            Rc::clone(&font),
             texturizer,
             Box::new(|s| format!("Score: {:05}", s)),
         )?;
@@ -156,7 +156,7 @@ impl<T> Data<T> {
             }
         };
         let heart = Heart {
-            texture: self.heart.clone(),
+            texture: Rc::clone(&self.heart),
             size: self.game.heart.out_size.into(),
             zoom: 0.,
         };

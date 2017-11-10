@@ -12,7 +12,7 @@ pub struct Animated<T> {
 impl<T> Clone for Animated<T> {
     fn clone(&self) -> Animated<T> {
         Animated {
-            idle: self.idle.clone(),
+            idle: Rc::clone(&self.idle),
             animation: self.animation.clone(),
             dst: self.dst,
         }

@@ -16,7 +16,7 @@ pub struct Background<T> {
 impl<T> Clone for Background<T> {
     fn clone(&self) -> Self {
         Background {
-            texture: self.texture.clone(),
+            texture: Rc::clone(&self.texture),
             dimensions: self.dimensions,
         }
     }

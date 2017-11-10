@@ -32,7 +32,7 @@ impl<T: Texture> Goal<T> {
 impl<T> Clone for Goal<T> {
     fn clone(&self) -> Self {
         Goal {
-            texture: self.texture.clone(),
+            texture: Rc::clone(&self.texture),
             dst: self.dst,
         }
     }

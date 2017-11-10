@@ -89,7 +89,7 @@ impl<T> Clone for Spike<T> {
             expand_left: self.expand_left.clone(),
             expand_right: self.expand_right.clone(),
             expand_bottom: self.expand_bottom.clone(),
-            texture: self.texture.clone(),
+            texture: Rc::clone(&self.texture),
             body: self.body.clone(),
         }
     }
@@ -190,7 +190,7 @@ impl<T> Data<T> {
                     let mut bl: glm::IVec2 = s.bottom_left.into();
                     bl = bl * tile_size;
                     bl.y = 720 - bl.y;
-                    let texture = texture.clone();
+                    let texture = Rc::clone(&texture);
                     let top_left = glm::ivec2(bl.x, bl.y - dims.y as i32);
                     let expand_left = s.left
                         .map(|l| l.load(&game.ground, texture_manager).unwrap());

@@ -87,7 +87,7 @@ impl<T> Player<T> {
         legs: Vec<data::Shape>,
     ) -> Self {
         Player {
-            action: Action::Standing(texture.clone()),
+            action: Action::Standing(Rc::clone(&texture)),
             delta_pos: glm::dvec2(0., 0.),
             backwards: false,
             invincibility: None,
@@ -146,15 +146,15 @@ impl<T> Player<T> {
 
         let next_action = match self.action {
             Action::Moving(ref mut a) => if !on_floor {
-                Some(Action::Jumping(self.texture.clone(), 0))
+                Some(Action::Jumping(Rc::clone(&self.texture), 0))
             } else if self.delta_pos.x == 0. {
-                Some(Action::Standing(self.texture.clone()))
+                Some(Action::Standing(Rc::clone(&self.texture)))
             } else {
                 a.animate(delta);
                 None
             },
             Action::Standing(_) => if !on_floor {
-                Some(Action::Jumping(self.texture.clone(), 0))
+                Some(Action::Jumping(Rc::clone(&self.texture), 0))
             } else if self.delta_pos.x == 0. {
                 None
             } else {
@@ -168,7 +168,7 @@ impl<T> Player<T> {
                 }
                 None
             } else if self.delta_pos.x == 0. {
-                Some(Action::Standing(self.texture.clone()))
+                Some(Action::Standing(Rc::clone(&self.texture)))
             } else {
                 let animation = self.animation.clone().start();
                 Some(Action::Moving(animation))

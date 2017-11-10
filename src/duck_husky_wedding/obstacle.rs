@@ -23,12 +23,12 @@ struct Textures<T> {
 impl<T> Clone for Textures<T> {
     fn clone(&self) -> Self {
         Textures {
-            center: self.center.clone(),
-            left: self.left.clone(),
-            right: self.right.clone(),
-            top_center: self.top_center.clone(),
-            top_left: self.top_left.clone(),
-            top_right: self.top_right.clone(),
+            center: Rc::clone(&self.center),
+            left: Rc::clone(&self.left),
+            right: Rc::clone(&self.right),
+            top_center: Rc::clone(&self.top_center),
+            top_left: Rc::clone(&self.top_left),
+            top_right: Rc::clone(&self.top_right),
         }
     }
 }

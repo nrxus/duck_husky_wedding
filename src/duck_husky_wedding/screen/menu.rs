@@ -18,7 +18,7 @@ pub struct Image<T> {
 impl<T> Clone for Image<T> {
     fn clone(&self) -> Self {
         Image {
-            texture: self.texture.clone(),
+            texture: Rc::clone(&self.texture),
             dst: self.dst,
         }
     }
@@ -39,7 +39,7 @@ impl<T> Clone for Menu<T> {
             duck: self.duck.clone(),
             husky: self.husky.clone(),
             heart: self.heart.clone(),
-            instructions: self.instructions.clone(),
+            instructions: Rc::clone(&self.instructions),
         }
     }
 }
@@ -176,7 +176,7 @@ impl<T> Clone for ButtonManager<T> {
             selected: self.selected,
             new_game: self.new_game.clone(),
             high_score: self.high_score.clone(),
-            picker: self.picker.clone(),
+            picker: Rc::clone(&self.picker),
         }
     }
 }

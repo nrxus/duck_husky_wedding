@@ -15,7 +15,7 @@ pub struct Npc<T> {
 impl<T> Clone for Npc<T> {
     fn clone(&self) -> Self {
         Npc {
-            texture: self.texture.clone(),
+            texture: Rc::clone(&self.texture),
             dst: self.dst,
         }
     }

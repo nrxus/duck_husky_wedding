@@ -14,8 +14,8 @@ pub struct Static<T> {
 impl<T> Clone for Static<T> {
     fn clone(&self) -> Static<T> {
         Static {
-            idle: self.idle.clone(),
-            selected: self.selected.clone(),
+            idle: Rc::clone(&self.idle),
+            selected: Rc::clone(&self.selected),
             dims: self.dims,
         }
     }
