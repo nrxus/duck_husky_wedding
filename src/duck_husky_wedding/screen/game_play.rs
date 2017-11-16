@@ -11,8 +11,8 @@ use utils::VecUtils;
 
 use glm;
 use moho::{self, input};
-use moho::renderer::{align, options, Canvas, ColorRGBA, Font, FontTexturizer, Renderer, Scene,
-                     Texture, TextureLoader, TextureManager};
+use moho::renderer::{align, options, Canvas, ColorRGBA, Font, Renderer, Scene, Texture,
+                     TextureLoader, TextureManager};
 use moho::shape::Shape;
 use sdl2::rect::Rect;
 use sdl2::keyboard::Keycode;
@@ -110,18 +110,17 @@ impl<T> Data<T> {
         Ok(Data { game, world, heart })
     }
 
-    pub fn activate<'t, 'f, TL, FM, FT>(
+    pub fn activate<'t, TL, FM>(
         &self,
         texture_manager: &mut TextureManager<'t, TL>,
         font_manager: &mut FM,
-        texturizer: &'t FT,
         kind: PlayerKind,
     ) -> Result<GamePlay<T, FM::Font>>
     where
         TL: TextureLoader<'t, Texture = T>,
         TL::Texture: Texture,
         FM: font::Manager,
-        FT: FontTexturizer<'t, FM::Font, Texture = T>,
+        FM::Font: Font<Texture = T>,
     {
         let (player, npc) = match kind {
             PlayerKind::Duck => (&self.game.duck, &self.game.husky),
@@ -134,13 +133,11 @@ impl<T> Data<T> {
         let timer = TextBox::load(
             Duration::from_secs(110),
             Rc::clone(&font),
-            texturizer,
             Box::new(|v| format!("Time: {:03}", v)),
         )?;
         let score = TextBox::load(
             0,
             Rc::clone(&font),
-            texturizer,
             Box::new(|s| format!("Score: {:05}", s)),
         )?;
         let splashes = vec![];
@@ -177,17 +174,10 @@ impl<T> Data<T> {
     }
 }
 
-impl<T, F> GamePlay<T, F> {
-    pub fn update<'t, FT>(
-        &mut self,
-        delta: Duration,
-        input: &input::State,
-        texturizer: &'t FT,
-    ) -> Option<super::Kind>
+impl<T, F: Font<Texture = T>> GamePlay<T, F> {
+    pub fn update(&mut self, delta: Duration, input: &input::State) -> Option<super::Kind>
     where
         T: Texture,
-        F: Font,
-        FT: FontTexturizer<'t, F, Texture = T>,
     {
         self.splashes.retain(|s| s.is_active());
         for s in &mut self.splashes {
@@ -196,7 +186,7 @@ impl<T, F> GamePlay<T, F> {
 
         match self.state {
             State::Running => {
-                self.update_running(delta, input, texturizer);
+                self.update_running(delta, input);
                 None
             }
             State::Transition => {
@@ -204,7 +194,6 @@ impl<T, F> GamePlay<T, F> {
                     self.state = State::Finished(
                         super::finish::Finish::load(
                             &self.finish,
-                            texturizer,
                             self.score.value,
                             self.timer.value,
                         ).unwrap(),
@@ -227,14 +216,9 @@ impl<T, F> GamePlay<T, F> {
         }
     }
 
-    pub fn update_running<'t, FT>(
-        &mut self,
-        delta: Duration,
-        input: &input::State,
-        texturizer: &'t FT,
-    ) where
+    pub fn update_running(&mut self, delta: Duration, input: &input::State)
+    where
         T: Texture,
-        FT: FontTexturizer<'t, F, Texture = T>,
     {
         self.world.update(delta);
 
@@ -256,8 +240,8 @@ impl<T, F> GamePlay<T, F> {
                 .collectables
                 .retain_or_drain(|c| !body.intersects(&c.body) && !legs.intersects(&c.body))
             {
-                let texture = texturizer
-                    .texturize(self.splash_font.as_ref(), &format!("+{}", c.score), &color)
+                let texture = self.splash_font
+                    .texturize(&format!("+{}", c.score), &color)
                     .unwrap();
                 let splash = Splash {
                     texture,
@@ -287,8 +271,8 @@ impl<T, F> GamePlay<T, F> {
                 let dmg = -d;
                 self.player.invincible();
                 let color = ColorRGBA(255, 0, 0, 255);
-                let texture = texturizer
-                    .texturize(self.splash_font.as_ref(), &format!("{}", dmg), &color)
+                let texture = self.splash_font
+                    .texturize(&format!("{}", dmg), &color)
                     .unwrap();
                 let splash = Splash {
                     texture,
@@ -309,33 +293,22 @@ impl<T, F> GamePlay<T, F> {
             let y_size = 200;
             self.state = State::TimeUp {
                 view: glm::ivec4(640 - x_size / 2, 360 - y_size / 2, x_size, y_size),
-                title: texturizer
-                    .texturize(
-                        &*self.time_up_font,
-                        "TIME'S UP!",
-                        &ColorRGBA(255, 0, 0, 255),
-                    )
+                title: self.time_up_font
+                    .texturize("TIME'S UP!", &ColorRGBA(255, 0, 0, 255))
                     .unwrap(),
-                instructions: texturizer
-                    .texturize(
-                        &*self.time_up_font,
-                        "<PRESS ENTER>",
-                        &ColorRGBA(255, 255, 255, 255),
-                    )
+                instructions: self.time_up_font
+                    .texturize("<PRESS ENTER>", &ColorRGBA(255, 255, 255, 255))
                     .unwrap(),
             };
         }
     }
 
-    pub fn before_draw<'t, FT>(&mut self, texturizer: &'t FT) -> Result<()>
-    where
-        FT: FontTexturizer<'t, F, Texture = T>,
-    {
+    pub fn before_draw(&mut self) -> Result<()> {
         if let State::Finished(ref mut f) = self.state {
-            f.before_draw(texturizer)?;
+            f.before_draw()?;
         }
-        self.score.before_draw(texturizer)?;
-        self.timer.before_draw(texturizer)
+        self.score.before_draw()?;
+        self.timer.before_draw()
     }
 }
 

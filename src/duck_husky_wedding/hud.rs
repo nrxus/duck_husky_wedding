@@ -1,7 +1,7 @@
 use errors::*;
 
 use moho;
-use moho::renderer::{Asset, ColorRGBA, FontTexturizer, Options, Renderer};
+use moho::renderer::{Asset, ColorRGBA, Font, Options, Renderer};
 
 use std::rc::Rc;
 use std::time::Duration;
@@ -42,18 +42,13 @@ pub struct TextCache<T, V> {
 }
 
 impl<T, V: AsCached> TextCache<T, V> {
-    pub fn load<'t, F, FT>(
-        value: CacheValue<V>,
-        font: &F,
-        texturizer: &'t FT,
-        pattern: &Fn(V::Value) -> String,
-    ) -> Result<Self>
+    pub fn load<F>(value: CacheValue<V>, font: &F, pattern: &Fn(V::Value) -> String) -> Result<Self>
     where
-        FT: FontTexturizer<'t, F, Texture = T>,
+        F: Font<Texture = T>,
     {
         let text = pattern(value.0.as_cached());
         let color = ColorRGBA(255, 255, 0, 255);
-        let texture = texturizer.texturize(font, &text, &color)?;
+        let texture = font.texturize(&text, &color)?;
         Ok(TextCache { value, texture })
     }
 }
@@ -87,17 +82,9 @@ pub struct TextBox<T, F, V: AsCached> {
     pub value: V,
 }
 
-impl<T, F, V: AsCached + Copy> TextBox<T, F, V> {
-    pub fn load<'t, FT>(
-        value: V,
-        font: Rc<F>,
-        texturizer: &'t FT,
-        pattern: Box<Fn(V::Value) -> String>,
-    ) -> Result<Self>
-    where
-        FT: FontTexturizer<'t, F, Texture = T>,
-    {
-        let text = TextCache::load(CacheValue(value), &*font, texturizer, pattern.as_ref())?;
+impl<T, F: Font<Texture = T>, V: AsCached + Copy> TextBox<T, F, V> {
+    pub fn load(value: V, font: Rc<F>, pattern: Box<Fn(V::Value) -> String>) -> Result<Self> {
+        let text = TextCache::load(CacheValue(value), &*font, pattern.as_ref())?;
         Ok(TextBox {
             text,
             font,
@@ -106,13 +93,10 @@ impl<T, F, V: AsCached + Copy> TextBox<T, F, V> {
         })
     }
 
-    pub fn before_draw<'t, FT>(&mut self, texturizer: &'t FT) -> Result<()>
-    where
-        FT: FontTexturizer<'t, F, Texture = T>,
-    {
+    pub fn before_draw(&mut self) -> Result<()> {
         let updated = CacheValue(self.value);
         if self.text.value != updated {
-            self.text = TextCache::load(updated, &*self.font, texturizer, self.pattern.as_ref())?;
+            self.text = TextCache::load(updated, &*self.font, self.pattern.as_ref())?;
         }
         Ok(())
     }

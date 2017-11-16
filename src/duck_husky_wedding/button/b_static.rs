@@ -1,7 +1,7 @@
 use errors::*;
 
 use glm;
-use moho::renderer::{ColorRGBA, Font, FontTexturizer};
+use moho::renderer::{ColorRGBA, Font};
 
 use std::rc::Rc;
 
@@ -22,18 +22,12 @@ impl<T> Clone for Static<T> {
 }
 
 impl<T> Static<T> {
-    pub fn with_text<'t, F, FT>(text: &str, texturizer: &'t FT, font: &F) -> Result<Self>
-    where
-        F: Font,
-        FT: FontTexturizer<'t, F, Texture = T>,
-    {
+    pub fn with_text<F: Font<Texture = T>>(text: &str, font: &F) -> Result<Self> {
         let dims = font.measure(text)?;
 
-        let idle = texturizer
-            .texturize(font, text, &ColorRGBA(255, 255, 255, 255))
+        let idle = font.texturize(text, &ColorRGBA(255, 255, 255, 255))
             .map(Rc::new)?;
-        let selected = texturizer
-            .texturize(font, text, &ColorRGBA(255, 255, 0, 255))
+        let selected = font.texturize(text, &ColorRGBA(255, 255, 0, 255))
             .map(Rc::new)?;
 
         Ok(Static {

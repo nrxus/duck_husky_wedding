@@ -4,8 +4,8 @@ use duck_husky_wedding::{button, font};
 
 use glm;
 use moho::{self, input};
-use moho::renderer::{align, options, ColorRGBA, Font, FontTexturizer, Renderer, Scene, Texture,
-                     TextureLoader, TextureManager};
+use moho::renderer::{align, options, ColorRGBA, Font, Renderer, Scene, Texture, TextureLoader,
+                     TextureManager};
 
 use std::rc::Rc;
 use sdl2::keyboard::Keycode;
@@ -45,9 +45,8 @@ impl<T> Clone for Menu<T> {
 }
 
 impl<T> Menu<T> {
-    pub fn load<'f, 't, FT, FM, TL>(
+    pub fn load<'f, 't, FM, TL>(
         font_manager: &mut FM,
-        texturizer: &'t FT,
         texture_manager: &mut TextureManager<'t, TL>,
         data: &data::Game,
         picker: Rc<T>,
@@ -56,13 +55,12 @@ impl<T> Menu<T> {
         T: Texture,
         TL: TextureLoader<'t, Texture = T>,
         FM: font::Manager,
-        FM::Font: Font,
-        FT: FontTexturizer<'t, FM::Font, Texture = T>,
+        FM::Font: Font<Texture = T>,
     {
         let button_manager = {
             font_manager
                 .load(font::Kind::KenPixel, 64)
-                .and_then(|f| ButtonManager::load(texturizer, f.as_ref(), picker))
+                .and_then(|f| ButtonManager::load(f.as_ref(), picker))
         }?;
 
         let scale = 2;
@@ -94,13 +92,8 @@ impl<T> Menu<T> {
         let instructions = {
             let font = font_manager.load(font::Kind::KenPixel, 32)?;
             let color = ColorRGBA(255, 255, 0, 255);
-            texturizer
-                .texturize(
-                    &*font,
-                    "<Use Arrow Keys to select option; then press Enter>",
-                    &color,
-                )
-                .map(Rc::new)
+            let text = "<Use Arrow Keys to select option; then press Enter>";
+            font.texturize(text, &color).map(Rc::new)
         }?;
 
         Ok(Menu {
@@ -182,14 +175,13 @@ impl<T> Clone for ButtonManager<T> {
 }
 
 impl<T> ButtonManager<T> {
-    pub fn load<'t, FT, F>(texturizer: &'t FT, font: &F, picker: Rc<T>) -> Result<Self>
+    pub fn load<F>(font: &F, picker: Rc<T>) -> Result<Self>
     where
-        F: Font,
-        FT: FontTexturizer<'t, F, Texture = T>,
+        F: Font<Texture = T>,
     {
         let new_game = {
             let center = glm::ivec2(640, 325);
-            let inner = button::Static::with_text("New Game", texturizer, font)?;
+            let inner = button::Static::with_text("New Game", font)?;
             Button {
                 center,
                 inner,
@@ -199,7 +191,7 @@ impl<T> ButtonManager<T> {
 
         let high_score = {
             let center = glm::ivec2(640, 500);
-            let inner = button::Static::with_text("High Scores", texturizer, font)?;
+            let inner = button::Static::with_text("High Scores", font)?;
             Button {
                 center,
                 inner,

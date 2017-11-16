@@ -20,8 +20,8 @@ use errors::*;
 use data;
 
 use moho::input;
-use moho::renderer::{Canvas, ColorRGBA, Font, FontLoader, FontManager, FontTexturizer, Texture,
-                     TextureLoader, TextureManager};
+use moho::renderer::{Canvas, ColorRGBA, Font, FontLoader, FontManager, Texture, TextureLoader,
+                     TextureManager};
 use moho::timer::Timer;
 
 use std::time::Duration;
@@ -35,7 +35,6 @@ where
     texture_manager: TextureManager<'t, TL>,
     font_manager: FontManager<'f, FL>,
     renderer: R,
-    texture_loader: &'t TL,
 }
 
 impl<'f, 't, TL, FL, R, E> DuckHuskyWedding<'f, 't, TL, FL, R, E>
@@ -43,7 +42,7 @@ where
     TL: TextureLoader<'t>,
     TL::Texture: Texture,
     FL: FontLoader<'f>,
-    FL::Font: Font,
+    FL::Font: Font<Texture = TL::Texture>,
 {
     pub fn new(
         renderer: R,
@@ -54,17 +53,15 @@ where
         let texture_manager = TextureManager::new(texture_loader);
         let font_manager = FontManager::new(font_loader);
         DuckHuskyWedding {
-            input_manager: input_manager,
-            texture_manager: texture_manager,
-            font_manager: font_manager,
-            renderer: renderer,
-            texture_loader: texture_loader,
+            input_manager,
+            texture_manager,
+            font_manager,
+            renderer,
         }
     }
 
     pub fn run(&mut self) -> Result<()>
     where
-        TL: FontTexturizer<'t, FL::Font, Texture = <TL as TextureLoader<'t>>::Texture>,
         R: Canvas<'t, Texture = <TL as TextureLoader<'t>>::Texture>,
         E: input::EventPump,
     {
@@ -73,7 +70,6 @@ where
         let mut screen_manager = screen::Manager::load(
             &mut self.font_manager,
             &mut self.texture_manager,
-            self.texture_loader,
             &level_data,
             game_data,
         )?;
@@ -94,16 +90,12 @@ where
                     break 'game_loop;
                 }
 
-                let next_screen =
-                    screen_manager
-                        .mut_screen()
-                        .update(update_duration, state, self.texture_loader);
+                let next_screen = screen_manager.mut_screen().update(update_duration, state);
                 if let Some(s) = next_screen {
                     screen_manager.select_screen(
                         s,
                         &mut self.font_manager,
                         &mut self.texture_manager,
-                        self.texture_loader,
                     );
                 }
 
@@ -115,7 +107,7 @@ where
             // / update_duration.subsec_nanos() as f64;
             self.renderer.set_draw_color(color);
             self.renderer.clear();
-            screen_manager.mut_screen().before_draw(self.texture_loader)?;
+            screen_manager.mut_screen().before_draw()?;
             self.renderer.show(screen_manager.screen())?;
             self.renderer.present();
         }

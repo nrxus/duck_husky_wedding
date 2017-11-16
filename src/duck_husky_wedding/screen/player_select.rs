@@ -6,8 +6,8 @@ use errors::*;
 use glm;
 use moho::animation::{self, Animation};
 use moho::{self, input};
-use moho::renderer::{align, options, ColorRGBA, FontTexturizer, Renderer, Scene, Texture,
-                     TextureLoader, TextureManager};
+use moho::renderer::{align, options, ColorRGBA, Font, Renderer, Scene, Texture, TextureLoader,
+                     TextureManager};
 use sdl2::keyboard::Keycode;
 
 use std::rc::Rc;
@@ -68,9 +68,8 @@ pub struct Data<T> {
 }
 
 impl<T> Data<T> {
-    pub fn load<'f, 't, FT, FM, TL>(
+    pub fn load<'t, FM, TL>(
         font_manager: &mut FM,
-        texturizer: &'t FT,
         texture_manager: &mut TextureManager<'t, TL>,
         data: &data::Game,
         picker: Rc<T>,
@@ -79,20 +78,14 @@ impl<T> Data<T> {
         T: Texture,
         TL: TextureLoader<'t, Texture = T>,
         FM: font::Manager,
-        FT: FontTexturizer<'t, FM::Font, Texture = T>,
+        FM::Font: Font<Texture = T>,
     {
         let font = font_manager.load(font::Kind::KenPixel, 64)?;
         let title_color = ColorRGBA(255, 255, 0, 255);
-        let title = texturizer
-            .texturize(&*font, "Select Player", &title_color)
-            .map(Rc::new)?;
+        let title = font.texturize("Select Player", &title_color).map(Rc::new)?;
         let button_manager = ButtonManager::load(data, texture_manager, picker)?;
-        let collect_text = texturizer
-            .texturize(&*font, "Collect", &title_color)
-            .map(Rc::new)?;
-        let avoid_text = texturizer
-            .texturize(&*font, "Avoid", &title_color)
-            .map(Rc::new)?;
+        let collect_text = font.texturize("Collect", &title_color).map(Rc::new)?;
+        let avoid_text = font.texturize("Avoid", &title_color).map(Rc::new)?;
         let collect_distance = 50;
         let coin = {
             let data = &data.coin;
@@ -121,13 +114,10 @@ impl<T> Data<T> {
         };
         let instructions = {
             let font = font_manager.load(font::Kind::KenPixel, 32)?;
-            texturizer
-                .texturize(
-                    &*font,
-                    "<Use Arrow Keys to choose player; then press Enter>",
-                    &title_color,
-                )
-                .map(Rc::new)
+            font.texturize(
+                "<Use Arrow Keys to choose player; then press Enter>",
+                &title_color,
+            ).map(Rc::new)
         }?;
 
         Ok(Data {

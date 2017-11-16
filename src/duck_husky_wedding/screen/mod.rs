@@ -11,8 +11,8 @@ use self::high_score::HighScore;
 use self::player_select::PlayerSelect;
 
 use moho::{self, input};
-use moho::renderer::{Canvas, Font, FontLoader, FontManager, FontTexturizer, Scene, Texture,
-                     TextureLoader, TextureManager};
+use moho::renderer::{Canvas, Font, FontLoader, FontManager, Scene, Texture, TextureLoader,
+                     TextureManager};
 
 use errors::*;
 
@@ -47,33 +47,19 @@ where
     }
 }
 
-impl<T, F> Screen<T, F> {
-    pub fn update<'t, FT>(
-        &mut self,
-        delta: Duration,
-        input: &input::State,
-        texturizer: &'t FT,
-    ) -> Option<Kind>
-    where
-        F: Font,
-        T: Texture,
-        FT: FontTexturizer<'t, F, Texture = T>,
-    {
+impl<T: Texture, F: Font<Texture = T>> Screen<T, F> {
+    pub fn update(&mut self, delta: Duration, input: &input::State) -> Option<Kind> {
         match *self {
             Screen::Menu(ref mut s) => s.update(input),
-            Screen::GamePlay(ref mut s) => s.update(delta, input, texturizer),
+            Screen::GamePlay(ref mut s) => s.update(delta, input),
             Screen::HighScore(ref mut s) => s.update(input),
             Screen::PlayerSelect(ref mut s) => s.update(delta, input),
         }
     }
 
-    pub fn before_draw<'t, FT>(&mut self, texturizer: &'t FT) -> Result<()>
-    where
-        T: Texture,
-        FT: FontTexturizer<'t, F, Texture = T>,
-    {
+    pub fn before_draw(&mut self) -> Result<()> {
         if let Screen::GamePlay(ref mut s) = *self {
-            s.before_draw(texturizer)
+            s.before_draw()
         } else {
             Ok(())
         }
@@ -89,33 +75,25 @@ pub struct Manager<T, F> {
     active: Screen<T, F>,
 }
 
-impl<T, F> Manager<T, F> {
-    pub fn load<'f, 't, R, TL, FL>(
+impl<T, F: Font<Texture = T>> Manager<T, F> {
+    pub fn load<'f, 't, TL, FL>(
         font_manager: &mut FontManager<'f, FL>,
         texture_manager: &mut TextureManager<'t, TL>,
-        texturizer: &'t R,
         level: &data::Level,
         game: data::Game,
     ) -> Result<Self>
     where
         T: Texture,
-        F: Font,
         TL: TextureLoader<'t, Texture = T>,
         FL: FontLoader<'f, Font = F>,
-        R: FontTexturizer<'t, F, Texture = T>,
     {
         let picker = game.heart.texture.load(texture_manager)?;
-        let player_select = player_select::Data::load(
-            font_manager,
-            texturizer,
-            texture_manager,
-            &game,
-            Rc::clone(&picker),
-        )?;
-        let menu = Menu::load(font_manager, texturizer, texture_manager, &game, picker)?;
+        let player_select =
+            player_select::Data::load(font_manager, texture_manager, &game, Rc::clone(&picker))?;
+        let menu = Menu::load(font_manager, texture_manager, &game, picker)?;
         let active = Screen::Menu(menu.clone());
         let game_play = game_play::Data::load(texture_manager, level, game)?;
-        let high_score = high_score::Data::load(font_manager, texturizer)?;
+        let high_score = high_score::Data::load(font_manager)?;
         Ok(Manager {
             menu: menu,
             game_play: game_play,
@@ -133,30 +111,25 @@ impl<T, F> Manager<T, F> {
         &self.active
     }
 
-    pub fn select_screen<'f, 't, FT, FL, TL>(
+    pub fn select_screen<'f, 't, FL, TL>(
         &mut self,
         screen: Kind,
         font_manager: &mut FontManager<'f, FL>,
         texture_manager: &mut TextureManager<'t, TL>,
-        texturizer: &'t FT,
     ) where
         T: Texture,
-        F: Font,
         FL: FontLoader<'f, Font = F>,
         TL: TextureLoader<'t, Texture = T>,
-        FT: FontTexturizer<'t, F, Texture = T>,
     {
         self.active = match screen {
             Kind::Menu => Screen::Menu(self.menu.clone()),
             Kind::PlayerSelect => Screen::PlayerSelect(self.player_select.activate()),
             Kind::GamePlay(k) => Screen::GamePlay(
                 self.game_play
-                    .activate(texture_manager, font_manager, texturizer, k)
+                    .activate(texture_manager, font_manager, k)
                     .unwrap(),
             ),
-            Kind::HighScore => {
-                Screen::HighScore(self.high_score.activate(font_manager, texturizer).unwrap())
-            }
+            Kind::HighScore => Screen::HighScore(self.high_score.activate(font_manager).unwrap()),
         }
     }
 }

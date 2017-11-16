@@ -4,7 +4,7 @@ use utils::Try;
 use errors::*;
 
 use moho::{self, input};
-use moho::renderer::{align, options, ColorRGBA, FontTexturizer, Renderer, Scene, Texture};
+use moho::renderer::{align, options, ColorRGBA, Font, Renderer, Scene, Texture};
 use sdl2::keyboard::Keycode;
 
 use std::rc::Rc;
@@ -21,22 +21,22 @@ pub struct Data<T> {
 }
 
 impl<T> Data<T> {
-    pub fn load<'f, 't, FT, FM>(font_manager: &mut FM, texturizer: &'t FT) -> Result<Self>
+    pub fn load<FM>(font_manager: &mut FM) -> Result<Self>
     where
         FM: font::Manager,
-        FT: FontTexturizer<'t, FM::Font, Texture = T>,
+        FM::Font: Font<Texture = T>,
     {
         let color = ColorRGBA(255, 255, 0, 255);
 
         let title = {
             let text = "High Scores";
             let font = font_manager.load(font::Kind::KenPixel, 64)?;
-            texturizer.texturize(&*font, text, &color).map(Rc::new)
+            font.texturize(text, &color).map(Rc::new)
         }?;
         let instructions = {
             let text = "<PRESS ENTER TO GO TO MAIN MENU>";
             let font = font_manager.load(font::Kind::KenPixel, 32)?;
-            texturizer.texturize(&*font, text, &color).map(Rc::new)
+            font.texturize(text, &color).map(Rc::new)
         }?;
 
         Ok(Data {
@@ -45,14 +45,10 @@ impl<T> Data<T> {
         })
     }
 
-    pub fn activate<'f, 't, FT, FM>(
-        &mut self,
-        font_manager: &mut FM,
-        texturizer: &'t FT,
-    ) -> Result<HighScore<T>>
+    pub fn activate<FM>(&mut self, font_manager: &mut FM) -> Result<HighScore<T>>
     where
         FM: font::Manager,
-        FT: FontTexturizer<'t, FM::Font, Texture = T>,
+        FM::Font: Font<Texture = T>,
     {
         let font = font_manager.load(font::Kind::Joystix, 32)?;
         let color = ColorRGBA(255, 255, 255, 255);
@@ -61,9 +57,7 @@ impl<T> Data<T> {
             .iter()
             .map(|s| {
                 let score = format!("{:06}{:5}{:>6}", s.score, "", s.name);
-                texturizer
-                    .texturize(&*font, &score, &color)
-                    .map_err(Into::into)
+                font.texturize(&score, &color).map_err(Into::into)
             })
             .collect::<Result<Vec<_>>>()?;
         Ok(HighScore {

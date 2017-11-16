@@ -75,8 +75,8 @@ fn main() {
         let mut game = LevelViewer::new(renderer, &creator, input_manager);
         game.run().unwrap();
     } else {
-        let loader = sdl2::ttf::init().unwrap();
-        let mut game = DuckHuskyWedding::new(renderer, &loader, &creator, input_manager);
+        let font_loader = moho::renderer::sdl2::font::Loader::load(&creator).unwrap();
+        let mut game = DuckHuskyWedding::new(renderer, &font_loader, &creator, input_manager);
         game.run().unwrap();
     }
 }

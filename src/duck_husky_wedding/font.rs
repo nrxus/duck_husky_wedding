@@ -1,6 +1,7 @@
 use errors::*;
 
-use moho::renderer::{FontDetails, FontLoader, FontManager};
+use moho::renderer::font;
+use moho::renderer::{FontLoader, FontManager};
 
 use std::rc::Rc;
 
@@ -32,7 +33,7 @@ where
     type Font = FL::Font;
 
     fn load(&mut self, kind: Kind, size: u16) -> Result<Rc<FL::Font>> {
-        self.load(&FontDetails {
+        self.load(&font::Details {
             path: kind.path(),
             size,
         }).chain_err(|| format!("cannot load font in path: {:?}", kind.path()))

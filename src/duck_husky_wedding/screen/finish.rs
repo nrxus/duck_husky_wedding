@@ -5,7 +5,7 @@ use errors::*;
 
 use glm;
 use moho;
-use moho::renderer::{align, options, Canvas, ColorRGBA, Font, FontTexturizer, Scene, Texture};
+use moho::renderer::{align, options, Canvas, ColorRGBA, Font, Scene, Texture};
 use moho::input;
 use sdl2::rect::Rect;
 use sdl2::keyboard::Keycode;
@@ -25,7 +25,7 @@ pub struct ScoreData<T, F> {
     name: EditText<T, F>,
 }
 
-impl<T, F> ScoreData<T, F> {
+impl<T, F: Font<Texture = T>> ScoreData<T, F> {
     fn extract(&self) -> Option<Vec<ScoreEntry>> {
         let name = self.name.extract();
         if name.is_empty() {
@@ -53,52 +53,31 @@ pub struct Finish<T, F> {
     score_entry: Option<ScoreData<T, F>>,
 }
 
-impl<T, F> Finish<T, F> {
-    pub fn load<'t, FT>(
-        data: &Data<F>,
-        texturizer: &'t FT,
-        score: u32,
-        duration: Duration,
-    ) -> Result<Self>
-    where
-        F: Font,
-        FT: FontTexturizer<'t, F, Texture = T>,
-    {
+impl<T, F: Font<Texture = T>> Finish<T, F> {
+    pub fn load(data: &Data<F>, score: u32, duration: Duration) -> Result<Self> {
+        let yellow = ColorRGBA(255, 255, 0, 255);
+        let white = ColorRGBA(255, 255, 255, 255);
         let view = data.view;
-        let title =
-            texturizer.texturize(&*data.title_font, "FINISHED!", &ColorRGBA(255, 255, 0, 255))?;
+        let title = data.title_font.texturize("FINISHED!", &yellow)?;
 
-        let instructions = texturizer.texturize(
-            &*data.title_font,
-            "<PRESS ENTER TO CONTINUE>",
-            &ColorRGBA(255, 255, 0, 255),
-        )?;
+        let instructions = data.title_font
+            .texturize("<PRESS ENTER TO CONTINUE>", &yellow)?;
 
         let duration = 5 * duration.as_secs();
         let new_score = duration as u32 + score;
-        let total = texturizer.texturize(
-            &*data.detail_font,
-            &format!("     total: {:>06}", new_score),
-            &ColorRGBA(255, 255, 255, 255),
-        )?;
+        let total = data.detail_font
+            .texturize(&format!("     total: {:>06}", new_score), &white)?;
 
-        let score = texturizer.texturize(
-            &*data.detail_font,
-            &format!("     score: {:>06}", score),
-            &ColorRGBA(255, 255, 255, 255),
-        )?;
+        let score = data.detail_font
+            .texturize(&format!("     score: {:>06}", score), &white)?;
 
-        let time = texturizer.texturize(
-            &*data.detail_font,
-            &format!("time bonus: {:>06}", duration),
-            &ColorRGBA(255, 255, 255, 255),
-        )?;
+        let time = data.detail_font
+            .texturize(&format!("time bonus: {:>06}", duration), &white)?;
 
         let name = EditText::load(
             "Enter Name: ",
             glm::ivec2(369, 400),
             Rc::clone(&data.detail_font),
-            texturizer,
         )?;
 
         let score_entry = {
@@ -130,12 +109,9 @@ impl<T, F> Finish<T, F> {
         })
     }
 
-    pub fn before_draw<'t, FT>(&mut self, texturizer: &'t FT) -> Result<()>
-    where
-        FT: FontTexturizer<'t, F, Texture = T>,
-    {
+    pub fn before_draw(&mut self) -> Result<()> {
         if let Some(ref mut s) = self.score_entry {
-            s.name.before_draw(texturizer)
+            s.name.before_draw()
         } else {
             Ok(())
         }

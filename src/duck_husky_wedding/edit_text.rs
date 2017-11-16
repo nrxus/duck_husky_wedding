@@ -5,7 +5,7 @@ use utils::Try;
 
 use glm;
 use moho::{self, input};
-use moho::renderer::{options, ColorRGBA, FontTexturizer, Renderer, Scene, Texture};
+use moho::renderer::{options, ColorRGBA, Font, Renderer, Scene, Texture};
 use sdl2::keyboard::Keycode;
 
 use std::cmp;
@@ -33,29 +33,21 @@ pub struct EditText<T, F> {
     tl: glm::IVec2,
 }
 
-impl<T, F> EditText<T, F> {
-    pub fn load<'t, FT>(
-        label: &str,
-        tl: glm::IVec2,
-        font: Rc<F>,
-        texturizer: &'t FT,
-    ) -> Result<Self>
-    where
-        FT: FontTexturizer<'t, F, Texture = T>,
-    {
+impl<T, F: Font<Texture = T>> EditText<T, F> {
+    pub fn load(label: &str, tl: glm::IVec2, font: Rc<F>) -> Result<Self> {
         let textures = {
             let font = &*font;
             [
-                Self::load_char(CacheValue(None), font, texturizer)?,
-                Self::load_char(CacheValue(None), font, texturizer)?,
-                Self::load_char(CacheValue(None), font, texturizer)?,
-                Self::load_char(CacheValue(None), font, texturizer)?,
-                Self::load_char(CacheValue(None), font, texturizer)?,
-                Self::load_char(CacheValue(None), font, texturizer)?,
+                Self::load_char(CacheValue(None), font)?,
+                Self::load_char(CacheValue(None), font)?,
+                Self::load_char(CacheValue(None), font)?,
+                Self::load_char(CacheValue(None), font)?,
+                Self::load_char(CacheValue(None), font)?,
+                Self::load_char(CacheValue(None), font)?,
             ]
         };
         let values = [None; 6];
-        let label = texturizer.texturize(&*font, label, &ColorRGBA(255, 255, 255, 255))?;
+        let label = font.texturize(label, &ColorRGBA(255, 255, 255, 255))?;
         Ok(EditText {
             label,
             tl,
@@ -91,13 +83,10 @@ impl<T, F> EditText<T, F> {
         self.flicker.update(elapsed);
     }
 
-    pub fn before_draw<'t, FT>(&mut self, texturizer: &'t FT) -> Result<()>
-    where
-        FT: FontTexturizer<'t, F, Texture = T>,
-    {
+    pub fn before_draw(&mut self) -> Result<()> {
         let updated = CacheValue(self.values[self.active]);
         if self.textures[self.active].value != updated {
-            self.textures[self.active] = Self::load_char(updated, &*self.font, texturizer)?;
+            self.textures[self.active] = Self::load_char(updated, &*self.font)?;
         }
         Ok(())
     }
@@ -111,15 +100,8 @@ impl<T, F> EditText<T, F> {
             .into()
     }
 
-    fn load_char<'t, FT>(
-        value: CacheValue<Option<char>>,
-        font: &F,
-        texturizer: &'t FT,
-    ) -> Result<TextCache<T, Option<char>>>
-    where
-        FT: FontTexturizer<'t, F, Texture = T>,
-    {
-        TextCache::load(value, font, texturizer, &|c| c.to_string())
+    fn load_char(value: CacheValue<Option<char>>, font: &F) -> Result<TextCache<T, Option<char>>> {
+        TextCache::load(value, font, &|c| c.to_string())
     }
 
     fn move_left(&mut self) {
